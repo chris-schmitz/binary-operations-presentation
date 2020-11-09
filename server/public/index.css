@@ -1,0 +1,11 @@
+table,tr,td {
+    border: 1px solid orangered;
+    border-collapse: collapse;
+}
+td {
+    padding:50px;
+}
+
+td[paint="true"] {
+    background: orangered;
+}
