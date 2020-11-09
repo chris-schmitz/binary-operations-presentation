@@ -48,8 +48,11 @@ class BrickMover {
   }
 
   addBrick(rowIndex) {
-    this.gridState[rowIndex] = this.gridState[rowIndex] << 1
-    this.gridState[rowIndex] += 1
+    // * Note that we're not adding 1 to the beginning of our state, we're performing a bitwise `OR` on it.
+    // * So, regardless of the state of the first bit of our state, we're setting it to `1`,
+    // * This way we don't accidentally push more bricks into our row if we accidentally multi-click the button
+    // * before the next frame paint. You can think of this as a way of debouncing the button until the next frame.
+    this.gridState[rowIndex] = this.gridState[rowIndex] | 1
     this.paintCell(rowIndex, 0, true)
   }
 
@@ -83,6 +86,6 @@ document.addEventListener('readystatechange', () => {
   if (document.readyState === 'complete') {
     brickMover.begin()
     window.game = brickMover
-    setInterval(brickMover.animate.bind(brickMover), 100)
+    setInterval(brickMover.animate.bind(brickMover), 1000)
   }
 })
