@@ -7,10 +7,11 @@
 // * - Game class takes ui and state manager instances as dependencies
 class BrickMover {
   gridElement = null
-
   gridState = []
   rows = 0
   columns = 0
+
+  frameInterval = 1000
 
   constructor(rows, columns) {
     this.rows = rows
@@ -21,11 +22,12 @@ class BrickMover {
   }
 
   begin() {
-    this.grabTable()
+    this.grabElements()
     this.populateGrid()
+    setInterval(this.animate.bind(this), this.frameInterval)
   }
 
-  grabTable() {
+  grabElements() {
     this.gridElement = document.querySelector('tbody')
     this.buttonWrapper = document.querySelector('#button-wrapper')
   }
@@ -85,7 +87,6 @@ const brickMover = new BrickMover(8, 10)
 document.addEventListener('readystatechange', () => {
   if (document.readyState === 'complete') {
     brickMover.begin()
-    window.game = brickMover
-    setInterval(brickMover.animate.bind(brickMover), 1000)
+    window.game = brickMover // ! leaving in for debugging and demo purposes
   }
 })
