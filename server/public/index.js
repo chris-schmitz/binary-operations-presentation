@@ -12,6 +12,7 @@ class BrickMover {
   columns = 0
 
   frameInterval = 1000
+  animationInterval = null
 
   constructor(rows, columns) {
     this.rows = rows
@@ -24,7 +25,15 @@ class BrickMover {
   begin() {
     this.grabElements()
     this.populateGrid()
-    setInterval(this.animate.bind(this), this.frameInterval)
+    this.startAnimation()
+  }
+
+  startAnimation() {
+    this.animationInterval = setInterval(this.animate.bind(this), this.frameInterval)
+  }
+
+  stopAnimation() {
+    clearInterval(this.animationInterval)
   }
 
   grabElements() {
