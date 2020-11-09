@@ -1,5 +1,7 @@
 // TODO:
 // * - detect collision
+
+// TODO: consider
 // * - Create classes:
 // *    - Game
 // *    - UI manager (handles the html)
@@ -7,44 +9,93 @@
 // * - Game class takes ui and state manager instances as dependencies
 class BrickMover {
   gridElement = null
+  RandomBrickToggleButton = null
+  randomBricksOn = false
   gridState = []
   rows = 0
   columns = 0
 
   frameInterval = 1000
-  animationInterval = null
+  animationIntervalContainer = null
+  randomBrickIntervalContainer = null
 
   constructor(rows, columns) {
     this.rows = rows
     this.columns = columns
-    for (let i = 0; i < rows; i++) {
+    for (let i = 0; i < rows; i++)
+    {
       this.gridState.push(0)
     }
   }
 
   begin() {
     this.grabElements()
+    this.addHooks()
     this.populateGrid()
     this.startAnimation()
   }
 
   startAnimation() {
-    this.animationInterval = setInterval(this.animate.bind(this), this.frameInterval)
+    if (this.animationIntervalContainer)
+    {
+      // * if the interval is already running, no need to start it again
+      return
+    }
+    this.animationIntervalContainer = setInterval(
+      this.animate.bind(this),
+      this.frameInterval)
   }
 
   stopAnimation() {
-    clearInterval(this.animationInterval)
+    clearInterval(this.animationIntervalContainer)
+    this.animationIntervalContainer = null
+  }
+
+  startRandomBricks() {
+    if (this.randomBrickIntervalContainer)
+    {
+      // * if the interval is already running, no need to start it again
+      return
+    }
+    this.randomBrickIntervalContainer = setInterval(() => {
+      const randomIndex = Math.floor(Math.random() * this.gridState.length)
+      this.addBrick(randomIndex)
+    }, this.frameInterval)
+  }
+
+  stopRandomBricks() {
+    clearInterval(this.randomBrickIntervalContainer)
+    this.randomBrickIntervalContainer = null
   }
 
   grabElements() {
     this.gridElement = document.querySelector('tbody')
     this.buttonWrapper = document.querySelector('#button-wrapper')
+    this.RandomBrickToggleButton = document.querySelector('#random-block-toggle')
+  }
+
+  addHooks() {
+    this.RandomBrickToggleButton.addEventListener("click", () => {
+      if (this.randomBricksOn)
+      {
+        this.randomBricksOn = false
+        this.RandomBrickToggleButton.classList.remove("button-toggle-on")
+        this.stopRandomBricks()
+      } else
+      {
+        this.randomBricksOn = true
+        this.RandomBrickToggleButton.classList.add("button-toggle-on")
+        this.startRandomBricks()
+      }
+    })
   }
 
   populateGrid() {
-    for (let rowIterator = 0; rowIterator < this.rows; rowIterator++) {
+    for (let rowIterator = 0; rowIterator < this.rows; rowIterator++)
+    {
       const row = document.createElement('tr')
-      for (let columnIterator = 0; columnIterator < this.columns; columnIterator++) {
+      for (let columnIterator = 0; columnIterator < this.columns; columnIterator++)
+      {
         const cell = document.createElement('td')
         cell.setAttribute('column', columnIterator)
         row.appendChild(cell)
@@ -72,9 +123,11 @@ class BrickMover {
   }
 
   paintFrame() {
-    for (let rowIterator = 0; rowIterator < this.gridState.length; rowIterator++) {
+    for (let rowIterator = 0; rowIterator < this.gridState.length; rowIterator++)
+    {
       const row = this.gridElement.children[rowIterator]
-      for (let columnIterator = 0; columnIterator < this.columns; columnIterator++) {
+      for (let columnIterator = 0; columnIterator < this.columns; columnIterator++)
+      {
         const cellState = Math.pow(2, columnIterator) & this.gridState[rowIterator]
         this.paintCell(rowIterator, columnIterator, cellState !== 0)
       }
@@ -82,7 +135,8 @@ class BrickMover {
   }
 
   animate() {
-    for (let i = 0; i < this.gridState.length; i++) {
+    for (let i = 0; i < this.gridState.length; i++)
+    {
       this.gridState[i] = this.gridState[i] << 1
       // Mask off the numbers so theyt don't just continually grow once the bricks are "off" the grid
       this.gridState[i] = this.gridState[i] & (Math.pow(2, this.columns) - 1)
@@ -94,7 +148,8 @@ class BrickMover {
 const brickMover = new BrickMover(8, 10)
 
 document.addEventListener('readystatechange', () => {
-  if (document.readyState === 'complete') {
+  if (document.readyState === 'complete')
+  {
     brickMover.begin()
     window.game = brickMover // ! leaving in for debugging and demo purposes
   }

@@ -9,3 +9,8 @@ td {
 td[paint="true"] {
     background: orangered;
 }
+
+.button-toggle-on{
+    background: green;
+    color: white;
+}
