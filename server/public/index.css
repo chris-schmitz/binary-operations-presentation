@@ -1,16 +1,22 @@
-table,tr,td {
-    border: 1px solid orangered;
-    border-collapse: collapse;
+table,
+tr,
+td {
+  border: 1px solid darkcyan;
+  border-collapse: collapse;
 }
 td {
-    padding:50px;
+  padding: 50px;
 }
 
-td[paint="true"] {
-    background: orangered;
+td[paint='true'] {
+  background: darkcyan;
 }
 
-.button-toggle-on{
-    background: green;
-    color: white;
+td[paint-player='true'] {
+  background: magenta;
+}
+
+.button-toggle-on {
+  background: green;
+  color: white;
 }
