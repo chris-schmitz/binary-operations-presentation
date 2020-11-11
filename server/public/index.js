@@ -10,6 +10,13 @@
 class GridManager {
   gridElement = null
   RandomBrickToggleButton = null
+
+  keyIndicators = {
+    up: null,
+    down: null,
+    left: null,
+    right: null,
+  }
   randomBricksOn = false
   gridState = []
   rows = 0
@@ -79,10 +86,15 @@ class GridManager {
     this.gridElement = document.querySelector('tbody')
     this.buttonWrapper = document.querySelector('#button-wrapper')
     this.RandomBrickToggleButton = document.querySelector('#random-block-toggle')
+    this.keyIndicators.up = document.querySelector('#up-key-indicator')
+    this.keyIndicators.down = document.querySelector('#down-key-indicator')
+    this.keyIndicators.left = document.querySelector('#left-key-indicator')
+    this.keyIndicators.right = document.querySelector('#right-key-indicator')
   }
 
   addHooks() {
-    document.addEventListener('keydown', this.movePlayer.bind(this))
+    document.addEventListener('keydown', this.playerKeydownHandler.bind(this))
+    document.addEventListener('keyup', this.playerKeyupHandler.bind(this))
 
     this.RandomBrickToggleButton.addEventListener('click', () => {
       if (this.randomBricksOn) {
@@ -123,7 +135,56 @@ class GridManager {
     this.paintCell(rowIndex, 0, true)
   }
 
-  movePlayer(event) {
+  activeKeys = 0b0000
+  playerKeydownHandler(event) {
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) return
+
+    let triggeredKey = 0b0000
+
+    switch (event.code) {
+      case 'ArrowUp':
+        triggeredKey = 0b1000
+        break
+      case 'ArrowDown':
+        triggeredKey = 0b0100
+        break
+      case 'ArrowLeft':
+        triggeredKey = 0b0010
+        break
+      case 'ArrowRight':
+        triggeredKey = 0b0001
+        break
+    }
+
+    this.activeKeys = this.activeKeys | triggeredKey
+    this.updateActiveKeyDisplay()
+  }
+
+  playerKeyupHandler(event) {
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) return
+
+    let triggeredKey = 0b1111
+
+    switch (event.code) {
+      case 'ArrowUp':
+        triggeredKey = 0b0111
+        break
+      case 'ArrowDown':
+        triggeredKey = 0b1011
+        break
+      case 'ArrowLeft':
+        triggeredKey = 0b1101
+        break
+      case 'ArrowRight':
+        triggeredKey = 0b1110
+        break
+    }
+
+    this.activeKeys = this.activeKeys & triggeredKey
+    this.updateActiveKeyDisplay()
+  }
+
+  oldmovePlayer(event) {
     this.player.previous.row = this.player.current.row
     this.player.previous.column = this.player.current.column
 
@@ -172,6 +233,13 @@ class GridManager {
       this.gridState[i] = this.gridState[i] & (Math.pow(2, this.columns) - 1)
     }
     this.paintFrame()
+  }
+
+  updateActiveKeyDisplay() {
+    this.keyIndicators.up.setAttribute('key-active', (this.activeKeys & 0b1000) > 0)
+    this.keyIndicators.down.setAttribute('key-active', (this.activeKeys & 0b0100) > 0)
+    this.keyIndicators.left.setAttribute('key-active', (this.activeKeys & 0b0010) > 0)
+    this.keyIndicators.right.setAttribute('key-active', (this.activeKeys & 0b0001) > 0)
   }
 }
 

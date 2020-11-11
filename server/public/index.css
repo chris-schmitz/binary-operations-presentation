@@ -20,3 +20,22 @@ td[paint-player='true'] {
   background: green;
   color: white;
 }
+
+.key-indicator {
+  display: flex;
+  align-items: flex-end;
+}
+.key-indicator div {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+}
+
+.key-indicator span {
+  padding: 30px;
+  background: lightgrey;
+}
+.key-indicator [key-active='true'] {
+  background: lightgreen;
+}

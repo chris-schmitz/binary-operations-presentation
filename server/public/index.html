@@ -1,22 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Block Mover</title>
     <link href="index.css" rel="stylesheet" />
-</head>
-<body>
+  </head>
+  <body>
     <h1>Block Mover</h1>
 
     <table>
-        <tbody></tbody>
+      <tbody></tbody>
     </table>
     <div id="button-wrapper"></div>
     <div>
-        <button id="random-block-toggle">Random Blocks</button>
+      <button id="random-block-toggle">Random Blocks</button>
     </div>
-    
+    <div class="key-indicator">
+      <span id="left-key-indicator">LEFT</span>
+      <div>
+        <span id="up-key-indicator">UP</span>
+        <span id="down-key-indicator">DOWN</span>
+      </div>
+      <span id="right-key-indicator">RIGHT</span>
+    </div>
+
     <script src="index.js"></script>
-</body>
+  </body>
 </html>
