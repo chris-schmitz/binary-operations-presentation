@@ -138,25 +138,46 @@ class GridManager {
   activeKeys = 0b0000
   playerKeydownHandler(event) {
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) return
+    // TODO: move to global spot, use to back enums
+    // TODO: also reorder so that the values are consecutive after testing
 
-    let triggeredKey = 0b0000
+    // TODO: some thing
+    const keyStates = [0b0010, 0b1000, 0b0001, 0b0100]
 
-    switch (event.code) {
-      case 'ArrowUp':
-        triggeredKey = 0b1000
-        break
-      case 'ArrowDown':
-        triggeredKey = 0b0100
-        break
-      case 'ArrowLeft':
-        triggeredKey = 0b0010
-        break
-      case 'ArrowRight':
-        triggeredKey = 0b0001
-        break
-    }
+    // * The key codes for:
+    // ? left, up, right, down
+    // * are:
+    // ? 37, 38, 39, 40
+    // * respectively, so if we want to get one of those codes and convert it to an index
+    // * in our `keyStates` variable we just need to subtract the value of the lowest number
+    // * which is 37. That way if we get left our index would be 0, up index would be 1, etc.
+    // ! We could do this with a switch statement, but using this approach avoids branching
+    // ! which gives a performance increase. That said, you're trading performance for readability,
+    // ! so you have to decide if it's really called for. I'm showing it here for demo purposes and
+    // ! it could be argued as accetable considering we're repainting a section of the screen on a
+    // ! regular basis and taking in user input for player movement.
+    // ! Ultimately, it's a cool strategy that does have performance advantages, but consider your use
+    // ! case and the dev-experience for devs in the future.
+    const keyStateIndex = event.keyCode - 37
 
-    this.activeKeys = this.activeKeys | triggeredKey
+    // ? Leaving this in to show the different approach
+    // let triggeredKey = 0b0000
+    // switch (event.code) {
+    //   case 'ArrowUp':
+    //     triggeredKey = 0b1000
+    //     break
+    //   case 'ArrowDown':
+    //     triggeredKey = 0b0100
+    //     break
+    //   case 'ArrowLeft':
+    //     triggeredKey = 0b0010
+    //     break
+    //   case 'ArrowRight':
+    //     triggeredKey = 0b0001
+    //     break
+    // }
+
+    this.activeKeys = this.activeKeys | keyStates[keyStateIndex]
     this.updateActiveKeyDisplay()
   }
 
@@ -236,6 +257,7 @@ class GridManager {
   }
 
   updateActiveKeyDisplay() {
+    // TODO: move to global spot, use to back enums
     this.keyIndicators.up.setAttribute('key-active', (this.activeKeys & 0b1000) > 0)
     this.keyIndicators.down.setAttribute('key-active', (this.activeKeys & 0b0100) > 0)
     this.keyIndicators.left.setAttribute('key-active', (this.activeKeys & 0b0010) > 0)
