@@ -8,6 +8,7 @@
 // *    - State manager (handles the html)
 // * - Game class takes ui and state manager instances as dependencies
 class GridManager {
+  // * HTML elements
   gridElement = null
   RandomBrickToggleButton = null
 
@@ -23,14 +24,9 @@ class GridManager {
     right: null,
   }
 
-  /**
-   * The current state of the arrow keys represented as a nibble.
-   *
-   * @memberof GridManager
-   */
+  // * Arrow key input properties
   activeKeys = 0b0000
   keyStates = []
-
   // * "enums" key state indexes
   KEY_LEFT = 0b0010
   KEY_UP = 0b1000
@@ -39,18 +35,21 @@ class GridManager {
 
   SMALLEST_ARROW_KEY_CODE = 37 // * i.e. the left arrow key's keyCode
 
+  // * Brick properties
   randomBricksOn = false
   gridState = []
   rows = 0
   columns = 0
 
+  // * Animation properties
   frameInterval = 1000
   animationIntervalContainer = null
   randomBrickIntervalContainer = null
 
+  // * Player properties
   playerPosition = {
-    rowIndex: 0, // * calculated according to number of rows
-    columnState: 0, // * represented as a binary number
+    rowIndex: 0,
+    columnState: 0, // * managed as a binary number to represent state
   }
 
   constructor(rows, columns) {
