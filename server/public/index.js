@@ -31,13 +31,13 @@ class GridManager {
   activeKeys = 0b0000
   keyStates = []
 
-  // * "enumns" key state indexes
+  // * "enums" key state indexes
   KEY_LEFT = 0b0010
   KEY_UP = 0b1000
   KEY_RIGHT = 0b0001
   KEY_DOWN = 0b0100
 
-  SMALLEST_ARROW_KEY_CODE = 37 // i.e. the left arrow key's keyCode
+  SMALLEST_ARROW_KEY_CODE = 37 // * i.e. the left arrow key's keyCode
 
   randomBricksOn = false
   gridState = []
@@ -49,20 +49,8 @@ class GridManager {
   randomBrickIntervalContainer = null
 
   playerPosition = {
-    rowIndex: 0, // ! calc according to number of rows
+    rowIndex: 0, // * calculated according to number of rows
     columnState: 0, // * represented as a binary number
-  }
-
-  // TODO: ripout after playerPosition is working
-  player = {
-    current: {
-      row: 0,
-      column: 0,
-    },
-    previous: {
-      row: 0,
-      column: 0,
-    },
   }
 
   constructor(rows, columns) {
@@ -200,7 +188,7 @@ class GridManager {
     // ! We could do this with a switch statement, but using this approach avoids branching
     // ! which gives a performance increase. That said, you're trading performance for readability,
     // ! so you have to decide if it's really called for. I'm showing it here for demo purposes and
-    // ! it could be argued as accetable considering we're repainting a section of the screen on a
+    // ! it could be argued as acceptable considering we're repainting a section of the screen on a
     // ! regular basis and taking in user input for player movement.
     // ! Ultimately, it's a cool strategy that does have performance advantages, but consider your use
     // ! case and the dev-experience for devs in the future.
@@ -225,6 +213,12 @@ class GridManager {
 
     this.activeKeys = this.activeKeys | this.keyStates[keyStateIndex]
     this.updateActiveKeyDisplay()
+
+    this.playerPosition.columnState = this.playerPosition.columnState << +((this.activeKeys & this.KEY_LEFT) !== 0)
+    this.playerPosition.columnState = this.playerPosition.columnState >> +((this.activeKeys & this.KEY_RIGHT) !== 0)
+    this.playerPosition.rowIndex -= +((this.activeKeys & this.KEY_UP) !== 0)
+    this.playerPosition.rowIndex += +((this.activeKeys & this.KEY_DOWN) !== 0)
+    this.paintPlayer()
   }
 
   playerKeyupHandler(event) {
@@ -255,40 +249,18 @@ class GridManager {
     this.updateActiveKeyDisplay()
   }
 
-  oldmovePlayer(event) {
-    this.player.previous.row = this.player.current.row
-    this.player.previous.column = this.player.current.column
-
-    switch (event.code) {
-      case 'ArrowUp':
-        this.player.current.row--
-        break
-      case 'ArrowDown':
-        this.player.current.row++
-        break
-      case 'ArrowLeft':
-        this.player.current.column--
-        break
-      case 'ArrowRight':
-        this.player.current.column++
-        break
-    }
-
-    this.paintPlayer()
-  }
-
   // TODO: merge with paintCell
   paintPlayer() {
+    // ^ It's so funny, I was running through different ways of efficiently clear the old player position visually. None of the
+    // ^ bitwise operation approaches seemed to be a good option because the paint timing would be tricky with the brick paint timing.
+    // ^ Then I remembered I was using the DOM and denoting the player visually via an attribute ... so I could just query and remove it :P
+    // ! Note that if we do a player size greater than 1 brick we'll need to change this a bit.
+    this.gridElement.querySelector('[paint-player]')?.removeAttribute('paint-player')
     const targetRow = this.gridElement.children[this.playerPosition.rowIndex]
     targetRow.children[targetRow.childElementCount - Math.log(this.playerPosition.columnState) / Math.log(2) - 1].setAttribute(
       'paint-player',
       true
     )
-
-    // .children[this.columns - this.playerPosition.co].removeAttribute('paint-player')
-
-    // this.gridElement.children[this.player.previous.row].children[this.player.previous.column].removeAttribute('paint-player')
-    // this.gridElement.children[this.player.current.row].children[this.player.current.column].setAttribute('paint-player', 'true')
   }
 
   paintCell(row, column, state) {
@@ -297,7 +269,6 @@ class GridManager {
 
   paintFrame() {
     for (let rowIterator = 0; rowIterator < this.gridState.length; rowIterator++) {
-      const row = this.gridElement.children[rowIterator]
       for (let columnIterator = 0; columnIterator < this.columns; columnIterator++) {
         const cellState = Math.pow(2, columnIterator) & this.gridState[rowIterator]
         this.paintCell(rowIterator, columnIterator, cellState !== 0)
@@ -308,7 +279,7 @@ class GridManager {
   animate() {
     for (let i = 0; i < this.gridState.length; i++) {
       this.gridState[i] = this.gridState[i] << 1
-      // Mask off the numbers so theyt don't just continually grow once the bricks are "off" the grid
+      // * Mask off the numbers so they don't just continually grow once the bricks are "off" the grid
       this.gridState[i] = this.gridState[i] & (Math.pow(2, this.columns) - 1)
     }
     this.paintFrame()
