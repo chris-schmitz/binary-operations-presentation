@@ -41,13 +41,13 @@ td[paint-player='true'] {
 }
 
 code {
-  font-size: 50px;
+  font-size: 30px;
 }
 
-#debugging-tools {
+.tools {
   display: flex;
 }
-#debugging-tools div {
+.tools div {
   margin: 10px;
 }
 
@@ -61,4 +61,10 @@ code {
 .key-indicator [key-active='true'],
 .indicator-active {
   background: orangered;
+}
+
+.game-over {
+  background: lightgray;
+  color: red;
+  font-weight: bold;
 }
