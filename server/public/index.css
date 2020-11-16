@@ -37,5 +37,28 @@ td[paint-player='true'] {
   background: lightgrey;
 }
 .key-indicator [key-active='true'] {
-  background: lightgreen;
+  background: orange;
+}
+
+code {
+  font-size: 50px;
+}
+
+#debugging-tools {
+  display: flex;
+}
+#debugging-tools div {
+  margin: 10px;
+}
+
+.collision-indicator {
+  height: 150px;
+  width: 150px;
+  background: lightgray;
+}
+
+/* TODO Consolidate this */
+.key-indicator [key-active='true'],
+.indicator-active {
+  background: orangered;
 }

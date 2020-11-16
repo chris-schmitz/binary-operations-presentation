@@ -12,17 +12,15 @@ class GridManager {
   gridElement = null
   RandomBrickToggleButton = null
 
-  /**
-   * The HTML elements used to show the current state of the arrow keys
-   *
-   * @memberof GridManager
-   */
   keyIndicators = {
     up: null,
     down: null,
     left: null,
     right: null,
   }
+
+  gridStateOutput = null
+  playerStateOutput = null
 
   // * Arrow key input properties
   activeKeys = 0b0000
@@ -125,6 +123,10 @@ class GridManager {
     this.keyIndicators.down = document.querySelector('#down-key-indicator')
     this.keyIndicators.left = document.querySelector('#left-key-indicator')
     this.keyIndicators.right = document.querySelector('#right-key-indicator')
+
+    this.gridStateOutput = document.querySelector('#grid-state-output')
+    this.playerStateOutput = document.querySelector('#player-state-output')
+    this.collisionIndicator = document.querySelector('.collision-indicator')
   }
 
   addHooks() {
@@ -166,16 +168,14 @@ class GridManager {
     // * So, regardless of the state of the first bit of our state, we're setting it to `1`,
     // * This way we don't accidentally push more bricks into our row if we accidentally multi-click the button
     // * before the next frame paint. You can think of this as a way of debouncing the button until the next frame.
-    this.gridState[rowIndex] = this.gridState[rowIndex] | 1
+    this.gridState[rowIndex] = this.gridState[rowIndex] | Math.pow(2, this.columns - 1)
+    // this.gridState[rowIndex] = this.gridState[rowIndex] | 1
     this.paintCell(rowIndex, 0, true)
   }
 
+  // TODO: abstract some logic, there's a lot happening here that should be named
   playerKeydownHandler(event) {
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) return
-    // TODO: move to global spot, use to back enums
-    // TODO: also reorder so that the values are consecutive after testing
-
-    // TODO: some thing
 
     // * The key codes for:
     // ? left, up, right, down
@@ -193,31 +193,16 @@ class GridManager {
     // ! case and the dev-experience for devs in the future.
     const keyStateIndex = event.keyCode - this.SMALLEST_ARROW_KEY_CODE
 
-    // ? Leaving this in to show the different approach
-    // let triggeredKey = 0b0000
-    // switch (event.code) {
-    //   case 'ArrowUp':
-    //     triggeredKey = 0b1000
-    //     break
-    //   case 'ArrowDown':
-    //     triggeredKey = 0b0100
-    //     break
-    //   case 'ArrowLeft':
-    //     triggeredKey = 0b0010
-    //     break
-    //   case 'ArrowRight':
-    //     triggeredKey = 0b0001
-    //     break
-    // }
-
     this.activeKeys = this.activeKeys | this.keyStates[keyStateIndex]
     this.updateActiveKeyDisplay()
 
     this.playerPosition.columnState = this.playerPosition.columnState << +((this.activeKeys & this.KEY_LEFT) !== 0)
     this.playerPosition.columnState = this.playerPosition.columnState >> +((this.activeKeys & this.KEY_RIGHT) !== 0)
+    this.playerPosition.columnState += +(this.playerPosition.columnState < 1)
     this.playerPosition.rowIndex -= +((this.activeKeys & this.KEY_UP) !== 0)
     this.playerPosition.rowIndex += +((this.activeKeys & this.KEY_DOWN) !== 0)
     this.paintPlayer()
+    this.detectCollisions()
   }
 
   playerKeyupHandler(event) {
@@ -266,22 +251,46 @@ class GridManager {
     this.gridElement.children[row].children[column].setAttribute('paint', state)
   }
 
+  // TODO cleanup
   paintFrame() {
     for (let rowIterator = 0; rowIterator < this.gridState.length; rowIterator++) {
       for (let columnIterator = 0; columnIterator < this.columns; columnIterator++) {
         const cellState = Math.pow(2, columnIterator) & this.gridState[rowIterator]
-        this.paintCell(rowIterator, columnIterator, cellState !== 0)
+        this.paintCell(rowIterator, this.columns - columnIterator - 1, cellState !== 0)
       }
     }
   }
 
   animate() {
     for (let i = 0; i < this.gridState.length; i++) {
-      this.gridState[i] = this.gridState[i] << 1
+      this.gridState[i] = this.gridState[i] >> 1
+      // this.gridState[i] = this.gridState[i] << 1
       // * Mask off the numbers so they don't just continually grow once the bricks are "off" the grid
       this.gridState[i] = this.gridState[i] & (Math.pow(2, this.columns) - 1)
     }
+    this.updateStateOutput()
+    this.detectCollisions()
     this.paintFrame()
+  }
+
+  updateStateOutput() {
+    this.gridStateOutput.innerText = this.gridState
+    this.playerStateOutput.innerText = JSON.stringify(this.playerPosition)
+  }
+
+  // TODO: come back and annotate and cleanup
+  detectCollisions() {
+    const colissions = this.playerPosition.columnState & this.gridState[this.playerPosition.rowIndex]
+
+    if (colissions) {
+      const gridColumn = this.columns - Math.log(colissions) / Math.log(2)
+      this.collisionIndicator.classList.add('indicator-active')
+      console.log(`Colission at row ${this.playerPosition.rowIndex + 1}, column ${gridColumn}`)
+    } else {
+      this.collisionIndicator.classList.remove('indicator-active')
+    }
+
+    this.updateStateOutput()
   }
 
   updateActiveKeyDisplay() {
