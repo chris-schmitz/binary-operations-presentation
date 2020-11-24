@@ -40,16 +40,30 @@ websocketServer.on('connection', (socket) => {
     // * use the message mask for that
     
 
+    // TODO move to property constant or module scope constant
+    // TODO: add notes
+    // ? - number format can be in any base 
+    // ? - comes down to readability/preference
+    const touchStateMask = 0b111111111111 
+    const messageTypeMask = 0xFF
+
+    // TODO: move process to named method
+    let messageData = message.readUInt32LE()
+    const touchState = messageData & touchStateMask
+    messageData >>= 12
+    const messageType = messageData & messageTypeMask // ? we don't even need the mask here anymore, right?
+
 
 
     // socket.send(`got it`)
-    const messageType = 0b00000001 // * type: add block
-    const data = 0b00000011 // * row index: 3
+    // const messageType = 0b00000001 // * type: add block
+    // const data = 0b00000011 // * row index: 3
+
 
     let payload = 0
     payload = payload | messageType
-    payload = payload << 8
-    payload = payload | data
+    payload <<= 8
+    payload = payload | touchState
     websocketServer.clients.forEach((client) => {
       client.send(payload)
     })
