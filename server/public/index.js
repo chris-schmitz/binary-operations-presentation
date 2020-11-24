@@ -333,6 +333,35 @@ class GridManager {
 
 const gridManager = new GridManager(8, 10, 10)
 
+const socket = new WebSocket('ws://localhost:3001')
+socket.addEventListener('open', () => {
+  console.log('connected to socket server')
+})
+socket.addEventListener('close', () => console.log('disconnected from socket server'))
+socket.addEventListener('error', (error) => {
+  console.log('Websocket server error:')
+  console.log(error)
+})
+socket.addEventListener('message', (event) => {
+  console.log('Message from server')
+  let messageBytes = parseInt(event.data)
+  console.log(messageBytes.toString(2))
+
+  const byteMask = 0b11111111
+
+  const data = messageBytes & byteMask
+  messageBytes = messageBytes >> 8
+  const type = messageBytes & byteMask
+
+  console.log(`type: ${type.toString(2)}`)
+  console.log(`data: ${data.toString(2)}`)
+
+  const TYPE_ADD_BRICK = 0b00000001
+  if (type == TYPE_ADD_BRICK) {
+    gridManager.addBrick(data)
+  }
+})
+
 document.addEventListener('readystatechange', () => {
   if (document.readyState === 'complete') {
     gridManager.begin()

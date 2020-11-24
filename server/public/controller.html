@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button click="sendBrick">Brick row 3</button>
+
+    <script>
+      const socket = new WebSocket('ws://localhost:3001')
+      socket.addEventListener('open', () => {
+        console.log('connected to socket server')
+      })
+      socket.addEventListener('close', () => console.log('disconnected from socket server'))
+      socket.addEventListener('error', (error) => {
+        console.log('Websocket server error:')
+        console.log(error)
+      })
+
+      document.querySelector('button').addEventListener('click', () => {
+        socket.send('brick')
+      })
+    </script>
+  </body>
+</html>
