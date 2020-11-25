@@ -40,47 +40,49 @@ void loop()
         client.poll();
     } // TODO: do we need a reconnect if we disconnect from wifi or if the server restarts??
 
-    uint32_t payload = 0;
-    payload |= touchControllerMessageType;
-    payload = payload << 12;
-
-    currentTouchState = cap.touched();
-    currentTouchState = 0b0000000000000011; // * faking out touch state to test
-
-    if (currentTouchState != previousTouchState)
+    if (touchStateHasChanged())
     {
-        payload |= currentTouchState;
-
-        client.sendBinary((char *)&payload, 32);
-        previousTouchState = currentTouchState;
+        sendTouchStateToServer();
     }
-    delay(500);
 
-    // if (touchStateHasChanged())
-    // {
-    //     sendTouchStateToServer();
-    // }
-
-    // Serial.println(cap.touched(), BIN);
-    // delay(500);
+    // TODO: rewrite as a state machine with a debounce for the cap touch sensor
+    delay(100);
 }
 
 void sendTouchStateToServer()
 {
-    Serial.println("sending state to server");
-
-    uint32_t payload = touchControllerMessageType << 12;
-    Serial.println(payload);
-    payload |= currentTouchState;
-
-    Serial.print("Payload contents: ");
-    Serial.println(payload);
-    Serial.print("Payload contents: ");
-    Serial.println((char *)&payload);
-    Serial.print("Payload size: ");
-    Serial.println(sizeof(payload));
-
+    uint32_t payload = formatPayload();
     client.sendBinary((char *)&payload, 32);
+}
+
+uint32_t formatPayload()
+{
+    uint32_t payload = 0;
+
+    Serial.print("payload initialization: ");
+    Serial.println(payload, BIN);
+
+    // * push the touch state onto the payload
+    payload += currentTouchState;
+
+    Serial.print("payload with current touch state: ");
+    Serial.println(payload, BIN);
+
+    // * shift the bits over one byte so we can add the type byte
+    payload <<= 8;
+
+    Serial.print("payload shifted one byte: ");
+    Serial.println(payload, BIN);
+
+    // * add in our message type byte
+    payload |= touchControllerMessageType;
+    // ! note that since we shifted the payload over, this could also be done by addition
+    // payload += touchControllerMessageType
+
+    Serial.print("payload with type added on: ");
+    Serial.println(payload, BIN);
+
+    return payload;
 }
 
 bool touchStateHasChanged()

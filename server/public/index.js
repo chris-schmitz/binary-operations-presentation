@@ -347,18 +347,31 @@ socket.addEventListener('message', (event) => {
   let messageBytes = parseInt(event.data)
   console.log(messageBytes.toString(2))
 
-  const byteMask = 0b11111111
+  const byteMask = 0xFFF
+  // const byteMask = 0b11111111
 
   const data = messageBytes & byteMask
-  messageBytes = messageBytes >> 8
+  messageBytes = messageBytes >> 12
+  // messageBytes = messageBytes >> 8
   const type = messageBytes & byteMask
 
   console.log(`type: ${type.toString(2)}`)
   console.log(`data: ${data.toString(2)}`)
 
-  const TYPE_ADD_BRICK = 0b00000001
-  if (type == TYPE_ADD_BRICK) {
+  const TYPE_ADD_SINGLE_BRICK = 0b00000001
+  const TYPE_TOUCH_CONTROLLER_STATE = 0b00000010
+  switch(type){
+    case TYPE_ADD_SINGLE_BRICK:
     gridManager.addBrick(data)
+    break
+    case TYPE_TOUCH_CONTROLLER_STATE: 
+    for(let i = 0; i < 12; i++) {
+      debugger
+      if(data & (0b1 << i) > 0) {
+        gridManager.addBrick(i)
+      }
+    }
+
   }
 })
 

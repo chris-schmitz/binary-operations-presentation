@@ -22,3 +22,20 @@ npm install
 npm run dev
 # At this point you should be able to open a web browser to http://localhost:3001
 ```
+
+# Topics to cover
+
+## Binary vs Hex vs Decimal
+
+### Places you see binary in use already
+
+- Permissions
+- ...
+
+## Number <-> State
+
+## The basic bitwise operations
+
+## Masking
+
+## Branchless programming
