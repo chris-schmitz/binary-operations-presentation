@@ -18,17 +18,7 @@ websocketServer.on('connection', (socket) => {
   console.log(websocketServer.clients)
   socket.on('message', (message) => {
     console.log(`Got the following message from a websocket client: ${message.readUInt32LE().toString(2)}`)
-    // console.log(`Got the following message from a websocket client: ${message.readUInt16LE().toString(2)}`)
-    // TODO: how would we parse the buffer?
-    // * On a conceptual level, we know that the cap touch controller has 12 bits that represent the state and we're tacking on an additional 8 bit 
-    // * type to the front of the number. If we think of the byte array in nibble increments going right to left (little endian) we'd have:
-    // ? nibble[0] = first four touch states (bottom row on the touch controller)
-    // ? nibble[1] = next four touch states (middle row on the touch controller)
-    // ? nibble[2] = next four touch states (top row on the touch controller)
-    // ? nibble[3] = first nibble of the touch type
-    // ? nibble[4] = last nibble of the touch type
-    // ! originally I was thinking "oh we just loop through on a nibble by nibble basis and each iteration evaluate the data". But as I typed that out 
-    // ! I realized that's the wrong way of going about it :facepalm:
+
     // * The nibble info is correct, but I'm thinking to rigidly. 
     // * We know the shape of the buffer coming up: from a little endian perspective we have:
     // ? first 12 bits = touch state
@@ -39,6 +29,7 @@ websocketServer.on('connection', (socket) => {
     // * From there we can mask the message for the touch state, store that in a variable, then right shift 12 to get our buffer to the message type and 
     // * use the message mask for that
     
+    let messageData = message.readUInt32LE()
 
     // TODO move to property constant or module scope constant
     // TODO: add notes
@@ -47,17 +38,10 @@ websocketServer.on('connection', (socket) => {
     const touchStateMask = 0b111111111111 
     const messageTypeMask = 0xFF
 
-    // TODO: move process to named method
-    let messageData = message.readUInt32LE()
-    const touchState = messageData & touchStateMask
-    messageData >>= 12
-    const messageType = messageData & messageTypeMask // ? we don't even need the mask here anymore, right?
+    const messageType = messageData & messageTypeMask 
+    messageData >>= 8 // * we've already grabbed the type information, so right shifting and losing the bits is fine
 
-
-
-    // socket.send(`got it`)
-    // const messageType = 0b00000001 // * type: add block
-    // const data = 0b00000011 // * row index: 3
+    const touchState = messageData 
 
 
     let payload = 0
