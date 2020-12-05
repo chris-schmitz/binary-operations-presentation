@@ -8,7 +8,7 @@
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 // const char* websockets_server_host = "192.168.0.172"; //Enter server adress
-const char *websockets_server_host = "192.168.4.14"; //Enter server adress
+const char *websockets_server_host = "192.168.4.2";  //Enter server adress
 const uint16_t websockets_server_port = 3001;        // Enter server port
 
 using namespace websockets;

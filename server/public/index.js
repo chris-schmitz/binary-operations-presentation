@@ -334,6 +334,8 @@ class GridManager {
 
 const gridManager = new GridManager(8, 10, 10)
 
+// TODO: come back and clean this up. either add it as a new class or fold it into the eexisting class
+
 const socket = new WebSocket('ws://localhost:3001')
 socket.addEventListener('open', () => {
   console.log('connected to socket server')
@@ -343,38 +345,46 @@ socket.addEventListener('error', (error) => {
   console.log('Websocket server error:')
   console.log(error)
 })
-socket.addEventListener('message', (event) => {
-  console.log('Message from server')
-  let messageBytes = parseInt(event.data)
-  console.log(messageBytes.toString(2))
 
-  const byteMask = 0xFFF
-  // const byteMask = 0b11111111
+async function binaryMessageHandler(event) {
+  const messageData = event.data
+  const number = Number(messageData)
 
-  const data = messageBytes & byteMask
-  messageBytes = messageBytes >> 12
-  // messageBytes = messageBytes >> 8
-  const type = messageBytes & byteMask
-
-  console.log(`type: ${type.toString(2)}`)
-  console.log(`data: ${data.toString(2)}`)
-
-  const TYPE_ADD_SINGLE_BRICK = 0b00000001
-  const TYPE_TOUCH_CONTROLLER_STATE = 0b00000010
-  switch(type){
-    case TYPE_ADD_SINGLE_BRICK:
-    gridManager.addBrick(data)
-    break
-    case TYPE_TOUCH_CONTROLLER_STATE: 
-    for(let i = 0; i < 12; i++) {
-      debugger
-      if(data & (0b1 << i) > 0) {
-        gridManager.addBrick(i)
+  console.log(number.toString(2))
+}
+socket.addEventListener('message', binaryMessageHandler)
+function oldMessageHandler(event) {
+    console.log('Message from server')
+    let messageBytes = parseInt(event.data)
+    console.log(messageBytes.toString(2))
+  
+    const byteMask = 0xFFF
+    // const byteMask = 0b11111111
+  
+    const data = messageBytes & byteMask
+    messageBytes = messageBytes >> 12
+    // messageBytes = messageBytes >> 8
+    const type = messageBytes & byteMask
+  
+    console.log(`type: ${type.toString(2)}`)
+    console.log(`data: ${data.toString(2)}`)
+  
+    const TYPE_ADD_SINGLE_BRICK = 0b00000001
+    const TYPE_TOUCH_CONTROLLER_STATE = 0b00000010
+    switch(type){
+      case TYPE_ADD_SINGLE_BRICK:
+      gridManager.addBrick(data)
+      break
+      case TYPE_TOUCH_CONTROLLER_STATE: 
+      for(let i = 0; i < 12; i++) {
+        debugger
+        if(data & (0b1 << i) > 0) {
+          gridManager.addBrick(i)
+        }
       }
+  
     }
-
-  }
-})
+}
 
 document.addEventListener('readystatechange', () => {
   if (document.readyState === 'complete') {
