@@ -23,7 +23,14 @@ npm run dev
 # At this point you should be able to open a web browser to http://localhost:3001
 ```
 
-# Topics to cover
+## Messaging format
+
+The "dataframe" for the binary messages in this project looks like this:
+
+
+
+
+# Topics to cover for the talk
 
 ## Binary vs Hex vs Decimal
 

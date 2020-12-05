@@ -326,7 +326,7 @@ class GridManager {
   }
 }
 
-const gridManager = new GridManager(8, 10, 10)
+const gridManager = new GridManager(12, 10, 10)
 
 // TODO: come back and clean this up. either add it as a new class or fold it into the eexisting class
 
@@ -344,8 +344,45 @@ async function binaryMessageHandler(event) {
   const messageData = event.data
   const number = Number(messageData)
 
-  console.log(number.toString(2))
+  const {type, data}= parseMessageTypeAndData(number)
+
+
+  // TODO I dont' like how this feels. refactor and pull out to it's own function or method
+  switch (type) {
+    case messageTypeMockEnum['add-single-brick']:
+      gridManager.addBrick(data)
+      break
+    case messageTypeMockEnum['touch-controller-state']:
+      let maskBit = 0b1
+      for (let i = 0; i < 12; i++) {
+        let maskedData = data & maskBit
+
+        console.log(maskBit.toString(2))
+        console.log(maskedData.toString(2))
+
+        if(maskedData > 0){
+          let rowIndex = Math.log(maskedData) / Math.log(2)
+          gridManager.addBrick(rowIndex)
+        }
+        maskBit <<= 1
+      }
+      break
+  }
 }
+
+const messageTypeMockEnum = {
+  'add-single-brick': 0b00000001,
+  'touch-controller-state': 0b00000010,
+}
+const messageTypeMask = 0xff
+const touchStateMask = 0xfff
+function parseMessageTypeAndData(message) {
+  const type = message & messageTypeMask
+  message >>= 8
+  const data = message
+  return {type, data}
+}
+
 socket.addEventListener('message', binaryMessageHandler)
 
 document.addEventListener('readystatechange', () => {
