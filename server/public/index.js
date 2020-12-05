@@ -1,12 +1,3 @@
-// TODO:
-// * - detect collision
-
-// TODO: consider
-// * - Create classes:
-// *    - Game
-// *    - UI manager (handles the html)
-// *    - State manager (handles the html)
-// * - Game class takes ui and state manager instances as dependencies
 class GridManager {
   // * HTML elements
   gameState = null
@@ -208,7 +199,10 @@ class GridManager {
     this.updateActiveKeyDisplay()
 
     // * There are a couple of things worth noting here:
-    // ? - There are no conditionals. This is an example of branchless coding. Avoiding conditionals can lead to 
+    // ? - There are no conditionals. This is an example of branchless coding. Avoiding conditionals can lead to better performance
+    // ? - Here we're doing shift assignment (e.g. this.player.columnState <<= ...) to shorten the syntax
+    // ? - Yeah this is compact, but is it more readable? This code could benefit from some abstraction to make what's happening a bit more obvious
+    // ?    (I'm leaving it less abstract to make it easier to pull out and play with the pieces in the browser dev tools). 
     this.player.columnState <<= +((this.activeKeys & this.KEY_LEFT) !== 0 && this.player.columnState < Math.pow(2, this.columns - 1)) 
     this.player.columnState >>= +((this.activeKeys & this.KEY_RIGHT) !== 0 && this.player.columnState > 1)
     this.player.rowIndex -= +((this.activeKeys & this.KEY_UP) !== 0 && this.player.rowIndex > 0)
@@ -353,38 +347,6 @@ async function binaryMessageHandler(event) {
   console.log(number.toString(2))
 }
 socket.addEventListener('message', binaryMessageHandler)
-function oldMessageHandler(event) {
-    console.log('Message from server')
-    let messageBytes = parseInt(event.data)
-    console.log(messageBytes.toString(2))
-  
-    const byteMask = 0xFFF
-    // const byteMask = 0b11111111
-  
-    const data = messageBytes & byteMask
-    messageBytes = messageBytes >> 12
-    // messageBytes = messageBytes >> 8
-    const type = messageBytes & byteMask
-  
-    console.log(`type: ${type.toString(2)}`)
-    console.log(`data: ${data.toString(2)}`)
-  
-    const TYPE_ADD_SINGLE_BRICK = 0b00000001
-    const TYPE_TOUCH_CONTROLLER_STATE = 0b00000010
-    switch(type){
-      case TYPE_ADD_SINGLE_BRICK:
-      gridManager.addBrick(data)
-      break
-      case TYPE_TOUCH_CONTROLLER_STATE: 
-      for(let i = 0; i < 12; i++) {
-        debugger
-        if(data & (0b1 << i) > 0) {
-          gridManager.addBrick(i)
-        }
-      }
-  
-    }
-}
 
 document.addEventListener('readystatechange', () => {
   if (document.readyState === 'complete') {
