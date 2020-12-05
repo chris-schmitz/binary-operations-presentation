@@ -207,11 +207,12 @@ class GridManager {
     this.activeKeys = this.activeKeys | this.keyStates[keyStateIndex]
     this.updateActiveKeyDisplay()
 
-    this.player.columnState = this.player.columnState << +((this.activeKeys & this.KEY_LEFT) !== 0)
-    this.player.columnState = this.player.columnState >> +((this.activeKeys & this.KEY_RIGHT) !== 0)
-    this.player.columnState += +(this.player.columnState < 1)
-    this.player.rowIndex -= +((this.activeKeys & this.KEY_UP) !== 0)
-    this.player.rowIndex += +((this.activeKeys & this.KEY_DOWN) !== 0)
+    // * There are a couple of things worth noting here:
+    // ? - There are no conditionals. This is an example of branchless coding. Avoiding conditionals can lead to 
+    this.player.columnState <<= +((this.activeKeys & this.KEY_LEFT) !== 0 && this.player.columnState < Math.pow(2, this.columns - 1)) 
+    this.player.columnState >>= +((this.activeKeys & this.KEY_RIGHT) !== 0 && this.player.columnState > 1)
+    this.player.rowIndex -= +((this.activeKeys & this.KEY_UP) !== 0 && this.player.rowIndex > 0)
+    this.player.rowIndex += +((this.activeKeys & this.KEY_DOWN) !== 0 && this.player.rowIndex + 1 < this.rows)
     this.paintPlayer()
     this.detectCollisions()
   }
