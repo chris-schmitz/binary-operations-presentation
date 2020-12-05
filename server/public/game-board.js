@@ -202,8 +202,10 @@ class GridManager {
     // ? - There are no conditionals. This is an example of branchless coding. Avoiding conditionals can lead to better performance
     // ? - Here we're doing shift assignment (e.g. this.player.columnState <<= ...) to shorten the syntax
     // ? - Yeah this is compact, but is it more readable? This code could benefit from some abstraction to make what's happening a bit more obvious
-    // ?    (I'm leaving it less abstract to make it easier to pull out and play with the pieces in the browser dev tools). 
-    this.player.columnState <<= +((this.activeKeys & this.KEY_LEFT) !== 0 && this.player.columnState < Math.pow(2, this.columns - 1)) 
+    // ?    (I'm leaving it less abstract to make it easier to pull out and play with the pieces in the browser dev tools).
+    this.player.columnState <<= +(
+      (this.activeKeys & this.KEY_LEFT) !== 0 && this.player.columnState < Math.pow(2, this.columns - 1)
+    )
     this.player.columnState >>= +((this.activeKeys & this.KEY_RIGHT) !== 0 && this.player.columnState > 1)
     this.player.rowIndex -= +((this.activeKeys & this.KEY_UP) !== 0 && this.player.rowIndex > 0)
     this.player.rowIndex += +((this.activeKeys & this.KEY_DOWN) !== 0 && this.player.rowIndex + 1 < this.rows)
@@ -340,34 +342,29 @@ socket.addEventListener('error', (error) => {
   console.log(error)
 })
 
-async function binaryMessageHandler(event) {
-  const messageData = event.data
-  const number = Number(messageData)
-
-  const {type, data}= parseMessageTypeAndData(number)
-
-
+// TODO: refactor to allow this to accept the message `type` and the message `data`
+async function touchControllerMessageHandler(type, data) {
   // TODO I dont' like how this feels. refactor and pull out to it's own function or method
-  switch (type) {
-    case messageTypeMockEnum['add-single-brick']:
-      gridManager.addBrick(data)
-      break
-    case messageTypeMockEnum['touch-controller-state']:
-      let maskBit = 0b1
-      for (let i = 0; i < 12; i++) {
-        let maskedData = data & maskBit
+  // switch (type) {
+  //   case messageTypeMockEnum['add-single-brick']:
+  //     gridManager.addBrick(data)
+  //     break
+  // case messageTypeMockEnum['touch-controller-state']:
+  let maskBit = 0b1
+  for (let i = 0; i < 12; i++) {
+    let maskedData = data & maskBit
 
-        console.log(maskBit.toString(2))
-        console.log(maskedData.toString(2))
+    console.log(maskBit.toString(2))
+    console.log(maskedData.toString(2))
 
-        if(maskedData > 0){
-          let rowIndex = Math.log(maskedData) / Math.log(2)
-          gridManager.addBrick(rowIndex)
-        }
-        maskBit <<= 1
-      }
-      break
+    if (maskedData > 0) {
+      let rowIndex = Math.log(maskedData) / Math.log(2)
+      gridManager.addBrick(rowIndex)
+    }
+    maskBit <<= 1
   }
+  //     break
+  // }
 }
 
 const messageTypeMockEnum = {
@@ -380,10 +377,51 @@ function parseMessageTypeAndData(message) {
   const type = message & messageTypeMask
   message >>= 8
   const data = message
-  return {type, data}
+  return { type, data }
 }
 
-socket.addEventListener('message', binaryMessageHandler)
+function byteArrayMessageHandler(byteArray) {
+  console.log(byteArray)
+  const type = byteArray[0]
+  const message = byteArray[1]
+
+  switch (type) {
+    case 0b1:
+      console.log('Message from web controller')
+      gridManager.addBrick(message)
+      break
+    case 0b10:
+      console.log('Message from touch controller')
+      touchControllerMessageHandler(type, message)
+      break
+  }
+}
+
+// TODO: woof, refactor to clean this up. We need:
+// * - a "parseMessage(message): {type, data}" function:
+// ? - check the instance
+// ? - parse for number
+// ? - convert for blob
+// ? - extracts and returns type and data regardless of instance
+// * - hand off type and data to a single `messageHandler` function
+socket.addEventListener('message', async (message) => {
+  const { data } = message
+
+  if (data instanceof Number) {
+    const number = Number(data)
+
+    const { type, data } = parseMessageTypeAndData(number)
+    touchControllerMessageHandler(type, data)
+  } else if (data instanceof Blob) {
+    const buffer = await data.arrayBuffer()
+    const view = new Uint8Array(buffer)
+
+    byteArrayMessageHandler(view)
+  } else {
+    console.error("we don't have a handler for the message.")
+    console.log(message)
+  }
+})
 
 document.addEventListener('readystatechange', () => {
   if (document.readyState === 'complete') {

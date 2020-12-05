@@ -8,14 +8,26 @@ app.use(express.static('public'))
 const server = http.createServer(app)
 const websocketServer = new WebSocket.Server({ server })
 
-websocketServer.on('connection', (socket) => {
-  console.log(websocketServer.clients)
-  socket.on('message', (message) => {
-    const intVersion = message.readUInt32LE()
-    console.log(intVersion.toString(2))
-    websocketServer.clients.forEach((client) => {
-      client.send(intVersion)
-    })
+function relayMessageToClients(message) {
+  if (message instanceof Number) {
+    // * we're only sending numbers up from the touch controller
+    // * and we know we're storing those binary numbers in Little Endian form:
+    // ? https://en.wikipedia.org/wiki/Endianness
+    // ? https://www.youtube.com/watch?v=WBA6svOyWb8
+    const message = message.readUInt32LE()
+  }
+
+  console.log(message)
+
+  websocketServer.clients.forEach((client) => {
+    client.send(message)
   })
+}
+
+websocketServer.on('connection', (socket) => {
+  console.log('new client connected. Clients: ')
+  console.log(websocketServer.clients)
+
+  socket.on('message', relayMessageToClients)
 })
 server.listen(PORT, () => console.log(`Listening on port: ${PORT}`))

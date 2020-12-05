@@ -4,16 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <style>
+      button {
+        font-size: 20pt;
+      }
+    </style>
   </head>
   <body>
-    <button click="sendBrick">Brick row 3</button>
+    <button click="sendBrick">Brick row 10</button>
 
     <script>
       const socket = new WebSocket('ws://localhost:3001')
       socket.addEventListener('open', () => {
         console.log('connected to socket server')
-
-        socket.send("register-controller")
       })
       socket.addEventListener('close', () => console.log('disconnected from socket server'))
       socket.addEventListener('error', (error) => {
@@ -21,12 +24,18 @@
         console.log(error)
       })
 
-      socket.addEventListener('message', () => {
-        // * listen for a "assign controller" message
-      })
+      // * We're not expecting any messages back from the server
+      socket.addEventListener('message', () => {})
 
       document.querySelector('button').addEventListener('click', () => {
-        socket.send('brick')
+        const type = 0x1
+        const rowToAddBrick = 0x0a
+
+        const controllerPayload = new Uint8Array(2)
+        controllerPayload[0] = type
+        controllerPayload[1] = rowToAddBrick
+
+        socket.send(controllerPayload)
       })
     </script>
   </body>

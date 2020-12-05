@@ -27,9 +27,6 @@ npm run dev
 
 The "dataframe" for the binary messages in this project looks like this:
 
-
-
-
 # Topics to cover for the talk
 
 ## Binary vs Hex vs Decimal
@@ -46,3 +43,5 @@ The "dataframe" for the binary messages in this project looks like this:
 ## Masking
 
 ## Branchless programming
+
+## Byte arrays
