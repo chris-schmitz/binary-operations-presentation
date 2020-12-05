@@ -12,11 +12,17 @@
       const socket = new WebSocket('ws://localhost:3001')
       socket.addEventListener('open', () => {
         console.log('connected to socket server')
+
+        socket.send("register-controller")
       })
       socket.addEventListener('close', () => console.log('disconnected from socket server'))
       socket.addEventListener('error', (error) => {
         console.log('Websocket server error:')
         console.log(error)
+      })
+
+      socket.addEventListener('message', () => {
+        // * listen for a "assign controller" message
       })
 
       document.querySelector('button').addEventListener('click', () => {
