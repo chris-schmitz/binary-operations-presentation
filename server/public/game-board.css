@@ -5,7 +5,7 @@ td {
   border-collapse: collapse;
 }
 td {
-  padding: 50px;
+  padding: 30px;
 }
 
 td[paint='true'] {

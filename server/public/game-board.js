@@ -2,7 +2,10 @@ class GridManager {
   // * HTML elements
   gameState = null
   gridElement = null
-  RandomBrickToggleButton = null
+  randomBrickToggleButton = null
+  restartButton = null
+  gridStateOutput = null
+  playerStateOutput = null
 
   keyIndicators = {
     up: null,
@@ -11,19 +14,16 @@ class GridManager {
     right: null,
   }
 
-  gridStateOutput = null
-  playerStateOutput = null
-
   // * Arrow key input properties
   activeKeys = 0b0000
   keyStates = []
+
   // * "enums" key state indexes
   KEY_LEFT = 0b0010
   KEY_UP = 0b1000
   KEY_RIGHT = 0b0001
   KEY_DOWN = 0b0100
   enableArrowKeys = true
-
   SMALLEST_ARROW_KEY_CODE = 37 // * i.e. the left arrow key's keyCode
 
   // * Brick properties
@@ -33,26 +33,31 @@ class GridManager {
   columns = 0
 
   // * Animation properties
-  frameInterval = 1000
+  frameInterval = 800
   animationIntervalContainer = null
   randomBrickIntervalContainer = null
 
   // * Player properties
+  startingHealth = 0
   player = {
     rowIndex: 0,
     columnState: 0, // * managed as a binary number to represent state
     health: 0,
   }
 
+  decrementHealthOnCollision = true
+
   constructor(rows, columns, playerHealth) {
-    this.setKeyStateOrder()
     this.rows = rows
     this.columns = columns
-    this.player.health = playerHealth
+    this.player.health = this.startingHealth = playerHealth
+
+    this.setKeyStateOrder()
     this.initializeGridState()
     this.initializePlayerState()
   }
   initializeGridState() {
+    this.gridState = []
     for (let i = 0; i < this.rows; i++) {
       this.gridState.push(0)
     }
@@ -79,9 +84,6 @@ class GridManager {
     this.gameState.innerText = label
   }
 
-  /**
-   *
-   */
   setKeyStateOrder() {
     this.keyStates = [this.KEY_LEFT, this.KEY_UP, this.KEY_RIGHT, this.KEY_DOWN]
   }
@@ -94,6 +96,17 @@ class GridManager {
     this.animationIntervalContainer = setInterval(this.animate.bind(this), this.frameInterval)
   }
 
+  setFrameRate(rate) {
+    this.frameInterval = rate
+    this.stopAnimation()
+    this.startAnimation()
+
+    if (this.randomBrickIntervalContainer !== null) {
+      this.stopRandomBricks()
+      this.startRandomBricks()
+    }
+  }
+
   stopAnimation() {
     clearInterval(this.animationIntervalContainer)
     this.animationIntervalContainer = null
@@ -104,21 +117,26 @@ class GridManager {
       // * if the interval is already running, no need to start it again
       return
     }
+    this.randomBricksOn = true
+    this.randomBrickToggleButton.classList.add('button-toggle-on')
     this.randomBrickIntervalContainer = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * this.gridState.length)
       this.addBrick(randomIndex)
-    }, this.frameInterval)
+    }, this.frameInterval / 3)
   }
 
   stopRandomBricks() {
     clearInterval(this.randomBrickIntervalContainer)
+    this.randomBricksOn = false
+    this.randomBrickToggleButton.classList.remove('button-toggle-on')
     this.randomBrickIntervalContainer = null
   }
 
   grabElements() {
     this.gridElement = document.querySelector('tbody')
     this.buttonWrapper = document.querySelector('#button-wrapper')
-    this.RandomBrickToggleButton = document.querySelector('#random-block-toggle')
+    this.randomBrickToggleButton = document.querySelector('#random-block-toggle')
+    this.restartButton = document.querySelector('#restart')
     this.keyIndicators.up = document.querySelector('#up-key-indicator')
     this.keyIndicators.down = document.querySelector('#down-key-indicator')
     this.keyIndicators.left = document.querySelector('#left-key-indicator')
@@ -134,14 +152,12 @@ class GridManager {
     document.addEventListener('keydown', this.playerKeydownHandler.bind(this))
     document.addEventListener('keyup', this.playerKeyupHandler.bind(this))
 
-    this.RandomBrickToggleButton.addEventListener('click', () => {
+    this.restartButton.addEventListener('click', this.restartGame.bind(this))
+
+    this.randomBrickToggleButton.addEventListener('click', () => {
       if (this.randomBricksOn) {
-        this.randomBricksOn = false
-        this.RandomBrickToggleButton.classList.remove('button-toggle-on')
         this.stopRandomBricks()
       } else {
-        this.randomBricksOn = true
-        this.RandomBrickToggleButton.classList.add('button-toggle-on')
         this.startRandomBricks()
       }
     })
@@ -243,10 +259,16 @@ class GridManager {
   }
 
   decrementPlayerHealth() {
+    if (!this.decrementHealthOnCollision) return
+
     this.player.health--
     if (this.player.health <= 0) {
       this.triggerGameOver()
     }
+  }
+
+  clearPlayer() {
+    this.gridElement.querySelector('[paint-player]')?.removeAttribute('paint-player')
   }
 
   // TODO: merge with paintCell
@@ -255,7 +277,7 @@ class GridManager {
     // ^ bitwise operation approaches seemed to be a good option because the paint timing would be tricky with the brick paint timing.
     // ^ Then I remembered I was using the DOM and denoting the player visually via an attribute ... so I could just query and remove it :P
     // ! Note that if we do a player size greater than 1 brick we'll need to change this a bit.
-    this.gridElement.querySelector('[paint-player]')?.removeAttribute('paint-player')
+    this.clearPlayer()
     const targetRow = this.gridElement.children[this.player.rowIndex]
     targetRow.children[targetRow.childElementCount - Math.log(this.player.columnState) / Math.log(2) - 1].setAttribute(
       'paint-player',
@@ -301,7 +323,18 @@ class GridManager {
     if (colissions) {
       const gridColumn = this.columns - Math.log(colissions) / Math.log(2)
       this.collisionIndicator.classList.add('indicator-active')
+
+      // TODO: abstract
       this.decrementPlayerHealth()
+      this.player.columnState >>= 1
+      if (this.player.columnState == 0) {
+        this.clearPlayer()
+        this.triggerGameOver()
+        return
+      } else {
+        this.paintPlayer()
+      }
+
       console.log(`Colission at row ${this.player.rowIndex + 1}, column ${gridColumn}`)
     } else {
       this.collisionIndicator.classList.remove('indicator-active')
@@ -318,13 +351,41 @@ class GridManager {
     this.keyIndicators.right.setAttribute('key-active', (this.activeKeys & 0b0001) > 0)
   }
 
+  restartGame() {
+    this.player.health = this.startingHealth
+    this.enableArrowKeys = true
+
+    this.setGameState('Playing')
+    this.showGameOverGraphics(false)
+    this.clearAllBricks()
+    this.initializePlayerState()
+    this.paintPlayer()
+    this.initializeGridState()
+    this.startRandomBricks()
+    this.startAnimation()
+  }
+
   triggerGameOver() {
     clearInterval(this.animationIntervalContainer)
     this.stopRandomBricks()
     this.setGameState('Game Over')
-    this.gridElement.classList.add('game-over')
-    this.gameState.classList.add('game-over')
+    this.showGameOverGraphics()
+    this.stopAnimation()
     this.enableArrowKeys = false
+  }
+
+  clearAllBricks() {
+    document.querySelectorAll('[paint = true]').forEach((cell) => cell.setAttribute('paint', false))
+  }
+
+  showGameOverGraphics(status = true) {
+    if (status) {
+      this.gridElement.classList.add('game-over')
+      this.gameState.classList.add('game-over')
+    } else {
+      this.gridElement.classList.remove('game-over')
+      this.gameState.classList.remove('game-over')
+    }
   }
 }
 

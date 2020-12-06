@@ -17,6 +17,7 @@ function relayMessageToClients(message) {
     const message = message.readUInt32LE()
   }
 
+  console.log('Relaying the following message to all clients:')
   console.log(message)
 
   websocketServer.clients.forEach((client) => {
@@ -25,7 +26,7 @@ function relayMessageToClients(message) {
 }
 
 websocketServer.on('connection', (socket) => {
-  console.log('new client connected. Clients: ')
+  console.log('new client connected. Current active connections:')
   console.log(websocketServer.clients)
 
   socket.on('message', relayMessageToClients)
