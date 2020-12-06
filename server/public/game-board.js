@@ -196,7 +196,7 @@ class GridManager {
     this.randomBricksOn = true
     this.randomBrickToggleButton.classList.add('button-toggle-on')
 
-    const bricksPerFrame = 1
+    const bricksPerFrame = 3
     this.randomBrickIntervalContainer = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * this.gridState.length)
       this.addBrick(randomIndex)

@@ -4,8 +4,7 @@ I took a dev test just recently and one of the problems to solve asked me to cre
 
 The question, and the fact that I was told that no one had solved it that way before, inspired me to do a presentation for the STL Full Stack on binary operations. This project is definitely not a re-creation of the test problem, it's a much more elaborate game that I'm using to show off the concepts.
 
-![demo](./readme_attachments/player-movement.gif)
-_a work-in-progress look at the demo_
+![demo](./readme_attachments/demo-gameplay.gif)
 
 ## Up and running
 
