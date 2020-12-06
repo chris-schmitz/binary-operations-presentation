@@ -7,50 +7,51 @@
     <link href="game-board.css" rel="stylesheet" />
   </head>
   <body>
-    <h1>Block Mover</h1>
+    <section class="grid">
+      <table>
+        <tbody></tbody>
+      </table>
+    </section>
 
-    <table>
-      <tbody></tbody>
-    </table>
-    <div id="button-wrapper"></div>
-    <div>
-      <button id="random-block-toggle">Random Blocks</button>
-      <button id="restart">Restart</button>
-    </div>
-
-    <div>
-      <div class="key-indicator">
-        <span id="left-key-indicator">LEFT</span>
-        <div>
-          <span id="up-key-indicator">UP</span>
-          <span id="down-key-indicator">DOWN</span>
-        </div>
-        <span id="right-key-indicator">RIGHT</span>
-      </div>
-      <div>
+    <section>
+      <div class="game-state-wrapper">
         <h2>Game state:</h2>
         <code id="game-state"></code>
       </div>
-    </div>
-
-    <div class="tools">
       <div>
-        <div>
-          <h2>Grid State</h2>
-          <code id="grid-state-output"> </code>
-        </div>
-        <div>
-          <h2>Player State</h2>
-          <code id="player-state-output"> </code>
-        </div>
+        <button id="random-block-toggle">Random Blocks</button>
+        <button id="restart">Restart</button>
       </div>
-      <div>
+      <ul id="row-brick-buttons"></ul>
+
+      <div class="indicators">
+        <div class="key-indicator">
+          <span id="left-key-indicator">LEFT</span>
+          <div>
+            <span id="up-key-indicator">UP</span>
+            <span id="down-key-indicator">DOWN</span>
+          </div>
+          <span id="right-key-indicator">RIGHT</span>
+        </div>
         <div>
           <h2>Collision</h2>
           <div class="collision-indicator"></div>
         </div>
       </div>
-    </div>
+
+      <div class="tools">
+        <div>
+          <div>
+            <h2>Grid State</h2>
+            <code id="grid-state-output"> </code>
+          </div>
+          <div>
+            <h2>Player State</h2>
+            <code id="player-state-output"> </code>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <script src="game-board.js"></script>
   </body>

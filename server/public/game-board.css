@@ -1,3 +1,22 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100vw;
+  height: 100vh;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+}
+section:nth-child(2) {
+  width: 40vw;
+}
+
 table,
 tr,
 td {
@@ -14,6 +33,26 @@ td[paint='true'] {
 
 td[paint-player='true'] {
   background: magenta;
+}
+
+#row-brick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  padding-inline-start: 0;
+}
+
+#row-brick-buttons li {
+  list-style: none;
+  margin: 0 5px 5px 0;
+}
+
+.indicators {
+  display: flex;
+  justify-content: space-between;
+}
+
+.game-state-wrapper * {
+  display: inline-block;
 }
 
 .button-toggle-on {
@@ -41,7 +80,7 @@ td[paint-player='true'] {
 }
 
 code {
-  font-size: 30px;
+  font-size: 20px;
 }
 
 .tools {

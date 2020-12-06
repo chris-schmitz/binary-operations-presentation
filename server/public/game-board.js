@@ -85,7 +85,7 @@ class GridManager {
    */
   grabElements() {
     this.gridElement = document.querySelector('tbody')
-    this.buttonWrapper = document.querySelector('#button-wrapper')
+    this.buttonWrapper = document.querySelector('#row-brick-buttons')
     this.randomBrickToggleButton = document.querySelector('#random-block-toggle')
     this.restartButton = document.querySelector('#restart')
     this.keyIndicators.up = document.querySelector('#up-key-indicator')
@@ -227,10 +227,13 @@ class GridManager {
       }
       this.gridElement.appendChild(row)
 
+      // TODO extract to named method
+      const listItem = document.createElement('li')
       const button = document.createElement('button')
       button.addEventListener('click', () => gridManager.addBrick(rowIterator))
       button.innerText = `Row: ${rowIterator + 1}`
-      this.buttonWrapper.appendChild(button)
+      listItem.appendChild(button)
+      this.buttonWrapper.appendChild(listItem)
     }
   }
 
