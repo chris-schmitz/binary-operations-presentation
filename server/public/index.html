@@ -25,13 +25,16 @@
       <ul id="row-brick-buttons"></ul>
 
       <div class="indicators">
-        <div class="key-indicator">
-          <span id="left-key-indicator">LEFT</span>
-          <div>
-            <span id="up-key-indicator">UP</span>
-            <span id="down-key-indicator">DOWN</span>
+        <div>
+          <h2>Keys</h2>
+          <div class="key-indicator">
+            <span id="left-key-indicator">LEFT</span>
+            <div>
+              <span id="up-key-indicator">UP</span>
+              <span id="down-key-indicator">DOWN</span>
+            </div>
+            <span id="right-key-indicator">RIGHT</span>
           </div>
-          <span id="right-key-indicator">RIGHT</span>
         </div>
         <div>
           <h2>Collision</h2>
@@ -43,7 +46,10 @@
         <div>
           <div>
             <h2>Grid State</h2>
-            <code id="grid-state-output"> </code>
+            <div class="grid-state-output">
+              <code id="grid-state-output-binary"> </code>
+              <code id="grid-state-output-decimal"> </code>
+            </div>
           </div>
           <div>
             <h2>Player State</h2>

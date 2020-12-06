@@ -4,7 +4,7 @@ class GridManager {
   gridElement = null
   randomBrickToggleButton = null
   restartButton = null
-  gridStateOutput = null
+  gridStateOutputBinary = null
   playerStateOutput = null
 
   keyIndicators = {
@@ -94,7 +94,8 @@ class GridManager {
     this.keyIndicators.right = document.querySelector('#right-key-indicator')
     this.gameState = document.querySelector('#game-state')
 
-    this.gridStateOutput = document.querySelector('#grid-state-output')
+    this.gridStateOutputBinary = document.querySelector('#grid-state-output-binary')
+    this.gridStateOutputDecimal = document.querySelector('#grid-state-output-decimal')
     this.playerStateOutput = document.querySelector('#player-state-output')
     this.collisionIndicator = document.querySelector('.collision-indicator')
   }
@@ -195,7 +196,7 @@ class GridManager {
     this.randomBricksOn = true
     this.randomBrickToggleButton.classList.add('button-toggle-on')
 
-    const bricksPerFrame = 3
+    const bricksPerFrame = 1
     this.randomBrickIntervalContainer = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * this.gridState.length)
       this.addBrick(randomIndex)
@@ -442,7 +443,23 @@ class GridManager {
    * Draw the various states to the dom. Not needed for the game, just helpful for the demo and debugging.
    */
   updateStateOutput() {
-    this.gridStateOutput.innerText = this.gridState
+    // this.gridStateOutput.innerText = this.gridState.map((row) => `\n${row.toString(2)}`)
+
+    this.gridStateOutputBinary.innerText = this.gridState
+      .map((row) => `${row.toString(2)}`)
+      .map((row) => {
+        function pad(i) {
+          if (i > 0) {
+            return '0' + pad(i - 1)
+          }
+          return '0'
+        }
+        let state = pad(this.columns - row.length - 1) + row
+        return `\n${state}`
+      })
+
+    this.gridStateOutputDecimal.innerText = this.gridState.map((row) => `\n${row}`)
+
     this.playerStateOutput.innerText = JSON.stringify(this.player)
   }
 

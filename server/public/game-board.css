@@ -60,6 +60,11 @@ td[paint-player='true'] {
   color: white;
 }
 
+.grid-state-output {
+  display: flex;
+  justify-content: space-evenly;
+}
+
 .key-indicator {
   display: flex;
   align-items: flex-end;
