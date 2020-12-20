@@ -530,7 +530,7 @@ class GridManager {
   }
 }
 
-const gridManager = new GridManager(12, 10, 10)
+const gridManager = new GridManager(8, 8, 10)
 
 /**
  * * All of the websocket stuff
