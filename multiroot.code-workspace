@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "server"
+		},
+		{
+			"path": "touch-controller"
+		},
+		{
+			"path": "diagrams"
+		},
+		{
+			"path": "led-matrix"
+		}
+	]
+}
