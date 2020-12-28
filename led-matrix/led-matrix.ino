@@ -86,7 +86,17 @@ void setup()
   delay(50);
   Init_MAX7219();
 
+  clearMatrix();
+
   connectToWifi();
+}
+
+void clearMatrix()
+{
+  for (int i = 0; i < 8; i++)
+  {
+    Write_Max7219(i + 1, 0);
+  }
 }
 
 void connectToWifi()
@@ -99,8 +109,6 @@ void connectToWifi()
     Serial.print(WiFi.status());
     delay(1000);
   }
-
-
 
   if (WiFi.status() != WL_CONNECTED)
   {
@@ -126,28 +134,86 @@ void connectToWebsocketServer()
   else
   {
     Serial.println("Unable to connect to websocket server.");
-//    if (reconnectCount < totalReconnectTries)
-//    {
-//      reconnectCount++;
-//      delay(5000);
-//      connectToWebsocketServer();
-//    }
+    if (reconnectCount < totalReconnectTries)
+    {
+      reconnectCount++;
+      delay(5000);
+      connectToWebsocketServer();
+    }
   }
 }
 
 void addWebsocketListeners()
 {
   Serial.println("Adding websocket listeners");
-//  client.onMessage([&](WebsocketsMessage message) {
-//    Serial.print("Received message from server: ");
-//    Serial.println(message.data());
-//  });
-    // run callback when messages are received
 
-      client.onMessage([&](WebsocketsMessage message) {
-        Serial.print("Got Message: ");
-        Serial.println(message.data());
-    });
+  client.onMessage([&](WebsocketsMessage message) {
+    Serial.print("Got Message: ");
+    Serial.println(message.data());
+
+    Serial.print("message type binary: ");
+    Serial.println(message.type() == MessageType::Binary);
+    Serial.print("message type text: ");
+    Serial.println(message.type() == MessageType::Text);
+    Serial.print("Is binary: ");
+    Serial.println(message.isBinary());
+    Serial.print("Is text: ");
+    Serial.println(message.isText());
+    Serial.print("c string: ");
+    Serial.println(message.c_str());
+
+    const char *data = message.c_str();
+
+    Serial.print("Data: ");
+    Serial.println(data);
+    // Serial.println(message.data()[0], BIN);
+    // Serial.println(message.c_str()[0], BIN);
+    // Serial.println(message.rawData()[0], BIN);
+
+    // Write_Max7219(1, strtol(message.data()));
+
+    // printByteWithPadding(message);
+
+    // Serial.print("  ->  ");
+    // Serial.print("Address: ");
+    // Serial.println(address, BIN);
+
+    // String grid = message.data();
+
+    // char delimiter[] = "\n";
+    // int size = strlen(data);
+    // char *pointer = strtok((char *)data, delimiter);
+
+    // int i = 1;
+    // while (pointer != NULL)
+    // {
+    //   Serial.print("pointer: ");
+    //   Serial.println(pointer);
+    //   pointer = strtok(NULL, delimiter);
+    //   int num = atoi((const char *)*pointer);
+    //   Serial.print("num: ");
+    //   Serial.println(num);
+    //   Write_Max7219(i, num);
+    //   i++;
+    // }
+
+    for (int i = 0; i < strlen(data); i++)
+    {
+      Serial.println("========================");
+      // Serial.print("loop: ");
+      // Serial.println(i);
+
+      // Serial.print("char version: ");
+      // Serial.println(data[i]);
+
+      // int num = atoi(&data[i]);
+
+      // Serial.print("int version: ");
+      // Serial.println(num);
+
+      Write_Max7219(i + 1, data[i]);
+    }
+  });
 }
 
 // unsigned char dot[4][8] = {
@@ -157,15 +223,16 @@ void addWebsocketListeners()
 //     {0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x7C}, //L
 //     {0x41, 0x22, 0x14, 0x8, 0x8, 0x8, 0x8, 0x8},      //Y
 // };
- unsigned char frame[8] ={ 80, 0, 40, 29, 29, 96, 2, 34 };
+// unsigned char frame[8] = {80, 0, 40, 29, 29, 96, 2, 34};
 
 void loop()
 {
-  if(client.available()){
+  if (client.available())
+  {
     client.poll();
   }
-   for (int i = 0; i < 8; i++)
-   {
-     Write_Max7219(i+1, frame[i]);
-   }
+  for (int i = 0; i < 8; i++)
+  {
+    // Write_Max7219(i + 1, frame[i]);
+  }
 }
