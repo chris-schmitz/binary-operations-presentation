@@ -14,18 +14,23 @@ function relayMessageToClients(message) {
     // * and we know we're storing those binary numbers in Little Endian form:
     // ? https://en.wikipedia.org/wiki/Endianness
     // ? https://www.youtube.com/watch?v=WBA6svOyWb8
-    const message = message.readUInt32LE()
+    message = message.readUInt32LE()
   }
 
   console.log('Relaying the following message to all clients:')
   console.log(message)
 
   websocketServer.clients.forEach((client) => {
-    client.send(message)
+    client.send(message, { binary: true }, (error) => {
+      if (!error) return
+      console.log('Error sending message:')
+      console.log(error)
+    })
   })
 }
 
 websocketServer.on('connection', (socket) => {
+  socket.binaryType = 'arraybuffer'
   console.log('new client connected. Current active connections:')
   console.log(websocketServer.clients)
 

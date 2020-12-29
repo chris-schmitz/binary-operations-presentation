@@ -1,10 +1,13 @@
+#include "credentials.h"
 #include <ArduinoWebsockets.h>
 #include <WiFi.h>
 
-const char *ssid = "cs-touchscreen";
-const char *password = "ohSoSecret!!";
-const char *websocket_server_host = "192.168.4.19";
-const uint16_t websocket_server_port = 3001;
+#define _BV(bit) (1 << (bit))
+
+const char *ssid = SSID;
+const char *password = PASSWORD;
+const char *websocket_server_host = WEBSOCKET_SERVER_HOST;
+const uint16_t websocket_server_port = WEBSOCKET_SERVER_PORT;
 
 using namespace websockets;
 
@@ -13,6 +16,8 @@ WebsocketsClient client;
 int Max7219_pinCLK = 22;
 int Max7219_pinCS = 21;
 int Max7219_pinDIN = 5;
+
+uint8_t matrixState[8] = {0};
 
 void Write_Max7219_byte(unsigned char DATA)
 {
@@ -33,14 +38,7 @@ void printByteWithPadding(unsigned char value)
 {
   int exponent = log(value) / log(2);
   int zerosNeeded = 8 - exponent - 1;
-  /*
-  Serial.print("Zeros needed: ");
-  Serial.println(zerosNeeded);
-  Serial.print("Value: ");
-  Serial.println(value, BIN);
-  Serial.print("Exponent: ");
-  Serial.println(exponent);
-  */
+
   String padding = "";
   for (int i = 0; i < zerosNeeded; i++)
   {
@@ -54,12 +52,13 @@ void printByteWithPadding(unsigned char value)
 void Write_Max7219(unsigned char address, unsigned char dat)
 {
 
-  Serial.print("Data: ");
-  printByteWithPadding(dat);
+  // ! Leaving in for troubleshooting aid
+  // Serial.print("Data: ");
+  // printByteWithPadding(dat);
 
-  Serial.print("  ->  ");
-  Serial.print("Address: ");
-  Serial.println(address, BIN);
+  // Serial.print("  ->  ");
+  // Serial.print("Address: ");
+  // Serial.println(address, BIN);
 
   digitalWrite(Max7219_pinCS, LOW);
   Write_Max7219_byte(address); //address，code of LED
@@ -84,10 +83,9 @@ void setup()
   pinMode(Max7219_pinCS, OUTPUT);
   pinMode(Max7219_pinDIN, OUTPUT);
   delay(50);
+
   Init_MAX7219();
-
   clearMatrix();
-
   connectToWifi();
 }
 
@@ -151,79 +149,64 @@ void addWebsocketListeners()
     Serial.print("Got Message: ");
     Serial.println(message.data());
 
-    Serial.print("message type binary: ");
-    Serial.println(message.type() == MessageType::Binary);
-    Serial.print("message type text: ");
-    Serial.println(message.type() == MessageType::Text);
-    Serial.print("Is binary: ");
-    Serial.println(message.isBinary());
-    Serial.print("Is text: ");
-    Serial.println(message.isText());
-    Serial.print("c string: ");
-    Serial.println(message.c_str());
+    // ! Leaving in for troubleshooting purposes
+    // Serial.print("message type binary: ");
+    // Serial.println(message.type() == MessageType::Binary);
+    // Serial.print("message type text: ");
+    // Serial.println(message.type() == MessageType::Text);
+    // Serial.print("Is binary: ");
+    // Serial.println(message.isBinary());
+    // Serial.print("Is text: ");
+    // Serial.println(message.isText());
+    // Serial.print("c string: ");``
+    // Serial.println(message.c_str());
 
     const char *data = message.c_str();
 
     Serial.print("Data: ");
     Serial.println(data);
-    // Serial.println(message.data()[0], BIN);
-    // Serial.println(message.c_str()[0], BIN);
-    // Serial.println(message.rawData()[0], BIN);
-
-    // Write_Max7219(1, strtol(message.data()));
-
-    // printByteWithPadding(message);
-
-    // Serial.print("  ->  ");
-    // Serial.print("Address: ");
-    // Serial.println(address, BIN);
-
-    // String grid = message.data();
-
-    // char delimiter[] = "\n";
-    // int size = strlen(data);
-    // char *pointer = strtok((char *)data, delimiter);
-
-    // int i = 1;
-    // while (pointer != NULL)
-    // {
-    //   Serial.print("pointer: ");
-    //   Serial.println(pointer);
-    //   pointer = strtok(NULL, delimiter);
-    //   int num = atoi((const char *)*pointer);
-    //   Serial.print("num: ");
-    //   Serial.println(num);
-    //   Write_Max7219(i, num);
-    //   i++;
-    // }
 
     for (int i = 0; i < strlen(data); i++)
     {
-      Serial.println("========================");
-      // Serial.print("loop: ");
-      // Serial.println(i);
+      uint8_t currentBtye = data[i];
 
-      // Serial.print("char version: ");
-      // Serial.println(data[i]);
+      for (uint i = 0; i < 8; i++)
+      {
+        uint8_t state = currentBtye & _BV(i) ? 0x80 : 0;
 
-      // int num = atoi(&data[i]);
+        Serial.print("bit: ");
+        Serial.print(i);
+        Serial.print(", data: ");
+        Serial.print(data[i]);
+        Serial.print(", state: ");
+        Serial.println(state);
 
-      // Serial.print("int version: ");
-      // Serial.println(num);
-
-      Write_Max7219(i + 1, data[i]);
+        matrixState[i] |= state;
+      }
     }
   });
 }
 
-// unsigned char dot[4][8] = {
-//     //  {0x0, 0x0, 0x0, 0x18, 0x18, 0x0, 0x0, 0x0}
-//     {0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x7C}, //L
-//     {0x7C, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x7C}, //I
-//     {0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x7C}, //L
-//     {0x41, 0x22, 0x14, 0x8, 0x8, 0x8, 0x8, 0x8},      //Y
-// };
-// unsigned char frame[8] = {80, 0, 40, 29, 29, 96, 2, 34};
+void animate()
+{
+  for (int i = 0; i < 8; i++)
+  {
+
+    Serial.println("matrix state:");
+    for (int i = 0; i < 8; i++)
+    {
+      Serial.print(matrixState[i]);
+      Serial.print(" ");
+    }
+
+    Serial.println("");
+    Write_Max7219(i + 1, matrixState[i]);
+    matrixState[i] >>= 1;
+  }
+}
+
+unsigned long animationInterval = 800;
+unsigned long animationLastChecked = 0;
 
 void loop()
 {
@@ -231,8 +214,12 @@ void loop()
   {
     client.poll();
   }
-  for (int i = 0; i < 8; i++)
+
+  unsigned long now = millis();
+
+  if (now - animationLastChecked >= animationInterval)
   {
-    // Write_Max7219(i + 1, frame[i]);
+    animate();
+    animationLastChecked = now;
   }
 }

@@ -398,7 +398,6 @@ class GridManager {
   animateBrickState() {
     for (let i = 0; i < this.gridState.length; i++) {
       this.gridState[i] = this.gridState[i] >> 1
-      // this.gridState[i] = this.gridState[i] << 1
       // * Mask off the numbers so they don't just continually grow once the bricks are "off" the grid
       this.gridState[i] = this.gridState[i] & (Math.pow(2, this.columns) - 1)
     }
@@ -532,6 +531,13 @@ class GridManager {
 
 const gridManager = new GridManager(8, 8, 10)
 
+function mask(i, ones = false) {
+  if (ones) {
+    return (1 << i) + ((1 << i) - 1)
+  }
+  return 1 << i
+}
+
 /**
  * * All of the websocket stuff
  * * I'm keeping all of this out of the grid manager for a couple of reasons:
@@ -607,8 +613,39 @@ socket.addEventListener('message', async (message) => {
     const number = Number(payload)
     ;({ type, data } = parseMessageTypeAndData(number))
   } else if (payload instanceof Blob) {
+    // TODO: messssssssyyyyy come back and clean this up
+    // ^ figure out what code is using the old buffer version
+    // ^ refactor to use the new version
+
     const buffer = await payload.arrayBuffer()
-    ;[type, data] = new Uint8Array(buffer)
+    const view = new DataView(buffer)
+
+    function compileBytes(view) {
+      let number = 0
+      let counter = 0
+      do {
+        number <<= 8 // * note that on the first iteration this will do nothing. 0 << 8 still equals 0
+        number += view.getUint8(counter)
+        counter++
+      } while (counter < view.byteLength)
+      return number
+    }
+
+    const state = compileBytes(view)
+
+    for (let i = 0; i < view.byteLength * 8; i++) {
+      // mask(2)
+      if (state & mask(i)) {
+        gridManager.addBrick(i)
+      }
+    }
+
+    // console.log(rowOneAndTwo.toString(2))
+    // console.log(rowThree.toString(2))
+
+    // } else if (payload instanceof Blob) {
+    //   const buffer = await payload.arrayBuffer()
+    //   ;[type, data] = new Uint8Array(buffer)
   } else {
     console.error("we don't have a handler for the message.")
     console.log(message)
