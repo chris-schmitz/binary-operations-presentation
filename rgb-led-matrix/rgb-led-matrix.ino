@@ -1,8 +1,10 @@
 #include "credentials.h"
+#include <Adafruit_NeoPixel.h>
 #include <ArduinoWebsockets.h>
 #include <WiFi.h>
 
 #define _BV(bit) (1 << (bit))
+#define MATRIX_PIN 32
 
 const char *ssid = WIFI_SSID;
 const char *password = PASSWORD;
@@ -13,26 +15,9 @@ using namespace websockets;
 
 WebsocketsClient client;
 
-int Max7219_pinCLK = 22;
-int Max7219_pinCS = 21;
-int Max7219_pinDIN = 5;
+Adafruit_NeoPixel matrix = Adafruit_NeoPixel(64, MATRIX_PIN, NEO_GRB + NEO_KHZ800);
 
 uint8_t matrixState[8] = {0};
-
-void Write_Max7219_byte(unsigned char DATA)
-{
-
-  unsigned char i;
-  digitalWrite(Max7219_pinCS, LOW);
-  for (i = 8; i >= 1; i--)
-
-  {
-    digitalWrite(Max7219_pinCLK, LOW);
-    digitalWrite(Max7219_pinDIN, DATA & 0x80); // Extracting a bit data
-    DATA = DATA << 1;
-    digitalWrite(Max7219_pinCLK, HIGH);
-  }
-}
 
 void printByteWithPadding(unsigned char value)
 {
@@ -44,57 +29,23 @@ void printByteWithPadding(unsigned char value)
   {
     padding += "0";
   }
-  // Serial.print("padding and number: ");
   Serial.print(padding);
   Serial.print(value, BIN);
-}
-
-void Write_Max7219(unsigned char address, unsigned char dat)
-{
-
-  // ! Leaving in for troubleshooting aid
-  // Serial.print("Data: ");
-  // printByteWithPadding(dat);
-
-  // Serial.print("  ->  ");
-  // Serial.print("Address: ");
-  // Serial.println(address, BIN);
-
-  digitalWrite(Max7219_pinCS, LOW);
-  Write_Max7219_byte(address); //address，code of LED
-  Write_Max7219_byte(dat);     //data，figure on LED
-  digitalWrite(Max7219_pinCS, HIGH);
-}
-
-void Init_MAX7219(void)
-{
-
-  Write_Max7219(0x09, 0x00); //decoding ：BCD
-  Write_Max7219(0x0a, 0x03); //brightness
-  Write_Max7219(0x0b, 0x07); //scanlimit；8 LEDs
-  Write_Max7219(0x0c, 0x01); //power-down mode：0，normal mode：1
-  Write_Max7219(0x0f, 0x00); //test display：1；EOT，display：0
 }
 
 void setup()
 {
   Serial.begin(115200);
-  pinMode(Max7219_pinCLK, OUTPUT);
-  pinMode(Max7219_pinCS, OUTPUT);
-  pinMode(Max7219_pinDIN, OUTPUT);
-  delay(50);
+  matrix.begin();
+  matrix.clear();
+  matrix.show();
 
-  Init_MAX7219();
-  clearMatrix();
-  connectToWifi();
-}
-
-void clearMatrix()
-{
-  for (int i = 0; i < 8; i++)
+  for (uint8_t i = 0; i < 8; i++)
   {
-    Write_Max7219(i + 1, 0);
+    matrixState[i] = i;
   }
+
+  // connectToWifi();
 }
 
 void connectToWifi()
@@ -124,6 +75,7 @@ void connectToWebsocketServer()
 {
   Serial.println("Connecting to websocket server");
   bool connected = client.connect(websocket_server_host, websocket_server_port, "/");
+
   if (connected)
   {
     Serial.println("Connected to websocket server.");
@@ -158,7 +110,7 @@ void addWebsocketListeners()
     // Serial.println(message.isBinary());
     // Serial.print("Is text: ");
     // Serial.println(message.isText());
-    // Serial.print("c string: ");``
+    // Serial.print("c string: ");
     // Serial.println(message.c_str());
 
     const char *data = message.c_str();
@@ -200,7 +152,7 @@ void animate()
     }
 
     Serial.println("");
-    Write_Max7219(i + 1, matrixState[i]);
+    // Write_Max7219(i + 1, matrixState[i]);
     matrixState[i] >>= 1;
   }
 }
@@ -210,16 +162,57 @@ unsigned long animationLastChecked = 0;
 
 void loop()
 {
-  if (client.available())
-  {
-    client.poll();
-  }
+  // for (int row = 0; row < 8 * 8; row += 8)
+  // { // loop through each row
+  //   matrix.clear();
+  //   matrix.show();
+  //   for (uint8_t pixel = 0; pixel < 8; pixel++)
+  //   { // loop through each row
+  //     Serial.print("row: ");
+  //     Serial.print(row);
+  //     Serial.print(", pixel: ");
+  //     Serial.print(pixel);
+  //     Serial.print(", index: ");
+  //     int index = log(matrixState[pixel]) / log(2);
 
-  unsigned long now = millis();
+  //     matrixState[pixel] <<= 1;
 
-  if (now - animationLastChecked >= animationInterval)
+  //     Serial.print(index);
+  //     Serial.print(", row plus index: ");
+  //     Serial.println(row + index);
+
+  //     matrix.setPixelColor(row + index, matrix.Color(3, 66, 128));
+  //   }
+  //   matrix.show();
+  //   delay(100);
+  // }
+
+  for (int row = 0; row < 8 * 8; row += 8)
   {
-    animate();
-    animationLastChecked = now;
+    int index = 1;
+    for (int i = 0; i < 8; i++)
+    {
+      int exponent = log(index) / log(2);
+      matrix.setPixelColor(row + exponent - 1, matrix.Color(0, 0, 0));
+      matrix.setPixelColor(row + exponent, matrix.Color(3, 66, 128));
+      matrix.show();
+      index <<= 1;
+      delay(500);
+    }
   }
+  matrix.clear();
+  matrix.show();
+
+  // if (client.available())
+  // {
+  //   client.poll();
+  // }
+
+  // unsigned long now = millis();
+
+  // if (now - animationLastChecked >= animationInterval)
+  // {
+  //   animate();
+  //   animationLastChecked = now;
+  // }
 }
