@@ -32,7 +32,7 @@ function relayMessageToClients(message) {
 websocketServer.on('connection', (socket) => {
   socket.binaryType = 'arraybuffer'
   console.log('new client connected. Current active connections:')
-  console.log(websocketServer.clients)
+  // console.log(websocketServer.clients)
 
   socket.on('message', relayMessageToClients)
 })
