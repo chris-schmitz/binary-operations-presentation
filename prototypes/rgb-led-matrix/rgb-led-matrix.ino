@@ -20,9 +20,13 @@ using namespace websockets;
 
 WebsocketsClient client;
 
-uint8_t matrixState[8] = {0};
+int matrixState[8] = {0};
+// uint8_t matrixState[8] = {0};
 
 Adafruit_NeoPixel matrix = Adafruit_NeoPixel(64, MATRIX_PIN, NEO_RGB + NEO_KHZ800);
+
+uint32_t defaultBackgroundColor = matrix.Color(0, 255, 0);
+uint32_t backgroundColor = defaultBackgroundColor;
 
 void setup()
 {
@@ -31,10 +35,7 @@ void setup()
   matrix.begin();
   matrix.show();
 
-  for (uint8_t i = 0; i < 8; i++)
-  {
-    matrixState[i] = i;
-  }
+  clearMatrix(backgroundColor);
 
   connectToWifi();
 }
@@ -96,32 +97,30 @@ void addWebsocketListener()
     Serial.print("Extracted data: ");
     Serial.println(data);
 
+    clearMatrix(backgroundColor);
     // TODO: come back and give better names
     for (int i = 0; i < strlen(data); i++)
     {
       uint8_t currentByte = data[i];
-
-      for (uint8_t currentBit = 0; currentBit < 8; currentBit++)
-      {
-        uint8_t state = currentByte & _BV(currentBit) ? 0x80 : 0;
-
-        Serial.print("row: ");
-        Serial.print(currentBit);
-        Serial.print(", state: ");
-        Serial.println(state, BIN);
-
-        matrixState[i] |= state;
-      }
+      matrixState[i] = currentByte;
+      Serial.print("row: ");
+      Serial.print(i);
+      Serial.print(", byte: ");
+      Serial.println(currentByte, BIN);
     }
   });
 }
 
 void render8x8State(int *state, uint32_t color)
 {
-
   for (int row = 0; row < 8; row++)
   {
     int currentBtye = state[row];
+    // Serial.print("State row ");
+    // Serial.print(row);
+    // Serial.print(": ");
+    // Serial.println(currentBtye);
+
     if (row % 2 != 0)
     {
       currentBtye = reverseByte(currentBtye, 8);
@@ -153,7 +152,6 @@ void renderRow(int row, uint16_t data, uint32_t color)
   {
     int currentByte = _BV(i) & data;
     int index = (row * 8) + i;
-    // int exponent = (int)(log(currentByte) / log(2));
 
     if (DEBUG_MODE)
     {
@@ -228,7 +226,7 @@ void testRowFill(int row)
   }
 }
 
-void clearStrip(uint32_t color)
+void clearMatrix(uint32_t color)
 {
   // * one by one for all 64
   for (int i = 0; i < 64; i++)
@@ -236,86 +234,44 @@ void clearStrip(uint32_t color)
     matrix.setPixelColor(i, color);
   }
   matrix.show();
+
+  clearState();
+}
+
+void clearState()
+{
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    matrixState[i] = 0;
+  }
+}
+
+void clearRow(uint8_t row, uint32_t color) {}
+
+unsigned long animationInterval = 100;
+unsigned long animationLastCheckpoint = 0;
+
+void animate()
+{
+  // clearStrip(backgroundColor);
+  // TODO: if the state has changed (need to track previous state), then render row, otherwise don't
+  for (int index = 0; index < 8; index++)
+  {
+    render8x8State(matrixState, matrix.Color(255, 0, 255));
+  }
 }
 
 void loop()
 {
+  // TODO: add a reconnect if not available
   if (client.available())
   {
     client.poll();
   }
-  // TODO: add a reconnect if not available
 
-  return;
-
-  // TODO: clean alllllllll of this up
-
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(O, matrix.Color(255, 0, 255));
-  delay(1000);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(H, matrix.Color(255, 0, 255));
-  delay(1000);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(space, matrix.Color(255, 0, 255));
-  delay(1000);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(Y, matrix.Color(255, 0, 255));
-  delay(1000);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(E, matrix.Color(255, 0, 255));
-  delay(1000);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(A, matrix.Color(255, 0, 255));
-  delay(1000);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(H, matrix.Color(255, 0, 255));
-  delay(1000);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(tripleBang, matrix.Color(255, 0, 255));
-  delay(1000);
-  clearStrip(matrix.Color(0, 255, 0));
-  return;
-
-  // * one by one for all 64
-  for (int i = 0; i < 64; i++)
+  unsigned long now = millis();
+  if (now - animationLastCheckpoint > animationInterval)
   {
-    matrix.setPixelColor(i, matrix.Color(255, 0, 0));
-    matrix.show();
-    delay(50);
+    animate();
   }
-  delay(3000);
-  clearStrip(matrix.Color(0, 0, 0));
-
-  // * Row by row without function calls
-  for (int i = 0; i < 8; i++)
-  {
-    for (int j = 0; j < 8; j++)
-    {
-      matrix.setPixelColor((8 * i) + j, matrix.Color(0, 255, 0));
-    }
-    matrix.show();
-    delay(50);
-  }
-  delay(3000);
-  clearStrip(matrix.Color(0, 0, 0));
-
-  // * Row by row extracted to two functions
-  testGridFill();
-  delay(1000);
-  clearStrip(matrix.Color(0, 0, 0));
-
-  // * original row by row
-  render8x8State(fullGrid, matrix.Color(255, 255, 0));
-  clearStrip(matrix.Color(0, 0, 0));
-
-  delay(1000);
-
-  // * original row by row
-  render8x8State(boxInBox, matrix.Color(255, 255, 255));
-  clearStrip(matrix.Color(0, 0, 0));
-
-  delay(1000);
-  // matrix.clear();
-  clearStrip(matrix.Color(0, 0, 0));
 }
