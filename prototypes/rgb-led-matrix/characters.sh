@@ -18,6 +18,9 @@ sleep 1
 # randomPattern
 printf "\xFF\xAA\x81\x99\x18\xE2\x47\xFF" | websocat -b ws://cs-touchscreen.local:3001
 sleep 1
+# boxInBox and doors
+printf "\xE7\x81\x81\x18\x18\x81\x81\xE7" | websocat -b ws://cs-touchscreen.local:3001
+sleep 1
 # boxInBox
 printf "\xFF\x81\x81\x99\x99\x81\x81\xFF" | websocat -b ws://cs-touchscreen.local:3001
 

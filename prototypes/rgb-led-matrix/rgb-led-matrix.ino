@@ -1,3 +1,13 @@
+/**
+ * ^ RGB LED Matrix 
+ * 
+ * * blah blah
+ * 
+ * ! A couple of things to note!
+ * * - I wrote this code for an 8x8 RGB LED matrix, so there are some hardcoded `8`s in here 
+ *   * that _could_ be made dynamic, but I'm going for MVP on this one so there's no need for that flexibility
+ */
+
 #include "characters.h"
 #include "credentials.h"
 #include <Adafruit_NeoPixel.h>
@@ -16,17 +26,23 @@ const uint16_t websocket_server_port = WEBSOCKET_SERVER_PORT;
 uint8_t websocketReconnectTotalAttempts = 10;
 uint8_t websocketReconnectCount = 0;
 
+byte currentColor = 0;
+
 using namespace websockets;
 
 WebsocketsClient client;
 
+int previousMatrixState[8] = {0};
 int matrixState[8] = {0};
-// uint8_t matrixState[8] = {0};
 
 Adafruit_NeoPixel matrix = Adafruit_NeoPixel(64, MATRIX_PIN, NEO_RGB + NEO_KHZ800);
 
-uint32_t defaultBackgroundColor = matrix.Color(0, 255, 0);
+uint32_t defaultBackgroundColor = matrix.Color(10, 10, 10);
+// uint32_t defaultBackgroundColor = matrix.Color(0, 255, 0);
+// uint32_t defaultBackgroundColor = matrix.Color(0, 0, 0);
 uint32_t backgroundColor = defaultBackgroundColor;
+
+uint32_t activeColor = matrix.Color(255, 0, 255);
 
 void setup()
 {
@@ -36,6 +52,7 @@ void setup()
   matrix.show();
 
   clearMatrix(backgroundColor);
+  clearMatrixState();
 
   connectToWifi();
 }
@@ -96,17 +113,22 @@ void addWebsocketListener()
     const char *data = message.c_str();
     Serial.print("Extracted data: ");
     Serial.println(data);
+    Serial.print("data length: ");
+    Serial.println(message.length());
 
-    clearMatrix(backgroundColor);
     // TODO: come back and give better names
-    for (int i = 0; i < strlen(data); i++)
+    // TODO: refactor consideration: hard code as an 8?
+    // ? will longer messages blow up the code since the since the matrixState is hardcoded at 8??
+    for (int i = 0; i < message.length(); i++)
     {
       uint8_t currentByte = data[i];
-      matrixState[i] = currentByte;
-      Serial.print("row: ");
+      Serial.print("Message byte: ");
       Serial.print(i);
-      Serial.print(", byte: ");
+      Serial.print(", value: ");
       Serial.println(currentByte, BIN);
+
+      previousMatrixState[i] = matrixState[i];
+      matrixState[i] = currentByte;
     }
   });
 }
@@ -116,10 +138,6 @@ void render8x8State(int *state, uint32_t color)
   for (int row = 0; row < 8; row++)
   {
     int currentBtye = state[row];
-    // Serial.print("State row ");
-    // Serial.print(row);
-    // Serial.print(": ");
-    // Serial.println(currentBtye);
 
     if (row % 2 != 0)
     {
@@ -134,8 +152,6 @@ void render8x8State(int *state, uint32_t color)
     }
 
     renderRow(row, currentBtye, color);
-
-    // delay(300);
   }
 }
 
@@ -148,7 +164,8 @@ void renderRow(int row, uint16_t data, uint32_t color)
     Serial.print(", data: ");
     Serial.println(data, BIN);
   }
-  for (uint8_t i = 0; i < 8; i++) // TODO rewrite to dynamically determine size just to keep it clean
+
+  for (uint8_t i = 0; i < 8; i++)
   {
     int currentByte = _BV(i) & data;
     int index = (row * 8) + i;
@@ -172,25 +189,15 @@ void renderRow(int row, uint16_t data, uint32_t color)
         Serial.print(index);
         Serial.print(": ON, ");
       }
-      matrix.setPixelColor(index, color);
+
+      // matrix.setPixelColor(index, color);
+      matrix.setPixelColor(index, Wheel(index * 2 & 255));
       matrix.show();
-      // delay(50);
     }
-    else
-    {
-      if (DEBUG_MODE)
-      {
-        Serial.print(" index: ");
-        Serial.print(index);
-        Serial.print(": OFF, ");
-      }
-      // matrix.setPixelColor(index, matrix.Color(0, 0, 0));
-    }
+
     if (DEBUG_MODE)
       Serial.println("");
   }
-  // matrix.show();
-  delay(10);
 }
 
 uint16_t reverseByte(uint16_t byte, int length)
@@ -234,11 +241,9 @@ void clearMatrix(uint32_t color)
     matrix.setPixelColor(i, color);
   }
   matrix.show();
-
-  clearState();
 }
 
-void clearState()
+void clearMatrixState()
 {
   for (uint8_t i = 0; i < 8; i++)
   {
@@ -246,18 +251,72 @@ void clearState()
   }
 }
 
-void clearRow(uint8_t row, uint32_t color) {}
+void clearRow(uint8_t row, uint32_t color)
+{
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    matrix.setPixelColor(8 * row + i, backgroundColor);
+  }
+  matrix.show();
+}
+
+void clearRowState(uint8_t row)
+{
+  matrixState[row] = 0;
+}
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos)
+{
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85)
+  {
+    return matrix.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if (WheelPos < 170)
+  {
+    WheelPos -= 85;
+    return matrix.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return matrix.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
 
 unsigned long animationInterval = 100;
 unsigned long animationLastCheckpoint = 0;
 
 void animate()
 {
+
   // clearStrip(backgroundColor);
   // TODO: if the state has changed (need to track previous state), then render row, otherwise don't
-  for (int index = 0; index < 8; index++)
+  for (int row = 0; row < 8; row++)
   {
-    render8x8State(matrixState, matrix.Color(255, 0, 255));
+    if (matrixState[row] != previousMatrixState[row])
+    {
+      Serial.print("update needed for row: ");
+      Serial.print(row);
+      Serial.print(", current: ");
+      Serial.print(matrixState[row]);
+      Serial.print(", previous: ");
+      Serial.println(previousMatrixState[row]);
+
+      previousMatrixState[row] = matrixState[row];
+      Serial.print("storing state for : ");
+      Serial.print(row);
+      Serial.print(", current: ");
+      Serial.print(matrixState[row]);
+      Serial.print(", previous: ");
+      Serial.println(previousMatrixState[row]);
+
+      int renderByte = row % 2 == 0 ? matrixState[row] : reverseByte(matrixState[row], 8);
+
+      clearRow(row, backgroundColor);
+      renderRow(row, renderByte, activeColor);
+    }
+    // * Leaving in. this was when we were rendering the full matrix every time
+    // render8x8State(matrixState, matrix.Color(255, 0, 255));
   }
 }
 
@@ -272,6 +331,7 @@ void loop()
   unsigned long now = millis();
   if (now - animationLastCheckpoint > animationInterval)
   {
+    animationLastCheckpoint = now;
     animate();
   }
 }
