@@ -16,11 +16,9 @@ const port = 3000
 
 const socketManager = new WebsocketManager(server)
 
-socketManager.on("client-message", () => {
-  console.log("index listener on messages")
-})
-
 const manager = new GameManager(socketManager)
+
+
 
 server.listen(port, () => {
   console.log(`Listening on port ${port}`)

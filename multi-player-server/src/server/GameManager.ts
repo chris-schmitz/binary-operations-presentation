@@ -9,10 +9,15 @@ class GameManager {
   constructor(socketManager: WebsocketManager) {
     this.socketManager = socketManager
 
-    this.socketManager.on("client-message", () => {
-      console.log("caught emitted event")
+    this.socketManager.on("socket-connected", () => {
+      console.log("A new socket connected!!!!")
     })
-    // this.socketManager.on("client-message", this.handleClientMessage)
+    this.socketManager.on("client-message", (payload: ClientMessage) => {
+      console.log("Game received message payload with data:")
+      console.log(payload.data)
+      this.socketManager.sendToAllClients(`Message to all clients: ${payload.data}`)
+    })
+
 
     let fakeData = 0xFF
     while (fakeData !== 0) {
