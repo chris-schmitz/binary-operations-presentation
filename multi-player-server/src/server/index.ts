@@ -1,6 +1,8 @@
 import express from "express"
 import WebSocket from "ws"
 import http from "http"
+import GameManager from "./GameManager";
+import WebsocketManager from "./WebsocketManager";
 
 // TODO: ripout consideration
 // * I'm adding express here, but tbh I don't know that I'll need it.
@@ -12,18 +14,13 @@ const server = http.createServer(app)
 
 const port = 3000
 
-const webSocketServer = new WebSocket.Server({server})
-webSocketServer.on("connection", (socket) => {
-  console.log("socket connected")
-  socket.on("message", (message) => websocketMessageHandler(message, socket))
+const socketManager = new WebsocketManager(server)
+
+socketManager.on("client-message", () => {
+  console.log("index listener on messages")
 })
 
-const websocketMessageHandler = (message: WebSocket.Data, socket: WebSocket) =>{
-  console.log("new message:")
-  console.log(message)
-
-  socket.send("heya")
-}
+const manager = new GameManager(socketManager)
 
 server.listen(port, () => {
   console.log(`Listening on port ${port}`)
