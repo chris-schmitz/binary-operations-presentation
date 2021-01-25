@@ -18,6 +18,7 @@ int Max7219_pinCS = 21;
 int Max7219_pinDIN = 5;
 
 uint8_t matrixState[8] = {0};
+uint8_t previousMatrixState[8] = {0};
 
 void Write_Max7219_byte(unsigned char DATA)
 {
@@ -49,37 +50,19 @@ void printByteWithPadding(unsigned char value)
   Serial.print(value, BIN);
 }
 
-void Write_Max7219(uint8_t row)
-{
-  byte currentByte = matrixState[row];
-  Serial.println("==============");
-  Serial.print("Current byte: ");
-  printByteWithPadding(currentByte);
-  Serial.println("");
-  Serial.println("--------------");
-  for (uint8_t index = 0; index < 8; index++)
-  {
-    uint8_t currentBit = currentByte & _BV(index);
-    Serial.print("Current bit: ");
-    printByteWithPadding(currentBit);
-    Serial.println("");
-
-    digitalWrite(Max7219_pinCS, LOW);
-    Write_Max7219_byte(row * 8 + index);
-    Write_Max7219_byte(currentBit);
-    digitalWrite(Max7219_pinCS, HIGH);
-  }
-}
-
 void Write_Max7219(unsigned char address, unsigned char dat)
 {
+
   // ! Leaving in for troubleshooting aid
   // Serial.print("Data: ");
   // printByteWithPadding(dat);
 
   // Serial.print("  ->  ");
   // Serial.print("Address: ");
-  // Serial.println(address, BIN);
+  // Serial.print(address, HEX);
+  // Serial.print("  ->  ");
+  // Serial.print("data: ");
+  // Serial.println(dat, HEX);
 
   digitalWrite(Max7219_pinCS, LOW);
   Write_Max7219_byte(address); //address，code of LED
@@ -125,7 +108,7 @@ void connectToWifi()
   for (int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++)
   {
     Serial.print(".");
-    // Serial.print(WiFi.status());
+    Serial.print(WiFi.status());
     delay(1000);
   }
 
@@ -179,7 +162,7 @@ void addWebsocketListeners()
     // Serial.println(message.isBinary());
     // Serial.print("Is text: ");
     // Serial.println(message.isText());
-    // Serial.print("c string: ");
+    // Serial.print("c string: ");``
     // Serial.println(message.c_str());
 
     const char *data = message.c_str();
@@ -189,27 +172,26 @@ void addWebsocketListeners()
 
     for (int i = 0; i < message.length(); i++)
     {
-      matrixState[i] = data[i];
+      uint8_t currentBtye = data[i];
+      Serial.print("current byte: ");
+      Serial.println(currentBtye, HEX);
+
+      matrixState[i] = currentBtye;
+
+      for (uint i = 0; i < 8; i++)
+      {
+        // uint8_t state = currentBtye & _BV(i) ? 0x80 : 0;
+
+        // Serial.print("bit: ");
+        // Serial.print(i);
+        // Serial.print(", data: ");
+        // Serial.print(data[i]);
+        // Serial.print(", state: ");
+        // Serial.println(state);
+
+        // matrixState[i] |= state;
+      }
     }
-
-    // for (int i = 0; i < strlen(data); i++)
-    // {
-    //   uint8_t currentBtye = data[i];
-
-    //   for (uint i = 0; i < 8; i++)
-    //   {
-    //     uint8_t state = currentBtye & _BV(i) ? 0x80 : 0;
-
-    //     Serial.print("bit: ");
-    //     Serial.print(i);
-    //     Serial.print(", data: ");
-    //     Serial.print(data[i]);
-    //     Serial.print(", state: ");
-    //     Serial.println(state);
-
-    //     matrixState[i] |= state;
-    //   }
-    // }
   });
 }
 
@@ -218,21 +200,15 @@ void animate()
   for (int i = 0; i < 8; i++)
   {
 
-    if (matrixState[i] > 0)
+    if (matrixState[i] != previousMatrixState[i])
     {
-      // Serial.print("state row ");
-      // Serial.print(i);
-      // Serial.print(": ");
-      // Serial.println(matrixState[i], HEX);
-
-      Write_Max7219(i);
-      // Write_Max7219(i + 1, matrixState[i]);
-      // matrixState[i] >>= 1;
+      Write_Max7219(i + 1, matrixState[i]);
+      previousMatrixState[i] = matrixState[i];
     }
   }
 }
 
-unsigned long animationInterval = 800;
+unsigned long animationInterval = 100;
 unsigned long animationLastChecked = 0;
 
 void loop()
@@ -246,6 +222,12 @@ void loop()
 
   if (now - animationLastChecked >= animationInterval)
   {
+    // for (int i = 0; i < 8; i++)
+    // {
+    //   Serial.print(matrixState[i], HEX);
+    //   Serial.print(" ");
+    // }
+    // Serial.println("");
     animate();
     animationLastChecked = now;
   }

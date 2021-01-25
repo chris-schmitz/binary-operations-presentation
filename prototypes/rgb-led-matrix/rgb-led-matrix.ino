@@ -37,9 +37,9 @@ int matrixState[8] = {0};
 
 Adafruit_NeoPixel matrix = Adafruit_NeoPixel(64, MATRIX_PIN, NEO_RGB + NEO_KHZ800);
 
-uint32_t defaultBackgroundColor = matrix.Color(10, 10, 10);
+// uint32_t defaultBackgroundColor = matrix.Color(10, 10, 10);
 // uint32_t defaultBackgroundColor = matrix.Color(0, 255, 0);
-// uint32_t defaultBackgroundColor = matrix.Color(0, 0, 0);
+uint32_t defaultBackgroundColor = matrix.Color(0, 0, 0);
 uint32_t backgroundColor = defaultBackgroundColor;
 
 uint32_t activeColor = matrix.Color(255, 0, 255);
@@ -102,6 +102,7 @@ void connectToWebsocketServer()
   addWebsocketListener();
 }
 
+// TODO: extract state update to a separate function called from the listener
 void addWebsocketListener()
 {
   Serial.println("Adding websocket listener");

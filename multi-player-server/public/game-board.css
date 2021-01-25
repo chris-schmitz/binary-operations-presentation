@@ -1,0 +1,115 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100vw;
+  height: 100vh;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+}
+section:nth-child(2) {
+  width: 40vw;
+}
+
+table,
+tr,
+td {
+  border: 1px solid darkcyan;
+  border-collapse: collapse;
+}
+td {
+  padding: 30px;
+}
+
+td[paint='true'] {
+  background: darkcyan;
+  border: 1px solid white;
+}
+
+td[paint-player='true'] {
+  background: magenta;
+}
+
+#row-brick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  padding-inline-start: 0;
+}
+
+#row-brick-buttons li {
+  list-style: none;
+  margin: 0 5px 5px 0;
+}
+
+.indicators {
+  display: flex;
+  justify-content: space-between;
+}
+
+.game-state-wrapper * {
+  display: inline-block;
+}
+
+.button-toggle-on {
+  background: green;
+  color: white;
+}
+
+.grid-state-output {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.key-indicator {
+  display: flex;
+  align-items: flex-end;
+}
+.key-indicator div {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+}
+
+.key-indicator span {
+  padding: 30px;
+  background: lightgrey;
+}
+.key-indicator [key-active='true'] {
+  background: orange;
+}
+
+code {
+  font-size: 20px;
+}
+
+.tools {
+  display: flex;
+}
+.tools div {
+  margin: 10px;
+}
+
+.collision-indicator {
+  height: 150px;
+  width: 150px;
+  background: lightgray;
+}
+
+/* TODO Consolidate this */
+.key-indicator [key-active='true'],
+.indicator-active {
+  background: orangered;
+}
+
+.game-over {
+  background: lightgray;
+  color: red;
+  font-weight: bold;
+}

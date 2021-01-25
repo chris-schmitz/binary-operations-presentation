@@ -15,7 +15,7 @@ class GameManager {
     this.socketManager.on("client-message", (payload: ClientMessage) => {
       console.log("Game received message payload with data:")
       console.log(payload.data)
-      this.socketManager.sendToAllClients(`Message to all clients: ${payload.data}`)
+      this.socketManager.sendToAllClients(payload.data)
     })
 
 
