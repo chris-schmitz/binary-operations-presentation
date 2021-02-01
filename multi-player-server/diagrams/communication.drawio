@@ -1,6 +1,6 @@
-<mxfile host="65bd71144e" modified="2021-02-01T04:04:21.457Z" agent="5.0 (Macintosh; Intel Mac OS X 10_16_0) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.51.1 Chrome/83.0.4103.122 Electron/9.3.3 Safari/537.36" version="13.10.0" etag="P-87Xdii2DGBVaOQ9IC9" type="embed" pages="3">
+<mxfile host="65bd71144e" modified="2021-02-01T15:17:10.644Z" agent="5.0 (Macintosh; Intel Mac OS X 10_16_0) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.51.1 Chrome/83.0.4103.122 Electron/9.3.3 Safari/537.36" version="13.10.0" etag="MkXySio94Zhy-PLBbwV_" type="embed" pages="3">
     <diagram id="JR-FmOtAL7zXSWMbXB9z" name="Brick controller logic">
-        <mxGraphModel dx="1386" dy="2021" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="2900" dy="3055" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -91,7 +91,7 @@
                     <mxGeometry x="530" y="780" width="140" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="39" value="Grid state is updated to add a new row" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-                    <mxGeometry x="1260" y="770" width="140" height="60" as="geometry"/>
+                    <mxGeometry x="950" y="780" width="140" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="44" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="41" target="43">
                     <mxGeometry relative="1" as="geometry"/>
@@ -159,32 +159,6 @@
                 <mxCell id="61" value="UI button latches down" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
                     <mxGeometry x="90" y="1502.11" width="140" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="67" value="" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#FF00FF;" edge="1" parent="1" source="64" target="68">
-                    <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="230" y="1740" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="82" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;" edge="1" parent="1" source="64" target="81">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="64" value="Animation tick sends pre-calculated game state frame to clients.&lt;br&gt;&lt;br&gt;Game tick" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=12;fontColor=#000000;align=center;strokeColor=#9673a6;fillColor=#e1d5e7;" vertex="1" parent="1">
-                    <mxGeometry x="530" y="1720" width="140" height="90" as="geometry"/>
-                </mxCell>
-                <mxCell id="72" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#FF00FF;" edge="1" parent="1" source="68" target="71">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="68" value="client receives game animation tick" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-                    <mxGeometry x="90" y="1735" width="140" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="74" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#FF00FF;" edge="1" parent="1" source="71" target="73">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="71" value="button press enabled" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-                    <mxGeometry x="90" y="1840" width="140" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="73" value="UI button unlatches" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-                    <mxGeometry x="90" y="1960" width="140" height="60" as="geometry"/>
-                </mxCell>
                 <mxCell id="79" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;" edge="1" parent="1" source="75" target="78">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
@@ -205,26 +179,14 @@
                 <mxCell id="78" value="do nothing" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
                     <mxGeometry x="260" y="1390" width="70" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="87" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;" edge="1" parent="1" source="81" target="86">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="81" value="gameboard receives animation tick" style="whiteSpace=wrap;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;" vertex="1" parent="1">
-                    <mxGeometry x="1230" y="1725" width="120" height="60" as="geometry"/>
-                </mxCell>
                 <mxCell id="83" value="&lt;h1&gt;Game Board client&amp;nbsp;&lt;/h1&gt;&lt;p&gt;The game board clients are either web or physical matrix clients. These clients receive the game state frames and render them out.&amp;nbsp;&lt;/p&gt;&lt;p&gt;They also receive metadata about the overall game state, i.e. what UI elements to show when the game is going vs over etc. Since the web and physical matricies are so different, we should send this data over as a general indication (e.g. &quot;game_over&quot;) and the client should decide how to render it (e.g. physical matrix shows a game over animation fill vs the web controller showing the words &quot;game over&quot;)&lt;/p&gt;" style="text;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
-                    <mxGeometry x="1210" y="-80" width="310" height="240" as="geometry"/>
+                    <mxGeometry x="860" y="-80" width="310" height="240" as="geometry"/>
                 </mxCell>
                 <mxCell id="85" value="message type:&lt;b&gt; CONNECTION_ESTABLISHED&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;" vertex="1" parent="1">
                     <mxGeometry x="240" y="465" width="270" height="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="86" value="Game state is rendered according to the board type" style="whiteSpace=wrap;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;" vertex="1" parent="1">
-                    <mxGeometry x="1230" y="1865" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="88" value="&lt;h1&gt;Player Controller Client&amp;nbsp;&lt;/h1&gt;&lt;p&gt;The player controller allows ONE person to control the player brick on the screen.&amp;nbsp;&lt;/p&gt;&lt;p&gt;An important difference between the player and brick controllers is timing.&amp;nbsp;&lt;/p&gt;&lt;p&gt;The brick controller is coupled to the animation timer, i.e. changes happen on animation tick.&amp;nbsp;&lt;/p&gt;&lt;p&gt;The player controller messages should be sent as fast as possible.&amp;nbsp;&lt;/p&gt;" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
-                    <mxGeometry x="800" y="-80" width="310" height="240" as="geometry"/>
-                </mxCell>
                 <mxCell id="89" value="TODOs:&lt;br&gt;- Change tick terminology, should be something like `brickAnimationTick`&amp;nbsp;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FF8000;" vertex="1" parent="1">
-                    <mxGeometry x="495" y="-370" width="265" height="100" as="geometry"/>
+                    <mxGeometry x="162.5" y="-270" width="265" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="myNKCNEZ8obJiIs0TeL2-91" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;" edge="1" parent="1" source="myNKCNEZ8obJiIs0TeL2-89" target="myNKCNEZ8obJiIs0TeL2-90">
                     <mxGeometry relative="1" as="geometry"/>
@@ -252,7 +214,7 @@
         </mxGraphModel>
     </diagram>
     <diagram id="3T71fHW7_Rql4ui5esPX" name="Player controller logic">
-        <mxGraphModel dx="3358" dy="3058" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="4330" dy="3446" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="PuKvDdapNGO7cy3ew50b-0"/>
                 <mxCell id="PuKvDdapNGO7cy3ew50b-1" parent="PuKvDdapNGO7cy3ew50b-0"/>
@@ -371,7 +333,7 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="lshX5Dje-ZksVa8mOXSQ-67" value="&lt;h1&gt;player config code&lt;/h1&gt;&lt;p&gt;Consider renaming.&lt;/p&gt;&lt;p&gt;We need a way of making sure only the person we want to be the player can become the player.&amp;nbsp;&lt;/p&gt;&lt;p&gt;I think the best/easiest way to do this would be to generate a random that can be used to validate a player controller registration request.&amp;nbsp;&lt;/p&gt;&lt;p&gt;The first to bits of the first byte are used for the message and player types&amp;nbsp;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;fontColor=#FF00FF;" vertex="1" parent="PuKvDdapNGO7cy3ew50b-1">
+                <mxCell id="lshX5Dje-ZksVa8mOXSQ-67" value="&lt;h1&gt;player code&lt;/h1&gt;&lt;p&gt;Consider renaming.&lt;/p&gt;&lt;p&gt;We need a way of making sure only the person we want to be the player can become the player.&amp;nbsp;&lt;/p&gt;&lt;p&gt;I think the best/easiest way to do this would be to generate a random that can be used to validate a player controller registration request.&amp;nbsp;&lt;/p&gt;&lt;p&gt;The first to bits of the first byte are used for the message and player types&amp;nbsp;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;fontColor=#FF00FF;" vertex="1" parent="PuKvDdapNGO7cy3ew50b-1">
                     <mxGeometry x="-380" y="410" width="310" height="250" as="geometry"/>
                 </mxCell>
                 <mxCell id="lshX5Dje-ZksVa8mOXSQ-68" value="UI displays error message" style="whiteSpace=wrap;html=1;rounded=0;strokeColor=#82b366;fillColor=#d5e8d4;" vertex="1" parent="PuKvDdapNGO7cy3ew50b-1">
@@ -507,12 +469,47 @@
         </mxGraphModel>
     </diagram>
     <diagram id="BmnpUqMIkcij8vGUi-sK" name="Gameboard">
-        <mxGraphModel dx="1003" dy="783" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="2047" dy="1380" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="xre7-Kg9TgMED7J3gTLh-0"/>
                 <mxCell id="xre7-Kg9TgMED7J3gTLh-1" parent="xre7-Kg9TgMED7J3gTLh-0"/>
-                <mxCell id="xre7-Kg9TgMED7J3gTLh-2" value="Text" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#0000CC;" vertex="1" parent="xre7-Kg9TgMED7J3gTLh-1">
-                    <mxGeometry x="260" y="260" width="290" height="150" as="geometry"/>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-0" value="" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#FF00FF;" edge="1" parent="xre7-Kg9TgMED7J3gTLh-1" source="tdl6uLWDKxUFILA_ngHy-2" target="tdl6uLWDKxUFILA_ngHy-4">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="260" y="460" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;" edge="1" parent="xre7-Kg9TgMED7J3gTLh-1" source="tdl6uLWDKxUFILA_ngHy-2" target="tdl6uLWDKxUFILA_ngHy-9">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-2" value="Animation tick sends pre-calculated game state frame to clients.&lt;br&gt;&lt;br&gt;Game tick" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=12;fontColor=#000000;align=center;strokeColor=#9673a6;fillColor=#e1d5e7;" vertex="1" parent="xre7-Kg9TgMED7J3gTLh-1">
+                    <mxGeometry x="340" y="440" width="140" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#FF00FF;" edge="1" parent="xre7-Kg9TgMED7J3gTLh-1" source="tdl6uLWDKxUFILA_ngHy-4" target="tdl6uLWDKxUFILA_ngHy-6">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-4" value="client receives game animation tick" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="xre7-Kg9TgMED7J3gTLh-1">
+                    <mxGeometry x="120" y="455" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#FF00FF;" edge="1" parent="xre7-Kg9TgMED7J3gTLh-1" source="tdl6uLWDKxUFILA_ngHy-6" target="tdl6uLWDKxUFILA_ngHy-7">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-6" value="button press enabled" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="xre7-Kg9TgMED7J3gTLh-1">
+                    <mxGeometry x="120" y="560" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-7" value="UI button unlatches" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="xre7-Kg9TgMED7J3gTLh-1">
+                    <mxGeometry x="120" y="680" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;" edge="1" parent="xre7-Kg9TgMED7J3gTLh-1" source="tdl6uLWDKxUFILA_ngHy-9" target="tdl6uLWDKxUFILA_ngHy-10">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-9" value="gameboard receives animation tick" style="whiteSpace=wrap;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;" vertex="1" parent="xre7-Kg9TgMED7J3gTLh-1">
+                    <mxGeometry x="590" y="455" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="tdl6uLWDKxUFILA_ngHy-10" value="Game state is rendered according to the board type" style="whiteSpace=wrap;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;" vertex="1" parent="xre7-Kg9TgMED7J3gTLh-1">
+                    <mxGeometry x="590" y="585" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="6yn8WOCvnCHb2CODbRmr-0" value="&lt;h1&gt;GameManager Server&amp;nbsp;&lt;/h1&gt;&lt;div&gt;&lt;b&gt;Game state frames&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;The game part of this project is represented by game state frames. These are really just the state of all of the pieces on the game board for a given moment as well as the phase of play we're in.&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;So as an example, the grid and player states could look like this:&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;// example play phase&lt;/div&gt;&lt;div&gt;0x02 // a byte to represent the current play state (idle, playing, game over)&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;// example player state&lt;/div&gt;&lt;div&gt;[&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0x02,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// the index of the row the player is in&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0b00010000, // the bit position that the player is at for the given row&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0x1&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // whether or not there is a colission between the player and a brick&lt;/div&gt;&lt;div&gt;]&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;// example brick state&lt;/div&gt;&lt;div&gt;[&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0b00010000,&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0b00000000,&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0b01001000,&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0b00000000,&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0b10000000,&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0b00000000,&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0b00000100,&lt;/div&gt;&lt;div&gt;&amp;nbsp; 0b01110000,&lt;/div&gt;&lt;div&gt;]&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;i&gt;(Note that the mix of hex and binary in the player state doesn't really matter, it's just how we want to see it.&amp;nbsp;&lt;/i&gt;&lt;/div&gt;&lt;div&gt;&lt;i&gt;i.e. 0x02 == 0b00000010)&amp;nbsp;&lt;/i&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Any time there is a change to either state, a game state frame should be sent down to the gameboards.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;The play state is a single byte to tell the clients what phase of play the current frame is in, so each client can determine how to render the difference between each phase. e.g. for a &quot;idle&quot; a browser could display the words &quot;ready to play?&quot; while the big matrix could scroll the words across the matrix.&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;The player state is always going to be a three byte value. The player can only be in one row and column at the same time. The third byte lets the clients know if there's a colission or not. Yeah the clients could figure this out on the fly based on the player and grid states, but we want this message -&amp;gt; render transition to go as possible and given the clients could be phones, computers, and microcontrollers (and most likely all at the same time), it seems easier to just calculate that on the server as we're calculating everything else and shooting it down to the clients, mitigating any calc time differences on the client.&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;The brick state would show the position of all bricks on the grid at a given time. The number of bytes would match the number of rows in play. In the original demo I built this to be flexible, so we could have a dynamic number of rows and columns, but with the addition of the physical matricies we'll likely only do 8x8. That said, I don't necessarily want to hobble the code like that (what if I go crazy and build a 32x32 LED grid? *drools slightly* it would be nice to be able to expand the play area without having to refactor). With that in mind, the brick state should always go last. The first two parts of the game state are fixed; there will always be one byte for the game phase and three for the player state, but the brick state _could_ be dynamic. Plus, if we add more columns than 8 we'd need to handle the brick state data differently than the first two parts of the state (i.e. shift off the phase and player state as bytes and then handle the rest of the data as a different number type or parsing it dynamically based on the current grid size), so let's put it at the end.&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;SO! Tentively a full game frame would look like:&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;0b00000010&amp;nbsp; // the current phase of play&lt;/div&gt;&lt;div&gt;0b00000010&amp;nbsp; // player's row index&lt;/div&gt;&lt;div&gt;0b00010000&amp;nbsp; // the bit position that the player is at for the given row&amp;nbsp;&lt;/div&gt;&lt;div&gt;0b00000001&amp;nbsp; // whether or not there is a colission between the player and a brick&lt;/div&gt;&lt;div&gt;0b00010000&amp;nbsp; // each of the rows of the brick state&lt;/div&gt;&lt;div&gt;0b00000000&amp;nbsp;&lt;/div&gt;&lt;div&gt;0b01001000&amp;nbsp;&lt;/div&gt;&lt;div&gt;0b00000000&amp;nbsp;&lt;/div&gt;&lt;div&gt;0b10000000&amp;nbsp;&lt;/div&gt;&lt;div&gt;0b00000000&amp;nbsp;&lt;/div&gt;&lt;div&gt;0b00000100&amp;nbsp;&lt;/div&gt;&lt;div&gt;0b01110000&amp;nbsp;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;I know there are other ways this could be compacted (e.g. the row that the player is in is likely never going to be even close to 255 so we could put the colission and row index into the same byte, stuff like that, but right now I want to keep it simple and having two separate dedicated bytes isn't going to be that big of a deal.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;p&gt;&lt;b&gt;Brick animation interval&lt;/b&gt;&lt;/p&gt;&lt;p&gt;We want to have a steady interval of the bricks advancing from left to right for the game to be playable, so if the player doesn't move and the game phase isn't changing then the game state frames shold be sent at BRICK_ANIMATION_INTEVAL times per second (we're at the limitations of js intervals so we have to do it in seconds :/).&lt;/p&gt;&lt;p&gt;&lt;b&gt;Player animation and game phase updates&lt;/b&gt;&lt;/p&gt;&lt;p&gt;While the bricks should advance at a steady rate, we want the rest of the gameplay to be as fast as possible. I.e. when the player hits the left button, we want a frame generated to show the game state with the player one cell to the left immediately, not at the next brick animation frame. So, whenever a player updates or whenever the phase changes (e.g. we hit the reset button or if we do something like introducing a pause feature (PAST MVP CHRIS DON'T DO IT) we want to generate a frame and send it down. Think of it as a hardware interrupt firing in the middle of a loop in arduino.&amp;nbsp;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;" style="text;html=1;strokeColor=#9673a6;fillColor=#e1d5e7;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="xre7-Kg9TgMED7J3gTLh-1">
+                    <mxGeometry x="800" y="330" width="900" height="1230" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
