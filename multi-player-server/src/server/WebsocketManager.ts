@@ -1,12 +1,17 @@
 import WebSocket from "ws"
 import http from "http"
-import { EventEmitter } from "events";
+import { PlayerController } from "./PlayerController";
 import { v4 as uuid } from "uuid";
+import GameManager from "./GameManager";
+import { randomByte } from "./helpers/random-byte";
 
 enum messageTypeEnum {
   REGISTER_CLIENT = 0x04,
-  CONTROLLER_COMMAND,
-  GAME_FRAME
+  CLIENT_REGISTERED,
+  UPDATE_CREDENTIALS,
+  ADD_BRICK,
+  GAME_FRAME,
+  ERROR
 }
 
 enum clientTypeEnum {
@@ -21,40 +26,30 @@ export interface ClientMessage {
   client: WebSocket
 }
 
-class PlayerController {
-  private _id: string
-  private socket: WebSocket
-
-
-  constructor(socket: WebSocket) {
-    this.socket = socket
-    this._id = this.generateId()
-  }
-
-  generateId() {
-    return uuid()
-  }
-
-  get id() {
-    return this._id
-  }
+interface BrickControllerClient {
+  id: Uint8Array,
+  socket: WebSocket,
+  row: number
 }
 
-class WebsocketManager extends EventEmitter {
+class WebsocketManager {
 
   private websocketServer: WebSocket.Server
   private _verboseDebugging: boolean = false
+  private uuidByteLength = 4
 
   private gameBoardClients: WebSocket[] = []
-  private brickControllerClients: WebSocket[] = []
+  private brickControllerClients: BrickControllerClient[] = []
   private playerControllerClient: PlayerController | null = null
   private touchControllerClient: WebSocket[] = []
-  constructor(server: http.Server, verboseDebugging = false) {
-    super()
+  gameManager: GameManager;
+  constructor(server: http.Server, gameManager: GameManager, verboseDebugging = false) {
     this.websocketServer = new WebSocket.Server({ server })
+    this.gameManager = gameManager
     this._verboseDebugging = verboseDebugging
     this.addListeners()
 
+    console.log("WebsocketManager constructed")
   }
 
   // TODO: come back and define the specific message types
@@ -65,10 +60,8 @@ class WebsocketManager extends EventEmitter {
     })
   }
 
-
   private addListeners() {
     this.websocketServer.on("connection", (socket) => {
-      this.emit("socket-connected")
       console.log("new socket connected")
       socket.on("error", this.handleError)
       socket.on("close", this.handleClose)
@@ -77,83 +70,138 @@ class WebsocketManager extends EventEmitter {
     })
   }
 
+
+  // * Client -> Server message structure:
+  // ^         | 7 6 5 4 3 2 1 0 |
+  // ^ byte 1: | x x x x x x x x | client type
+  // ^ byte 2: | x x x x x x x x | message type
+  // ^ byte 3: | x x x x x x x x | UUID
+  // ^ byte 4: | x x x x x x x x | UUID
+  // ^ byte 5: | x x x x x x x x | UUID
+  // ^ byte 6: | x x x x x x x x | UUID
+  // ! byte 7: | x x x x x x x x | payload length // consider adding
+  // ^ byte n: | ? ? ? ? ? ? ? ? | payload
   private handleMessage(data: WebSocket.Data, socket: WebSocket) {
+    console.log("============================")
     console.log("Got a message from a client:")
     console.log(data)
-    if (data instanceof Buffer) {
+
+    try {
+
+      if (!(data instanceof Buffer)) {
+        // ! Note this check and throw is just b/c I'm making things difficult on myself for this demo. 
+        throw new Error("Invalid message data type")
+      }
+
       const { messageType, clientType, payload } = this.parseMessage(data)
+
       switch (messageType) {
         case messageTypeEnum.REGISTER_CLIENT:
           this.registerClient(clientType, socket)
           break
-        case messageTypeEnum.CONTROLLER_COMMAND:
-          this.handleControllerCommand(clientType, payload)
+        case messageTypeEnum.ADD_BRICK:
+          console.log("----> BRICK COMMAND!!")
+
+          this.validateClientId(data, socket)
+          const client = this.getStoredBrickController(this.getIdFromMessageData(data))
+          if (client) {
+            this.handleAddBrickCommand(payload, client)
+          }
           break
+
         default:
-          console.log(`!!! message has unknown messageType: ${messageType} !!!`)
+          console.log(`==> message has unknown messageType: ${messageType} <==`)
           console.log("data:")
           console.log(data)
       }
-    } else {
-      console.log("Incorrect data type")
-      console.log(typeof data)
+
+    } catch (error) {
+      console.log("Error in message handling:")
+      console.log(error)
+      let errorMessageArray = error.split("")
+      let errorLength = errorMessageArray.length
+      socket.send(Uint8Array.from([
+        messageTypeEnum.ERROR,
+        errorLength,
+        ...errorMessageArray
+      ]))
     }
-
-    // * Message structure:
-    // ^         | 7 6 5 4 3 2 1 0 |
-    // ^ byte 1: | x x x x m m c c | where `m` is messageType and `c` is clientType
-    // ^ byte n: | ? ? ? ? ? ? ? ? | the rest of the data, no specific length atm (though should we add one? does it matter?)
-    // ^ ]
-    // * If it doesn't fit this format, reject with error message
-
-
-
-    const payload: ClientMessage = { data, client: socket }
-    this.emit("client-message", payload) // * and now when we fire `this.emit`, it's from the WebsocketManager
   }
-  handleControllerCommand(clientType: number, payload: Buffer) {
-    // * if it's a player controller and payload has correct controller id/password/whatever, tell game manager to update player position
-    // * if it's the brick controller, grab the row number from the payload and tell game manager to update
+  validateClientId(data: Buffer, socket: WebSocket) {
+    const id = this.getIdFromMessageData(data)
+    const storedController = this.getStoredBrickController(id)
+
+    if (!storedController) {
+      throw new Error("Unable to find a brick controller with this id.")
+    }
+    if (storedController.socket !== socket) {
+      throw new Error("Stored controller doesn't match the socket that sent the message.")
+    }
+  }
+
+  // TODO: pull all message data parsing out to it's own utility class
+  getIdFromMessageData(data: Buffer) {
+    // * with the current message structure, the UUID are 4 the bytes 
+    // * starting at index 2 
+    return data.slice(2, 6)
+  }
+
+  private getStoredBrickController(id: Uint8Array): BrickControllerClient | undefined {
+    return this.brickControllerClients
+      .find(controller => Buffer.compare(controller.id, id) == 0)
+  }
+
+
+  handleAddBrickCommand(payload: Uint8Array, controller: BrickControllerClient) {
+    // * get the row
+    // * get the color
+
+    const row = controller.row
+    const color = payload
+
+    console.log(`row: ${row}`)
+    process.stdout.write(`brick color:`)
+    console.log(color)
+
+    // * notify game manager
   }
 
   private parseMessage(data: Buffer) {
-
-    function getClientType(byte: number): clientTypeEnum {
-      const clientMask = 0b00000011
-      return clientMask & byte
+    function extractUuid(data: Buffer, uuidByteLength: number) {
+      let buffer = new ArrayBuffer(uuidByteLength)
+      let view = new Uint8Array(buffer)
+      for (let i = 0; i < uuidByteLength; i++) {
+        view[i] = data[i + 2]
+      }
+      return buffer
     }
 
-    function getMessageType(byte: number) {
-      const messageMask = 0b001100
-      return messageMask & byte
-    }
+    const clientType = data[0] as clientTypeEnum
+    const messageType = data[1] as messageTypeEnum
 
-    console.log("---> message parsing!!:")
+    const uuid = extractUuid(data, this.uuidByteLength)
 
-    let firstByte = data.slice(0, 7)[0]
+    // TODO: 
+    // * instead of slicing till the end, slice based on the payload size data provided in the value in the data
+    const payload = data.slice(2 + this.uuidByteLength)
 
     if (this._verboseDebugging) {
-      process.stdout.write("firstByte: ")
-      console.log(firstByte.toString(2))
-    }
+      console.log("---> message parsing:")
 
-    const clientType = getClientType(firstByte)
-
-    if (this._verboseDebugging) {
       process.stdout.write("clientType: ")
       console.log(clientTypeEnum[clientType])
-    }
 
-
-    const messageType = getMessageType(firstByte)
-
-    if (this._verboseDebugging) {
       process.stdout.write("messageType: ")
       console.log(messageTypeEnum[messageType])
+
+      process.stdout.write("controllerId: ")
+      console.log(uuid)
+
+      process.stdout.write("payload: ")
+      console.log(payload)
     }
 
 
-    const payload = data.slice(2)
 
     return { clientType, messageType, payload }
   }
@@ -170,11 +218,35 @@ class WebsocketManager extends EventEmitter {
         console.log("player controller");
         this.registerPlayerController(socket);
         break
+      case clientTypeEnum.BRICK_CONTROLLER:
+        console.log("brick controller")
+        this.registerBrickController(socket)
+        break
       // TODO: touch controller
-      // TODO: brick controller
     }
   }
 
+  private registerBrickController(socket: WebSocket) {
+    const id = randomByte(this.uuidByteLength)
+    const idView = new Uint8Array(id)
+
+    const row = this.gameManager.getNextRow()
+    this.brickControllerClients.push({ id: idView, socket, row })
+
+    console.log("Sending registration information:")
+    console.log({ id, row })
+
+    const buffer = new ArrayBuffer(2 + this.uuidByteLength)
+    const messageView = new Uint8Array(buffer)
+
+    messageView[0] = messageTypeEnum.CLIENT_REGISTERED
+    messageView[1] = row
+    for (let i = 0; i < this.uuidByteLength; i++) {
+      messageView[i + 2] = idView[i]
+    }
+    socket.send(messageView)
+
+  }
   private registerGameBoard(socket: WebSocket) {
     this.gameBoardClients.push(socket);
   }

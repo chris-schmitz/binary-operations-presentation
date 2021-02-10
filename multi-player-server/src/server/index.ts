@@ -13,19 +13,14 @@ const port = 3000
 // * websockets and a static page and maybe a simple ajax request or two, considerer
 // * ripping out express
 const app = express()
-const webroot = join(__dirname, "..", "..", "public")
+const webroot = join(__dirname, "..", "public")
 const server = http.createServer(app)
 
-// app.use(express.static(webroot))
-console.log('test')
+app.use(express.static(webroot))
 
+const manager = new GameManager(true)
+const socketManager = new WebsocketManager(server, manager, true)
 
-// const socketManager = new WebsocketManager(server)
-// const manager = new GameManager(socketManager)
-
-app.get('/', (request: express.Request, response: express.Response) => {
-  response.send('It worked??!!!')
-})
 
 server.listen(port, () => {
   console.log(`Listening on port ${port}`)

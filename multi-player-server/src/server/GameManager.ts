@@ -1,43 +1,22 @@
 import WebsocketManager from "./WebsocketManager"
 import { ClientMessage } from "./WebsocketManager";
+import { EventEmitter } from "events";
 
-class GameManager {
+class GameManager extends EventEmitter {
 
   private gameState: number[] = []
-  private socketManager: WebsocketManager
+  private verboseDebuggng: boolean;
 
-  constructor(socketManager: WebsocketManager) {
-    this.socketManager = socketManager
+  private nextAvailableRow = 0
 
-    this.socketManager.on("socket-connected", () => {
-      console.log("A new socket connected!!!!")
-    })
-    this.socketManager.on("client-message", (payload: ClientMessage) => {
-      console.log("Game received message payload with data:")
-      console.log(payload.data)
-      this.socketManager.sendToAllClients(payload.data)
-    })
-
-
-    let fakeData = 0xFF
-    while (fakeData !== 0) {
-      this.gameState.push(fakeData)
-      fakeData >>= 1
-    }
+  constructor(verboseDebugging = false) {
+    super();
+    this.verboseDebuggng = verboseDebugging
   }
 
-
-  public sendState() {
-    // TODO: refactor consideration
-    // * Look how far we're reaching into a different class. This is what Jon was describing as a greedy
-    // * abstraction. Go back and wrap the websocket manager in it's own class and make a "send to clients"
-    // * method. 
-    this.socketManager.sendToAllClients("hey all")
-  }
-
-  private handleClientMessage(payload: ClientMessage) {
-    console.log("We got a client message event! ")
-    this.sendState()
+  getNextRow() {
+    // TODO: how do we want to handle freed up rows when a client disconnects??
+    return this.nextAvailableRow++
   }
 }
 
