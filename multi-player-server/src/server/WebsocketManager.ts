@@ -2,7 +2,7 @@ import WebSocket from "ws"
 import http from "http"
 import { PlayerController } from "./PlayerController";
 import { v4 as uuid } from "uuid";
-import GameManager from "./GameManager";
+import GameManager, { TICK } from "./GameManager";
 import { randomByte } from "./helpers/random-byte";
 
 enum messageTypeEnum {
@@ -50,6 +50,10 @@ class WebsocketManager {
     this.addListeners()
 
     console.log("WebsocketManager constructed")
+
+    console.log("Starting brick animation")
+    this.gameManager.begin()
+
   }
 
   // TODO: come back and define the specific message types
@@ -67,6 +71,19 @@ class WebsocketManager {
       socket.on("close", this.handleClose)
 
       socket.on("message", message => this.handleMessage(message, socket))
+
+      this.gameManager.on(TICK, this.sendGameFrame.bind(this))
+    })
+  }
+  sendGameFrame(frame: Uint8Array) {
+    console.log("frame")
+    this.sendToAllGameBoards(frame)
+    // * inform controllers?
+  }
+  sendToAllGameBoards(frame: Uint8Array) {
+    this.gameBoardClients.forEach(socket => {
+      console.log("send")
+      socket.send(frame)
     })
   }
 
@@ -162,6 +179,7 @@ class WebsocketManager {
     console.log(`row: ${row}`)
     process.stdout.write(`brick color:`)
     console.log(color)
+    this.gameManager.addBrick(row, color)
 
     // * notify game manager
   }

@@ -1,19 +1,7 @@
-
 let websocketServerUrl = "ws://localhost:3000"
 // let websocketServerUrl = "ws://cs-touchscreen.local:3001"
 
 let socketManager = null
-
-// document.querySelector('button')?.addEventListener('click', () => {
-//   const type = 0x1
-//   const rowToAddBrick = 0x0a
-
-//   const controllerPayload = new Uint8Array(2)
-//   controllerPayload[0] = type
-//   controllerPayload[1] = rowToAddBrick
-
-//   socket.send(controllerPayload)
-// })
 
 enum messageTypeEnum {
   REGISTER_CLIENT = 0x04,
