@@ -1,10 +1,14 @@
 const webpack = require('webpack')
 const path = require('path')
+const CopyPlugin = require('copy-webpack-plugin')
+
+const brickControllerDirectoryName = 'brick-controller'
+const gameBoardDirectoryName = 'gameboard'
 
 const config = {
   entry: {
-    gameboard: './brick-controller/index.ts',
-    controller: './game-board/index.ts',
+    'brick-controller': `./${brickControllerDirectoryName}/index.ts`,
+    gameboard: `./${gameBoardDirectoryName}/index.ts`,
   },
 
   output: {
@@ -29,6 +33,26 @@ const config = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        {
+          from: `./${brickControllerDirectoryName}`,
+          to: 'brick-controller',
+          globOptions: {
+            ignore: ['**/*.ts'],
+          },
+        },
+        {
+          from: `./${gameBoardDirectoryName}`,
+          to: 'gameboard',
+          globOptions: {
+            ignore: ['**/*.ts'],
+          },
+        },
+      ],
+    }),
+  ],
 }
 
 module.exports = config

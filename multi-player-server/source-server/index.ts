@@ -14,6 +14,7 @@ const port = 3000
 // * ripping out express
 const app = express()
 const webroot = join(__dirname, "..", "public")
+console.log(webroot)
 const server = http.createServer(app)
 
 app.use(express.static(webroot))
