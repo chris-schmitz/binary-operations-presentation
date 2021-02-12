@@ -1,34 +1,11 @@
-let websocketServerUrl = "ws://localhost:3000"
-// let websocketServerUrl = "ws://cs-touchscreen.local:3001"
+import { clientTypeEnum, messageTypeEnum } from "../common/Enumerables";
+import { serverHostUrl } from "../common/config.json";
+import ClientMessageBuilder from "../common/ClientMessageBuilder";
+import { RegisteredClientMessage, ServerResponse, BrickColor } from "../common/Interfaces";
+
+let websocketServerUrl = `ws://${serverHostUrl}`
 
 
-enum messageTypeEnum {
-  REGISTER_CLIENT = 0x04,
-  CLIENT_REGISTERED,
-  UPDATE_CREDENTIALS,
-  ADD_BRICK,
-  GAME_FRAME,
-}
-
-
-enum clientTypeEnum {
-  BRICK_CONTROLLER = 0x02,
-}
-
-interface ServerResponse {
-  messageType: messageTypeEnum,
-}
-
-interface RegisteredClientMessage extends ServerResponse {
-  id: ArrayBuffer,
-  row: number
-}
-
-interface BrickColor {
-  red: number,
-  green: number
-  blue: number
-}
 
 class WebsocketClientManager {
 
@@ -200,32 +177,6 @@ class WebsocketClientManager {
   }
 }
 
-class ClientMessageBuilder {
-  clientType: clientTypeEnum
-  id: Uint8Array | null
-
-  constructor(clientType: clientTypeEnum) {
-    this.clientType = clientType
-    this.id = null
-  }
-
-  public setId(id: Uint8Array) {
-    this.id = id
-  }
-
-  public build(messageType: messageTypeEnum, payload: Uint8Array) {
-    if (!this.id) {
-      throw new Error("The ClientMessage helper class doesn't have an ID assigned")
-    }
-
-    return Uint8Array.from([
-      this.clientType,
-      messageType,
-      ...this.id,
-      ...payload
-    ])
-  }
-}
 
 
 export { WebsocketClientManager, ClientMessageBuilder, clientTypeEnum, websocketServerUrl }

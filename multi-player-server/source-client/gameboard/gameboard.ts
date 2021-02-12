@@ -1,20 +1,11 @@
 
-// const websocketServerUrl = 'ws://cs-touchscreen.local:3001'
-let serverUrl = 'ws://localhost:3000'
+import { serverHostUrl } from "../common/config.json";
+import { messageTypeEnum, clientTypeEnum } from "../common/Enumerables";
+import ClientMessageBuilder from "../common/ClientMessageBuilder";
+
+
+let serverUrl = `ws://${serverHostUrl}`
 const connectionTimeoutDuration = 1000
-
-enum messageTypeEnum {
-  REGISTER_CLIENT = 0x04,
-  CLIENT_REGISTERED,
-  UPDATE_CREDENTIALS,
-  ADD_BRICK,
-  GAME_FRAME,
-}
-
-
-enum clientTypeEnum {
-  BRICK_CONTROLLER = 0x02,
-}
 
 
 class StateRenderer {
@@ -142,32 +133,5 @@ class StateRenderer {
   }
 }
 
-
-class ClientMessageBuilder {
-  clientType: clientTypeEnum
-  id: Uint8Array | null
-
-  constructor(clientType: clientTypeEnum) {
-    this.clientType = clientType
-    this.id = null
-  }
-
-  public setId(id: Uint8Array) {
-    this.id = id
-  }
-
-  public build(messageType: messageTypeEnum, payload: Uint8Array) {
-    if (!this.id) {
-      throw new Error("The ClientMessage helper class doesn't have an ID assigned")
-    }
-
-    return Uint8Array.from([
-      this.clientType,
-      messageType,
-      ...this.id,
-      ...payload
-    ])
-  }
-}
 
 export { StateRenderer }

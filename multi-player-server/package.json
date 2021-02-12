@@ -4,18 +4,13 @@
   "description": "A websocket driven multi-player server for the binary operations talk ",
   "main": "dist/server/index.js",
   "scripts": {
+    "start": "node dist/server/index.js",
     "build": "npm run build:clients & npm run build:server",
     "build:server": "cd source-server && npm run build",
     "build:clients": "cd source-client && npm run build",
-    "start": "node dist/server/index.js",
     "watch": "npm run watch:server & npm run watch:clients",
     "watch:server": "cd source-server && npm run watch",
-    "watch:clients": "cd source-client && npm run watch",
-    "dev": "tsc-watch --onSuccess 'npm run sync&host'",
-    "sync&host": "npm run rsync:public && npm run host",
-    "kill-port": "npx kill-port 3000",
-    "host": "npm run kill-port && node ./dist/server/index.js",
-    "rsync:public": "rsync -avzhP --exclude '*.ts' src/public/* dist/public"
+    "watch:clients": "cd source-client && npm run watch"
   },
   "repository": {
     "type": "git",
