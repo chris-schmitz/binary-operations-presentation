@@ -4,22 +4,23 @@ import { PlayerController } from "./PlayerController";
 import { v4 as uuid } from "uuid";
 import GameManager, { TICK } from "./GameManager";
 import { randomByte } from "./helpers/random-byte";
+import { clientTypeEnum, messageTypeEnum } from "../project-common/Enumerables";
 
-enum messageTypeEnum {
-  REGISTER_CLIENT = 0x04,
-  CLIENT_REGISTERED,
-  UPDATE_CREDENTIALS,
-  ADD_BRICK,
-  GAME_FRAME,
-  ERROR
-}
+// enum messageTypeEnum {
+//   REGISTER_CLIENT = 0x04,
+//   CLIENT_REGISTERED,
+//   UPDATE_CREDENTIALS,
+//   ADD_BRICK,
+//   GAME_FRAME,
+//   ERROR
+// }
 
-enum clientTypeEnum {
-  GAMEBOARD = 0x01,
-  BRICK_CONTROLLER,
-  PLAYER_CONTROLLER,
-  TOUCH_CONTROLLER
-}
+// enum clientTypeEnum {
+//   GAMEBOARD = 0x01,
+//   BRICK_CONTROLLER,
+//   PLAYER_CONTROLLER,
+//   TOUCH_CONTROLLER
+// }
 
 export interface ClientMessage {
   data: WebSocket.Data,

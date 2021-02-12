@@ -1,4 +1,4 @@
-import { clientTypeEnum, messageTypeEnum } from "../common/Enumerables";
+import { clientTypeEnum, messageTypeEnum } from "../../project-common/Enumerables";
 import { serverHostUrl } from "../common/config.json";
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
 import { RegisteredClientMessage, ServerResponse, BrickColor } from "../common/Interfaces";

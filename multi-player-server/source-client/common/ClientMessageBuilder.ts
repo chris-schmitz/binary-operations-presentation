@@ -1,4 +1,4 @@
-import { clientTypeEnum, messageTypeEnum } from "./Enumerables";
+import { clientTypeEnum, messageTypeEnum } from "../../project-common/Enumerables";
 
 class ClientMessageBuilder {
   clientType: clientTypeEnum

@@ -1,7 +1,7 @@
 
-import { serverHostUrl } from "../common/config.json";
-import { messageTypeEnum, clientTypeEnum } from "../common/Enumerables";
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
+import { serverHostUrl } from "../common/config.json";
+import { messageTypeEnum, clientTypeEnum } from "../../project-common/Enumerables";
 
 
 let serverUrl = `ws://${serverHostUrl}`
@@ -20,6 +20,11 @@ class StateRenderer {
   columns = 8
   animationInterval = 100
   gameFrames = []
+  messageBuilder: ClientMessageBuilder;
+
+  constructor(messageBuilder: ClientMessageBuilder) {
+    this.messageBuilder = messageBuilder
+  }
 
   async initalize() {
     try {

@@ -1,4 +1,4 @@
-import { messageTypeEnum } from "./Enumerables";
+import { messageTypeEnum } from "../../project-common/Enumerables";
 
 export interface ServerResponse {
   messageType: messageTypeEnum,
