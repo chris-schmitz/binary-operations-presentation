@@ -135,13 +135,14 @@ class WebsocketManager {
     } catch (error) {
       console.log("Error in message handling:")
       console.log(error)
-      let errorMessageArray = error.split("")
-      let errorLength = errorMessageArray.length
-      socket.send(Uint8Array.from([
-        messageTypeEnum.ERROR,
-        errorLength,
-        ...errorMessageArray
-      ]))
+      // TODO: come back and standardize errors
+      // let errorMessageArray = error.split("")
+      // let errorLength = errorMessageArray.length
+      // socket.send(Uint8Array.from([
+      //   messageTypeEnum.ERROR,
+      //   errorLength,
+      //   ...errorMessageArray
+      // ]))
     }
   }
   validateClientId(data: Buffer, socket: WebSocket) {

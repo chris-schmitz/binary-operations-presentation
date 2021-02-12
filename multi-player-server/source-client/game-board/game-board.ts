@@ -1,13 +1,28 @@
-const websocketServerUrl = 'ws://cs-touchscreen.local:3001'
-// const websocketServerUrl = 'ws://localhost:3000'
+
+// const websocketServerUrl = 'ws://cs-touchscreen.local:3001'
+let serverUrl = 'ws://localhost:3000'
 const connectionTimeoutDuration = 1000
 
+enum messageTypeEnum {
+  REGISTER_CLIENT = 0x04,
+  CLIENT_REGISTERED,
+  UPDATE_CREDENTIALS,
+  ADD_BRICK,
+  GAME_FRAME,
+}
+
+
+enum clientTypeEnum {
+  BRICK_CONTROLLER = 0x02,
+}
+
+
 class StateRenderer {
-  connection = null
+  connection: WebSocket | null = null
   reconnectAttemptTotal = 10
   reconnectionAttemptCount = 0
 
-  gridElement = null
+  gridElement: HTMLTableSectionElement | null = null
 
   // * Hardcoding to 8x8 so it works on the physical matricies
   rows = 8
@@ -33,7 +48,7 @@ class StateRenderer {
 
   populateGrid() {
     for (let rowIterator = 0; rowIterator < this.rows; rowIterator++) {
-      this.gridElement.appendChild(this.createARow())
+      this.gridElement?.appendChild(this.createARow())
     }
   }
 
@@ -41,7 +56,7 @@ class StateRenderer {
     const row = document.createElement('tr')
     for (let columnIterator = 0; columnIterator < this.columns; columnIterator++) {
       const cell = document.createElement('td')
-      cell.setAttribute('column', columnIterator)
+      cell.setAttribute('column', columnIterator.toString())
       row.appendChild(cell)
     }
     return row
@@ -49,7 +64,7 @@ class StateRenderer {
 
   connectToWebsocketServer() {
     return new Promise((resolve, reject) => {
-      const socket = new WebSocket(websocketServerUrl)
+      const socket = new WebSocket(serverUrl)
       console.log(`Websocket server connection attempt: ${this.reconnectionAttemptCount}`)
 
       setTimeout(() => {
@@ -65,15 +80,15 @@ class StateRenderer {
 
         console.log('Connected to websocket server.')
         this.connection = socket
-        resolve()
+        resolve(true)
       }, connectionTimeoutDuration)
     })
   }
 
   attachListeners() {
-    this.connection.addEventListener('error', this.errorHandler.bind(this))
-    this.connection.addEventListener('close', this.closeHandler.bind(this))
-    this.connection.addEventListener('message', this.messageHandler.bind(this))
+    this.connection?.addEventListener('error', this.errorHandler.bind(this))
+    this.connection?.addEventListener('close', this.closeHandler.bind(this))
+    this.connection?.addEventListener('message', this.messageHandler.bind(this))
   }
 
   registerAsGameBoard() {
@@ -81,10 +96,10 @@ class StateRenderer {
     // * I don't think we need a UUID per board, they should all always get the same message
     // * controllers should have uuids
     // * and we should have block controllers vs a player controller
-    this.connection.send("I'm a game board.")
+    this.connection?.send("I'm a game board.")
   }
 
-  async messageHandler(message) {
+  async messageHandler(message: MessageEvent) {
     // TODO: add in conditional checks for data type
     console.log('received a message from the server')
     console.log(message)
@@ -97,22 +112,22 @@ class StateRenderer {
     }
   }
 
-  renderStateFrame(uint8Array) {
-    const bitValue = (bit) => 1 << bit
+  renderStateFrame(uint8Array: Uint8Array) {
+    const bitValue = (bit: number) => 1 << bit
 
     for (let row = 0; row < 8; row++) {
       for (let bitPlace = 0; bitPlace < 8; bitPlace++) {
         let cellState = uint8Array[row] & bitValue(bitPlace)
         if (cellState != 0) {
-          this.gridElement.rows[row].cells[bitPlace].setAttribute('paint', true)
+          this.gridElement?.rows[row].cells[bitPlace].setAttribute('paint', true.toString())
         } else {
-          this.gridElement.rows[row].cells[bitPlace].setAttribute('paint', false)
+          this.gridElement?.rows[row].cells[bitPlace].setAttribute('paint', false.toString())
         }
       }
     }
   }
 
-  closeHandler(closeEvent) {
+  closeHandler(closeEvent: Event) {
     console.log("The socket's connection has closed. Attempting reconnect.")
     this.connectToWebsocketServer().catch((error) => {
       // TODO: refactor consideration
@@ -121,12 +136,38 @@ class StateRenderer {
     })
   }
 
-  errorHandler(errorEvent) {
+  errorHandler(errorEvent: Event) {
     console.error('The websocket client encountered an error:')
     console.log(errorEvent)
   }
 }
 
-const stateRenderer = new StateRenderer()
 
-document.addEventListener('readystatechange', stateRenderer.initalize())
+class ClientMessageBuilder {
+  clientType: clientTypeEnum
+  id: Uint8Array | null
+
+  constructor(clientType: clientTypeEnum) {
+    this.clientType = clientType
+    this.id = null
+  }
+
+  public setId(id: Uint8Array) {
+    this.id = id
+  }
+
+  public build(messageType: messageTypeEnum, payload: Uint8Array) {
+    if (!this.id) {
+      throw new Error("The ClientMessage helper class doesn't have an ID assigned")
+    }
+
+    return Uint8Array.from([
+      this.clientType,
+      messageType,
+      ...this.id,
+      ...payload
+    ])
+  }
+}
+
+export { StateRenderer }

@@ -1,7 +1,6 @@
 let websocketServerUrl = "ws://localhost:3000"
 // let websocketServerUrl = "ws://cs-touchscreen.local:3001"
 
-let socketManager = null
 
 enum messageTypeEnum {
   REGISTER_CLIENT = 0x04,
@@ -229,6 +228,4 @@ class ClientMessageBuilder {
 }
 
 
-socketManager = new WebsocketClientManager(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.BRICK_CONTROLLER))
-socketManager.setBrickColor({ red: 0xff, green: 0xff, blue: 0xff })
-socketManager.reconnect()
+export { WebsocketClientManager, ClientMessageBuilder, clientTypeEnum, websocketServerUrl }
