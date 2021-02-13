@@ -1,14 +1,13 @@
 
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
-import { serverHostUrl } from "../common/config.json";
-import { messageTypeEnum, clientTypeEnum } from "../../project-common/Enumerables";
+import { websocketServerUrl } from "project-common/config.json";
+import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
+import WebsocketClientManager from "../common/WebsocketClientManager";
 
 
-let serverUrl = `ws://${serverHostUrl}`
 const connectionTimeoutDuration = 1000
 
-
-class StateRenderer {
+class GameBoard extends WebsocketClientManager {
   connection: WebSocket | null = null
   reconnectAttemptTotal = 10
   reconnectionAttemptCount = 0
@@ -22,7 +21,8 @@ class StateRenderer {
   gameFrames = []
   messageBuilder: ClientMessageBuilder;
 
-  constructor(messageBuilder: ClientMessageBuilder) {
+  constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect = true) {
+    super(websocketUrl, clientTypeEnum.GAMEBOARD, messageBuilder, attemptReconnect)
     this.messageBuilder = messageBuilder
   }
 
@@ -60,7 +60,7 @@ class StateRenderer {
 
   connectToWebsocketServer() {
     return new Promise((resolve, reject) => {
-      const socket = new WebSocket(serverUrl)
+      const socket = new WebSocket(websocketServerUrl)
       console.log(`Websocket server connection attempt: ${this.reconnectionAttemptCount}`)
 
       setTimeout(() => {
@@ -88,17 +88,22 @@ class StateRenderer {
   }
 
   registerAsGameBoard() {
-    // TODO: consider how we should handle this.
-    // * I don't think we need a UUID per board, they should all always get the same message
-    // * controllers should have uuids
-    // * and we should have block controllers vs a player controller
-    this.connection?.send("I'm a game board.")
+    const message = this.messageBuilder.build(messageTypeEnum.CLIENT_REGISTERED)
+    this.connection?.send(message)
   }
 
   async messageHandler(message: MessageEvent) {
     // TODO: add in conditional checks for data type
     console.log('received a message from the server')
     console.log(message)
+
+    const uint8Array = new Uint8Array(await message.data.arrayBuffer())
+    switch (uint8Array[0]) {
+      case messageTypeEnum.CLIENT_REGISTERED:
+        console.log("client registered!")
+        this.storeRegistration(uint8Array)
+    }
+
     try {
       const buffer = await message.data.arrayBuffer()
       const uint8tArray = new Uint8Array(buffer)
@@ -139,4 +144,4 @@ class StateRenderer {
 }
 
 
-export { StateRenderer }
+export { GameBoard }

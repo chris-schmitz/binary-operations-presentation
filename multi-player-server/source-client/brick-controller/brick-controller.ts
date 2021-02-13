@@ -1,48 +1,38 @@
-import { clientTypeEnum, messageTypeEnum } from "../../project-common/Enumerables";
-import { serverHostUrl } from "../common/config.json";
-import ClientMessageBuilder from "../common/ClientMessageBuilder";
-import { RegisteredClientMessage, ServerResponse, BrickColor } from "../common/Interfaces";
+import { client } from "websocket";
+import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
+// import { clientTypeEnum, messageTypeEnum } from "../../project-common/Enumerables";
+import ClientMessageBuilder, { ClientRegisteredPayload } from "../common/ClientMessageBuilder";
+import { ServerResponse, BrickColor } from "../common/Interfaces";
+import WebsocketClientManager, { ReturnMessagePayloadType } from "../common/WebsocketClientManager"
 
-let websocketServerUrl = `ws://${serverHostUrl}`
-
-
-
-class WebsocketClientManager {
-
-  socket?: WebSocket
-  websocketUrl: string
-
-  attemptReconnect: boolean
+class BrickController extends WebsocketClientManager {
 
   verboseLogging: boolean
-
-  registerationInformation: {
-    row: number | null
-    id: Uint8Array | null
-  }
 
   brickColor: BrickColor = { red: 0xff, green: 0x00, blue: 0x00 }
 
   rowNumberElement: Element | null = null
   brickButtonElement: Element | null = null
-  messageBuilder: ClientMessageBuilder
 
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect = true, verboseLogging = true) {
-    this.websocketUrl = websocketUrl
-    this.attemptReconnect = attemptReconnect
+    super(websocketUrl, clientTypeEnum.BRICK_CONTROLLER, messageBuilder, attemptReconnect)
     this.verboseLogging = verboseLogging
-    this.messageBuilder = messageBuilder
 
-    this.registerationInformation = {
-      id: null,
-      row: null
-    }
+    this.addBrickControllerListeners()
+
+    this.addListener("socket-connected", () => {
+      this.activateControls()
+    })
 
     this.grabUiElements()
   }
-  public reconnect() {
-    this.socket = new WebSocket(this.websocketUrl)
-    this.addListeners()
+
+  public begin() {
+    this.setBrickColor({ red: 0xff, green: 0xff, blue: 0xff })
+    this.reconnect(() => {
+      this.addBrickControllerListeners()
+      // this.activateControls()
+    })
   }
 
   public setBrickColor(color: BrickColor) {
@@ -54,56 +44,50 @@ class WebsocketClientManager {
     this.brickButtonElement = document.querySelector("#brick-button")
   }
 
-  private registerClient() {
-    const buffer = new Uint8Array(new ArrayBuffer(2))
-    buffer[0] = clientTypeEnum.BRICK_CONTROLLER
-    buffer[1] = messageTypeEnum.REGISTER_CLIENT
-    this.socket?.send(buffer)
-  }
 
 
-  private addListeners() {
-    this.socket?.addEventListener("close", this.closeListener.bind(this))
-    this.socket?.addEventListener("open", this.openListener.bind(this))
-    this.socket?.addEventListener("error", this.errorListener.bind(this))
-    this.socket?.addEventListener("message", this.messageListener.bind(this))
+  private addBrickControllerListeners() {
+    console.log("Adding listeners")
+    // TODO: move these generic listeners to the base class and add hooks for adding more listeners from the subclasses
+    this.addMessageHandler(this.controllerMessageHandler.bind(this))
 
     this.brickButtonElement?.addEventListener("click", this.sendBrickCommand.bind(this))
   }
 
+
   public sendBrickCommand() {
+    debugger
     if (this.registerationInformation.id) {
 
       let brickColor = Uint8Array.from([this.brickColor.red, this.brickColor.green, this.brickColor.blue])
-      let view = this.messageBuilder.build(messageTypeEnum.ADD_BRICK, brickColor)
+      // let view = this.messageBuilder.build(messageTypeEnum.ADD_BRICK, brickColor)
 
-      console.log(view)
-      this.socket?.send(view)
+      this.sendMessage(messageTypeEnum.ADD_BRICK, brickColor)
     }
   }
 
-  private async messageListener(messageEvent: MessageEvent) {
-    if (this.verboseLogging) {
-      console.log("===> Message from the server <===")
-      console.log(`Message type: ${messageEvent.type}`)
-      console.log(`Message: ${messageEvent.data}`)
-      console.log("=================================")
-    }
+  private async controllerMessageHandler(messageArray: ReturnMessagePayloadType) {
+    // if (this.verboseLogging) {
+    //   console.log("===> Message from the server <===")
+    //   console.log(`Message type: ${messageArray.type}`)
+    //   console.log(`Message: ${messageArray.data}`)
+    //   console.log("=================================")
+    // }
 
-    const uint8Array = new Uint8Array(await messageEvent.data.arrayBuffer())
-    switch (uint8Array[0]) {
-      case messageTypeEnum.CLIENT_REGISTERED:
-        this.storeRegistration(uint8Array)
+    // debugger
+    // TODO: FIGURE OUT WHY THIS IS BEING CALLED TWICE ON REGISTER
+    switch (messageArray?.constructor) {
+      case ClientRegisteredPayload:
+        this.activateControls()
         break
+      // case messageTypeEnum.GAME_FRAME:
+      //   console.log("add game frame handler")
+      //   break
     }
   }
 
-  private storeRegistration(registerationInformation: Uint8Array) {
-    this.registerationInformation.row = registerationInformation[1]
-    this.registerationInformation.id = registerationInformation.slice(2, 6) // TODO: rip out after moving all messaging to the message builder
-    this.messageBuilder.setId(registerationInformation.slice(2, 6))
 
-
+  private activateControls() {
     if (this.rowNumberElement) {
       this.rowNumberElement.innerHTML = `Row: ${this.registerationInformation.row}`
       this.brickButtonElement?.classList.remove("disabled")
@@ -141,42 +125,8 @@ class WebsocketClientManager {
     if (this.verboseLogging) console.log(JSON.parse(json))
     return JSON.parse(json)
   }
-
-  private openListener(openEvent: any) {
-    if (this.verboseLogging) {
-      console.log("===> Websocket connection open. <===")
-      console.log(`Open target: ${openEvent.target}`)
-      console.log("====================================")
-
-      this.registerClient()
-    }
-  }
-
-  private closeListener(closeEvent: any) {
-    if (this.verboseLogging) {
-      console.log("===> Websocket connection closed. <===")
-      console.log(`Close was clean: ${closeEvent.wasClean}`)
-      console.log(`Close event code: ${closeEvent.code}`)
-      console.log(`Close event reason: ${closeEvent.reason}`)
-      console.log("======================================")
-    }
-
-    if (this.attemptReconnect) {
-      console.log("Attempting reconnect")
-      this.reconnect()
-    }
-  }
-
-  private errorListener(errorEvent: any) {
-    console.log("===> There was an error with the websocket connection <===")
-    console.log(`Error: ${errorEvent.error}`)
-    console.log(`Error type: ${errorEvent.type}`)
-    console.log(`Error message: ${errorEvent.message}`)
-    console.log("==========================================================")
-
-  }
 }
 
 
 
-export { WebsocketClientManager, ClientMessageBuilder, clientTypeEnum, websocketServerUrl }
+export { BrickController }

@@ -3,6 +3,11 @@
     "target": "es6",
     "module": "commonjs",
     "outDir": "../dist",
+    // "rootDir": "./",
+    "baseUrl": ".",
+    "paths": {
+      "project-common/*": ["../project-common/*"]
+    },
     "rootDirs": ["./", "../project-common/"],
     "strict": true,
     "moduleResolution": "node",

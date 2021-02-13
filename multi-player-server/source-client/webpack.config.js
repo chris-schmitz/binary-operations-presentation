@@ -32,6 +32,9 @@ const config = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    alias: {
+      'project-common': path.resolve(__dirname, '../project-common'),
+    },
   },
   plugins: [
     new CopyPlugin({

@@ -1,5 +1,7 @@
-import { WebsocketClientManager, ClientMessageBuilder, clientTypeEnum, websocketServerUrl } from "./brick-controller";
+import ClientMessageBuilder from "../common/ClientMessageBuilder";
+import { clientTypeEnum } from "../../project-common/Enumerables";
+import { websocketServerUrl } from "project-common/config.json";
+import { BrickController } from "./brick-controller";
 
-let socketManager = new WebsocketClientManager(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.BRICK_CONTROLLER))
-socketManager.setBrickColor({ red: 0xff, green: 0xff, blue: 0xff })
-socketManager.reconnect()
+let brickController = new BrickController(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.BRICK_CONTROLLER))
+brickController.begin()

@@ -1,9 +1,8 @@
-import { StateRenderer } from "./gameboard";
+import { GameBoard } from "./gameboard";
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
 import { messageTypeEnum, clientTypeEnum } from "../../project-common/Enumerables";
+import { websocketServerUrl } from "../../project-common/config.json";
 
-const builder = new ClientMessageBuilder(clientTypeEnum.GAMEBOARD)
+const gameBoard = new GameBoard(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.GAMEBOARD))
 
-const stateRenderer = new StateRenderer(builder)
-
-document.addEventListener('readystatechange', () => stateRenderer.initalize())
+document.addEventListener('readystatechange', () => gameBoard.initalize())

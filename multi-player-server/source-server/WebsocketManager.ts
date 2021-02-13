@@ -6,22 +6,6 @@ import GameManager, { TICK } from "./GameManager";
 import { randomByte } from "./helpers/random-byte";
 import { clientTypeEnum, messageTypeEnum } from "../project-common/Enumerables";
 
-// enum messageTypeEnum {
-//   REGISTER_CLIENT = 0x04,
-//   CLIENT_REGISTERED,
-//   UPDATE_CREDENTIALS,
-//   ADD_BRICK,
-//   GAME_FRAME,
-//   ERROR
-// }
-
-// enum clientTypeEnum {
-//   GAMEBOARD = 0x01,
-//   BRICK_CONTROLLER,
-//   PLAYER_CONTROLLER,
-//   TOUCH_CONTROLLER
-// }
-
 export interface ClientMessage {
   data: WebSocket.Data,
   client: WebSocket
