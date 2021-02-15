@@ -3,7 +3,7 @@ import http from "http"
 import { PlayerController } from "./PlayerController";
 import GameManager, { TICK } from "./GameManager";
 import { randomByte } from "./helpers/random-byte";
-import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
+import { clientTypeEnum, messageTypeEnum } from "../project-common/Enumerables";
 
 export interface ClientMessage {
   data: WebSocket.Data,
@@ -31,6 +31,9 @@ class WebsocketServerManager {
     this.websocketServer = new WebSocket.Server({ server })
     this.gameManager = gameManager
     this._verboseDebugging = verboseDebugging
+    console.log("adding game manager listener")
+    // TODO: move back to listeners
+
     this.addListeners()
 
     console.log("WebsocketManager constructed")
@@ -49,6 +52,8 @@ class WebsocketServerManager {
   }
 
   private addListeners() {
+    this.gameManager.on(TICK, this.sendGameFrame.bind(this))
+
     this.websocketServer.on("connection", (socket) => {
       console.log("new socket connected")
       socket.on("error", this.handleError)
@@ -56,11 +61,11 @@ class WebsocketServerManager {
 
       socket.on("message", message => this.handleMessage(message, socket))
 
-      this.gameManager.on(TICK, this.sendGameFrame.bind(this))
+      console.log("adding tick listener")
     })
   }
   sendGameFrame(frame: Uint8Array) {
-    console.log("frame")
+    console.log("sending frame")
     this.sendToAllGameBoards(frame)
     // * inform controllers?
   }

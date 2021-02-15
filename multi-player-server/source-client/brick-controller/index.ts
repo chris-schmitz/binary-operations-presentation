@@ -10,5 +10,7 @@ const reconnectConfig: ReconnectConfig = {
   totalAttempts: 100
 }
 
-let brickController = new BrickController(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.BRICK_CONTROLLER), reconnectConfig)
-brickController.begin()
+document.addEventListener("DOMContentLoaded", () => {
+  let brickController = new BrickController(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.BRICK_CONTROLLER), reconnectConfig)
+  brickController.begin()
+})

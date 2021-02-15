@@ -6,17 +6,11 @@
     // "inlineSourceMap": true,
     // "inlineSources": true,
     "outDir": "../dist/server",
-    // "rootDir": "./",
     "rootDirs": ["./", "../project-common/"],
-    "baseUrl": ".",
-    "paths": {
-      "project-common/*": ["../project-common/*"]
-    },
     "strict": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   }
 }

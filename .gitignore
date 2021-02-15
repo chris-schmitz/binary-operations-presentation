@@ -2,4 +2,4 @@
 credentials.h
 arduino.json
 c_cpp_properties.json
-*/.vscode/settings.json
+settings.json

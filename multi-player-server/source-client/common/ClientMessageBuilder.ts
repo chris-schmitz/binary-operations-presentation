@@ -31,7 +31,6 @@ class ClientMessageBuilder {
   }
 
   public static interpret(payload: Uint8Array) {
-    debugger
     switch (payload[0]) {
       case messageTypeEnum.CLIENT_REGISTERED:
         return new ClientRegisteredPayload(payload)

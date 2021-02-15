@@ -10,7 +10,7 @@
       "outFiles": ["${workspaceFolder}/dist/server/**/*.js", "!**/node_modules/**"],
       "preLaunchTask": "npm: build - source-server",
       "request": "launch",
-      "sourceMaps": true,
+      // "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"],
       "type": "pwa-node"
     }

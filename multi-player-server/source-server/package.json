@@ -7,7 +7,7 @@
     "build": "tsc --build tsconfig.json",
     "watch": "tsc --watch",
     "todo": "echo delete all npm scripts under this if they're no longer needed",
-    "start": "tsc && node dist/index.js",
+    "start": "node ../dist/server",
     "dev": "tsc-watch --onSuccess 'npm run sync&host'",
     "sync&host": "npm run rsync:public && npm run host",
     "kill-port": "npx kill-port 3000",

@@ -91,11 +91,9 @@ class WebsocketClientManager extends EventEmitter {
 
   private async generalMessageListener(message: MessageEvent) {
 
-    debugger
     const messageArray = ClientMessageBuilder.interpret(new Uint8Array(await message.data.arrayBuffer()))
 
     if (messageArray instanceof ClientRegisteredPayload) {
-      // if (messageArray[0] == messageTypeEnum.REGISTER_CLIENT) {
       this.storeRegistration(messageArray)
     }
     this.messageHandlers.forEach(handler => {

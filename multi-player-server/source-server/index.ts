@@ -13,8 +13,8 @@ const port = 3000
 // * websockets and a static page and maybe a simple ajax request or two, considerer
 // * ripping out express
 const app = express()
-const webroot = join(__dirname, "..", "public")
-console.log(webroot)
+const webroot = join(__dirname, "..", "..", "public")
+// const webroot = join(__dirname, "..", "public")
 const server = http.createServer(app)
 
 app.use(express.static(webroot))
