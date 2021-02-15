@@ -1,5 +1,5 @@
-import WebsocketManager from "./WebsocketManager"
-import { ClientMessage } from "./WebsocketManager";
+import WebsocketServerManager from "./WebsocketServerManager"
+import { ClientMessage } from "./WebsocketServerManager";
 import { EventEmitter } from "events";
 
 enum PlayPhaseEnum {

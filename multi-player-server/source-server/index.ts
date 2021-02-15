@@ -1,7 +1,7 @@
 import express from "express"
 import http from "http"
 import GameManager from "./GameManager"
-import WebsocketManager from "./WebsocketManager"
+import WebsocketServerManager from "./WebsocketServerManager"
 import { join } from "path"
 import { v4 as uuid } from "uuid";
 
@@ -20,7 +20,7 @@ const server = http.createServer(app)
 app.use(express.static(webroot))
 
 const manager = new GameManager(true)
-const socketManager = new WebsocketManager(server, manager, true)
+const socketManager = new WebsocketServerManager(server, manager, true)
 
 
 server.listen(port, () => {

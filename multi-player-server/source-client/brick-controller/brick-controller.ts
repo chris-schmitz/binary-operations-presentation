@@ -3,7 +3,7 @@ import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
 // import { clientTypeEnum, messageTypeEnum } from "../../project-common/Enumerables";
 import ClientMessageBuilder, { ClientRegisteredPayload } from "../common/ClientMessageBuilder";
 import { ServerResponse, BrickColor } from "../common/Interfaces";
-import WebsocketClientManager, { ReturnMessagePayloadType } from "../common/WebsocketClientManager"
+import WebsocketClientManager, { ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager"
 
 class BrickController extends WebsocketClientManager {
 
@@ -14,7 +14,7 @@ class BrickController extends WebsocketClientManager {
   rowNumberElement: Element | null = null
   brickButtonElement: Element | null = null
 
-  constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect = true, verboseLogging = true) {
+  constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect?: ReconnectConfig, verboseLogging = true) {
     super(websocketUrl, clientTypeEnum.BRICK_CONTROLLER, messageBuilder, attemptReconnect)
     this.verboseLogging = verboseLogging
 
@@ -56,11 +56,9 @@ class BrickController extends WebsocketClientManager {
 
 
   public sendBrickCommand() {
-    debugger
     if (this.registerationInformation.id) {
 
       let brickColor = Uint8Array.from([this.brickColor.red, this.brickColor.green, this.brickColor.blue])
-      // let view = this.messageBuilder.build(messageTypeEnum.ADD_BRICK, brickColor)
 
       this.sendMessage(messageTypeEnum.ADD_BRICK, brickColor)
     }
@@ -74,7 +72,6 @@ class BrickController extends WebsocketClientManager {
     //   console.log("=================================")
     // }
 
-    // debugger
     // TODO: FIGURE OUT WHY THIS IS BEING CALLED TWICE ON REGISTER
     switch (messageArray?.constructor) {
       case ClientRegisteredPayload:

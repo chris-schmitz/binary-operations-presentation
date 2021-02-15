@@ -1,5 +1,7 @@
 import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
 
+
+// TODO: CHANGED MY MIND -> RIP THIS OUT
 export class ClientRegisteredPayload {
   row: number
   id: Uint8Array
@@ -29,9 +31,15 @@ class ClientMessageBuilder {
   }
 
   public static interpret(payload: Uint8Array) {
+    debugger
     switch (payload[0]) {
       case messageTypeEnum.CLIENT_REGISTERED:
         return new ClientRegisteredPayload(payload)
+      case messageTypeEnum.GAME_FRAME:
+        // * I go back and forth on if we should deserialize the buffer or not
+        // * in general, but in this case when we're rendering out the game frame 
+        // * we should def just pass back the buffer for speed sake. 
+        return payload
     }
   }
 

@@ -1,10 +1,9 @@
 import WebSocket from "ws"
 import http from "http"
 import { PlayerController } from "./PlayerController";
-import { v4 as uuid } from "uuid";
 import GameManager, { TICK } from "./GameManager";
 import { randomByte } from "./helpers/random-byte";
-import { clientTypeEnum, messageTypeEnum } from "../project-common/Enumerables";
+import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
 
 export interface ClientMessage {
   data: WebSocket.Data,
@@ -17,7 +16,7 @@ interface BrickControllerClient {
   row: number
 }
 
-class WebsocketManager {
+class WebsocketServerManager {
 
   private websocketServer: WebSocket.Server
   private _verboseDebugging: boolean = false
@@ -277,4 +276,4 @@ class WebsocketManager {
 
 }
 
-export default WebsocketManager
+export default WebsocketServerManager

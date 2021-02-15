@@ -4,5 +4,6 @@ import { messageTypeEnum, clientTypeEnum } from "../../project-common/Enumerable
 import { websocketServerUrl } from "../../project-common/config.json";
 
 const gameBoard = new GameBoard(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.GAMEBOARD))
+gameBoard.begin()
 
 document.addEventListener('readystatechange', () => gameBoard.initalize())
