@@ -3,7 +3,7 @@ import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
 // import { clientTypeEnum, messageTypeEnum } from "../../project-common/Enumerables";
 import ClientMessageBuilder, { ClientRegisteredPayload } from "../common/ClientMessageBuilder";
 import { ServerResponse, BrickColor } from "../common/Interfaces";
-import WebsocketClientManager, { ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager"
+import WebsocketClientManager, { ClientEvents, ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager"
 
 class BrickController extends WebsocketClientManager {
 
@@ -12,27 +12,39 @@ class BrickController extends WebsocketClientManager {
   brickColor: BrickColor = { red: 0xff, green: 0x00, blue: 0x00 }
 
   rowNumberElement: Element | null = null
-  brickButtonElement: Element | null = null
+  brickButtonElement: HTMLButtonElement | null = null
+  colorPicker: Element | null = null
 
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect?: ReconnectConfig, verboseLogging = true) {
     super(websocketUrl, clientTypeEnum.BRICK_CONTROLLER, messageBuilder, attemptReconnect)
     this.verboseLogging = verboseLogging
 
-    this.addBrickControllerListeners()
-
-    this.addListener("socket-connected", () => {
-      this.activateControls()
-    })
-
     this.grabUiElements()
   }
 
   public begin() {
-    this.setBrickColor({ red: 0xff, green: 0xff, blue: 0xff })
+    this.setBrickColor({ red: 0xff, green: 0x00, blue: 0xff })
     this.reconnect(() => {
       this.addBrickControllerListeners()
-      // this.activateControls()
     })
+  }
+
+  private updateBrickColor(changeEvent: Event) {
+    debugger
+    const target = changeEvent.target as HTMLInputElement
+    let hexColor = parseInt(target.value.slice(1, target.value.length), 16) // ? chop off that `#` from the string
+    const blue = hexColor & 0xFF
+    hexColor >>= 8
+    const green = hexColor & 0xFF
+    hexColor >>= 8
+    const red = hexColor & 0xFF
+    this.setBrickColor({ red, green, blue })
+    this.setButtonColor({ red, green, blue })
+  }
+  setButtonColor(color: BrickColor) {
+    if (!this.brickButtonElement) return
+    this.brickButtonElement.style.backgroundColor = `rgb(${color.red}, ${color.green}, ${color.blue})`
+    throw new Error("Method not implemented.");
   }
 
   public setBrickColor(color: BrickColor) {
@@ -42,16 +54,26 @@ class BrickController extends WebsocketClientManager {
   private grabUiElements() {
     this.rowNumberElement = document.querySelector("#row-number")
     this.brickButtonElement = document.querySelector("#brick-button")
+    this.colorPicker = document.querySelector("#color-picker")
   }
 
 
 
   private addBrickControllerListeners() {
     console.log("Adding listeners")
-    // TODO: move these generic listeners to the base class and add hooks for adding more listeners from the subclasses
-    this.addMessageHandler(this.controllerMessageHandler.bind(this))
+    this.addListener(ClientEvents.CLIENT_REGISTRATION_COMPLETE.toString(), this.activateControls.bind(this))
+
+    // TODO: refactor consideration
+    // * we're never going to see the frame on the brick-controller side because on the server side we're only 
+    // * sending the frames to the game boards. That said, there's some info that could be useful, so post MVP (laughs)
+    // * consider whether or not we should send the frames to the other controllers as well. 
+    this.addListener(ClientEvents.GAME_FRAME.toString(), (message) => {
+      console.log("got a game frame")
+      console.log(message)
+    })
 
     this.brickButtonElement?.addEventListener("click", this.sendBrickCommand.bind(this))
+    this.colorPicker?.addEventListener("change", this.updateBrickColor.bind(this))
   }
 
 
@@ -64,24 +86,18 @@ class BrickController extends WebsocketClientManager {
     }
   }
 
-  private async controllerMessageHandler(messageArray: ReturnMessagePayloadType) {
-    // if (this.verboseLogging) {
-    //   console.log("===> Message from the server <===")
-    //   console.log(`Message type: ${messageArray.type}`)
-    //   console.log(`Message: ${messageArray.data}`)
-    //   console.log("=================================")
-    // }
+  // private async controllerMessageHandler(messageArray: ReturnMessagePayloadType) {
 
-    // TODO: FIGURE OUT WHY THIS IS BEING CALLED TWICE ON REGISTER
-    switch (messageArray?.constructor) {
-      case ClientRegisteredPayload:
-        this.activateControls()
-        break
-      // case messageTypeEnum.GAME_FRAME:
-      //   console.log("add game frame handler")
-      //   break
-    }
-  }
+  //   // TODO: FIGURE OUT WHY THIS IS BEING CALLED TWICE ON REGISTER
+  //   switch (messageArray?.constructor) {
+  //     case ClientRegisteredPayload:
+  //       this.activateControls()
+  //       break
+  //     // case messageTypeEnum.GAME_FRAME:
+  //     //   console.log("add game frame handler")
+  //     //   break
+  //   }
+  // }
 
 
   private activateControls() {

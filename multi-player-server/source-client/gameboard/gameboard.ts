@@ -2,7 +2,7 @@
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
 import { websocketServerUrl } from "project-common/config.json";
 import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
-import WebsocketClientManager, { ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager";
+import WebsocketClientManager, { ClientEvents, ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager";
 
 
 const connectionTimeoutDuration = 1000
@@ -21,6 +21,7 @@ class GameBoard extends WebsocketClientManager {
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, reconnectConfig?: ReconnectConfig) {
     super(websocketUrl, clientTypeEnum.GAMEBOARD, messageBuilder, reconnectConfig)
     this.messageBuilder = messageBuilder
+    this.addListener(ClientEvents.GAME_FRAME.toString(), this.renderStateFrame.bind(this))
   }
 
 
@@ -65,27 +66,52 @@ class GameBoard extends WebsocketClientManager {
     // * we'll need to change this up after ripping out the ReturnMessagePayloadType stuff
     if (message instanceof Uint8Array) {
 
-      const justRows = message.slice(5, 13)
+      const justRows = message.slice(5, message.length)
 
-      this.renderStateFrame(justRows)
+      // this.renderStateFrame(justRows)
     }
 
   }
 
-  renderStateFrame(uint8Array: Uint8Array) {
-    // debugger
+  renderStateFrame(frameData: Uint32Array) {
     const bitValue = (bit: number) => 1 << bit
 
+    if (!this.gridElement) return
+
     for (let row = 0; row < 8; row++) {
-      for (let bitPlace = 0; bitPlace < 8; bitPlace++) {
-        let cellState = uint8Array[row] & bitValue(bitPlace)
-        if (cellState != 0) {
-          this.gridElement?.rows[row].cells[bitPlace].setAttribute('paint', true.toString())
+      let color = 0xFFFFFF & frameData[row]
+
+      // TODO: fit into the overall process
+      const blue = color & 0xFF
+      color >>= 8
+      const green = color & 0xFF
+      color >>= 8
+      const red = color & 0xFF
+
+
+      frameData[row] >>= 24
+      const state = frameData[row]
+      for (let cell = 0; cell < 8; cell++) {
+        if ((state & bitValue(cell)) != 0) {
+          this.gridElement.rows[row].cells[cell].style.backgroundColor = `rgb(${red}, ${green}, ${blue})`
         } else {
-          this.gridElement?.rows[row].cells[bitPlace].setAttribute('paint', false.toString())
+          this.gridElement.rows[row].cells[cell].style.backgroundColor = ""
         }
       }
     }
+    // for (let row = 0; row < 8; row++) {
+    //   for (let bitPlace = 0; bitPlace < 8; bitPlace++) {
+    //     let cellState = uint8Array[row] & bitValue(bitPlace)
+    //     let cellColor = uint8Array[row + 8] & bitValue(bitPlace)
+    //     if (!this.gridElement) return
+
+    //     if (cellState != 0) {
+    //       this.gridElement.rows[row].cells[bitPlace].style.backgroundColor = "#" + cellColor.toString(16)
+    //     } else {
+    //       this.gridElement.rows[row].cells[bitPlace].style.backgroundColor = ""
+    //     }
+    //   }
+    // }
   }
 
 }

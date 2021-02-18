@@ -3,6 +3,11 @@ import EventEmitter from "events"
 import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
 import { client } from "websocket";
 
+
+export enum ClientEvents {
+  GAME_FRAME,
+  CLIENT_REGISTRATION_COMPLETE
+}
 // TODO: consider refactor
 // * I can't tell if this feels sloppy or organized
 // ! feels sloppy and unneeded, ripout
@@ -91,16 +96,25 @@ class WebsocketClientManager extends EventEmitter {
 
   private async generalMessageListener(message: MessageEvent) {
 
-    const messageArray = ClientMessageBuilder.interpret(new Uint8Array(await message.data.arrayBuffer()))
+    const messageByteArray = new Uint8Array(await message.data.arrayBuffer())
 
-    if (messageArray instanceof ClientRegisteredPayload) {
-      this.storeRegistration(messageArray)
+    // TODO: structure consideration
+    // * We could handle all of the communication with the subclass via calling passed in handlers or
+    // * we could handle it through event emission. I can't decide which one I like more, but I'm kind of 
+    // * leaning to event emission so that we don't have to mess around with callback management. 
+    switch (messageByteArray[0]) {
+      case messageTypeEnum.CLIENT_REGISTERED:
+        this.storeRegistration(new ClientRegisteredPayload(messageByteArray))
+        // TODO: replace string event names with enums
+        this.emit(ClientEvents.CLIENT_REGISTRATION_COMPLETE.toString(), messageByteArray)
+        break
+      case messageTypeEnum.GAME_FRAME:
+        const data = new Uint32Array(await message.data.arrayBuffer())
+        console.log(data)
+        const frame = data.slice(3, data.length)
+        this.emit(ClientEvents.GAME_FRAME.toString(), frame)
+        break
     }
-    this.messageHandlers.forEach(handler => {
-      handler(messageArray)
-    })
-
-
   }
 
 

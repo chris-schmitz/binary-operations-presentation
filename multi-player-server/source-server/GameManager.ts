@@ -54,7 +54,7 @@ class GameManager extends EventEmitter {
   }
 
   public addBrick(row: number, color: Uint8Array) {
-    this.gridState[row] |= 0x80
+    this.gridState[row] |= 0x100 // ! TEMP FIX -> go back and debug
     this.gridColors[row] = color.reduce((carry, current) => {
       carry <<= 8; return carry + current
     })
@@ -82,15 +82,33 @@ class GameManager extends EventEmitter {
     // * byte 14 - 22:  row colors
     const collision = 1 // ! faking it out for now
 
-    const payload = Uint8Array.from([
+    let player = this.player.rowIndex
+    player <<= 8
+    player += this.player.rowState
+
+    let bricks = new Uint32Array(this.gridState.length)
+    for (let i = 0; i < this.totalRows; i++) {
+      bricks[i] = this.gridState[i]
+      bricks[i] <<= 24
+      bricks[i] += this.gridColors[i]
+    }
+
+    const payload = Uint32Array.from([
       messageTypeEnum.GAME_FRAME,
       this.playPhase | collision,
-      this.player.rowIndex,
-      this.player.rowState,
-      8,
-      ...this.gridState,
-      ...this.gridColors
+      player,
+      ...bricks
     ])
+
+    // const payload = Uint8Array.from([
+    //   messageTypeEnum.GAME_FRAME,
+    //   this.playPhase | collision,
+    //   this.player.rowIndex,
+    //   this.player.rowState,
+    //   8,
+    //   ...this.gridState,
+    //   ...this.gridColors
+    // ])
 
     this.emit(TICK, payload)
   }
