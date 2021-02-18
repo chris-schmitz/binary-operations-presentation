@@ -79,9 +79,40 @@ class GameBoard extends WebsocketClientManager {
     if (!this.gridElement) return
 
     for (let row = 0; row < 8; row++) {
+
+      // * For the frame data, each array element is a single number representing a row's state,
+      // * Specifically, each number holds for bytes:
+      // ^ RowState | RedValue | GreenValue | BlueValue
+      // * And it would look something like this:
+      // ^ frameRowData[i] == 2164239035 == 0x80ffaabb == 10000000 11111111 10101010 10111011
+      // 
+      // * So putting the bytes into a more tabular view:
+      // ^ RowState | RedValue | GreenValue | BlueValue
+      // ^ 10000000 | 11111111 | 10101010   | 10111011
+      // 
+      // * And we're taking the number apart from right to left using byte masking
+      // * so when you see 
+      // ^ const blue = color & 0xFF
+      // * we're saying "do an AND comparison to all the bits in the `color` number to the number `0xFF` which is `11111111` in binary form"
+      // ^ 10000000 11111111 10101010 10111011
+      // ^ 00000000 00000000 00000000 11111111
+      // * which gives us just the first byte from our number
+      // ^ 00000000 00000000 00000000 10111011
+      // 
+      // * Then we shift our number right by 8 bits
+      // ^ color >>= 8
+      // ^ 00000000 10000000 11111111 10101010 
+      // * and do the comparison again to get the next byte
+      // ^ color green = color & 0xFF
+      // ^ 00000000 10000000 11111111 10101010 
+      // ^ 00000000 00000000 00000000 11111111
+      // * which gives us 
+      // ^ 00000000 00000000 00000000 10101010 
+      // 
+      // * And we keep doing that to pull out the rest of our bytes for red and then the row state
+
       let color = 0xFFFFFF & frameData[row]
 
-      // TODO: fit into the overall process
       const blue = color & 0xFF
       color >>= 8
       const green = color & 0xFF
@@ -93,25 +124,15 @@ class GameBoard extends WebsocketClientManager {
       const state = frameData[row]
       for (let cell = 0; cell < 8; cell++) {
         if ((state & bitValue(cell)) != 0) {
+          // ! we _should_ be able to set the style with a hex value, though I was having problems with it before. 
+          // ! that said, deconstructing the 32 bit number here into 4 different bytes that mean different things 
+          // ! is a pretty worthy binary operations example :)
           this.gridElement.rows[row].cells[cell].style.backgroundColor = `rgb(${red}, ${green}, ${blue})`
         } else {
           this.gridElement.rows[row].cells[cell].style.backgroundColor = ""
         }
       }
     }
-    // for (let row = 0; row < 8; row++) {
-    //   for (let bitPlace = 0; bitPlace < 8; bitPlace++) {
-    //     let cellState = uint8Array[row] & bitValue(bitPlace)
-    //     let cellColor = uint8Array[row + 8] & bitValue(bitPlace)
-    //     if (!this.gridElement) return
-
-    //     if (cellState != 0) {
-    //       this.gridElement.rows[row].cells[bitPlace].style.backgroundColor = "#" + cellColor.toString(16)
-    //     } else {
-    //       this.gridElement.rows[row].cells[bitPlace].style.backgroundColor = ""
-    //     }
-    //   }
-    // }
   }
 
 }
