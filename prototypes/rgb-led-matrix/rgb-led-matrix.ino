@@ -18,6 +18,24 @@
 #define MATRIX_PIN 12
 #define DEBUG_MODE false
 
+enum messageTypeEnum
+{
+  REGISTER_CLIENT = 0x04,
+  CLIENT_REGISTERED,
+  UPDATE_CREDENTIALS,
+  ADD_BRICK,
+  GAME_FRAME,
+  ERROR
+};
+
+enum clientTypeEnum
+{
+  GAMEBOARD = 0x01,
+  BRICK_CONTROLLER,
+  PLAYER_CONTROLLER,
+  TOUCH_CONTROLLER
+};
+
 const char *ssid = WIFI_SSID;
 const char *password = PASSWORD;
 const char *websocket_server_host = WEBSOCKET_SERVER_HOST;
@@ -100,6 +118,35 @@ void connectToWebsocketServer()
   Serial.println("Connected to websocket server");
 
   addWebsocketListener();
+  registerAsAGameBoard();
+}
+
+void registerAsAGameBoard()
+{
+  char data[3] = {GAMEBOARD, REGISTER_CLIENT, 0};
+
+  const char *buffer = data;
+  size_t size = strlen(buffer);
+
+  Serial.print("Reg size:");
+  Serial.println(size);
+
+  client.sendBinary(buffer, size);
+}
+
+void onEventsCallback(WebsocketsEvent event, String data)
+{
+  if (event == WebsocketsEvent::ConnectionOpened)
+  {
+    Serial.println("---> connection opened.");
+    Serial.println(data);
+  }
+  else if (event == WebsocketsEvent::ConnectionClosed)
+  {
+    // TODO: add in reconnect logic
+    Serial.println("---> Connection closed.");
+    Serial.println(data);
+  }
 }
 
 // TODO: extract state update to a separate function called from the listener
@@ -107,7 +154,10 @@ void addWebsocketListener()
 {
   Serial.println("Adding websocket listener");
 
+  client.onEvent(onEventsCallback);
+
   client.onMessage([&](WebsocketsMessage message) {
+    return;
     Serial.print("Got message: ");
     Serial.println(message.data());
 
@@ -116,6 +166,8 @@ void addWebsocketListener()
     Serial.println(data);
     Serial.print("data length: ");
     Serial.println(message.length());
+
+    // * New data
 
     // TODO: come back and give better names
     // TODO: refactor consideration: hard code as an 8?
@@ -128,8 +180,8 @@ void addWebsocketListener()
       Serial.print(", value: ");
       Serial.println(currentByte, BIN);
 
-      previousMatrixState[i] = matrixState[i];
-      matrixState[i] = currentByte;
+      // previousMatrixState[i] = matrixState[i];
+      // matrixState[i] = currentByte;
     }
   });
 }
