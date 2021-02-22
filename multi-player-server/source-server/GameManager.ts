@@ -99,6 +99,8 @@ class GameManager extends EventEmitter {
       ...bricks
     ])
 
+    console.log(payload)
+
     // const payload = Uint8Array.from([
     //   messageTypeEnum.GAME_FRAME,
     //   this.playPhase | collision,
