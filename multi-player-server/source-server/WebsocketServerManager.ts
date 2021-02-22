@@ -65,13 +65,13 @@ class WebsocketServerManager {
     })
   }
   sendGameFrame(frame: Uint8Array) {
-    console.log("sending frame")
+    // console.log("sending frame")
     this.sendToAllGameBoards(frame)
     // * inform controllers?
   }
   sendToAllGameBoards(frame: Uint8Array) {
     this.gameBoardClients.forEach(socket => {
-      console.log("send")
+      // console.log("send")
       socket.send(frame)
     })
   }

@@ -68,7 +68,6 @@ class GameManager extends EventEmitter {
   }
 
   private animate() {
-    console.log("tick")
 
     for (let i = 0; i < this.totalRows; i++) {
       this.gridState[i] >>= 1
