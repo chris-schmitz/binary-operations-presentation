@@ -149,7 +149,27 @@ void onEventsCallback(WebsocketsEvent event, String data)
   }
 }
 
-// TODO: extract state update to a separate function called from the listener
+void get32BitInt(WebsocketsMessage message)
+{
+  Serial.println("--------------------------------");
+  Serial.println("raw parse:");
+  std::string raw = message.rawData();
+  for (int i = 0; i < message.length(); i += 4)
+  {
+    uint32_t chunk = 0;
+    for (int j = 0; j < 4; j++)
+    {
+      chunk <<= 8;
+      chunk |= raw.at(i + j);
+    }
+    Serial.println(chunk, BIN);
+  }
+  Serial.println("--------------------------------");
+}
+
+// TODO: refactor considerations:
+// * extract state update to a separate function called from the listener
+// * Extract websocket handling to a separate class
 void addWebsocketListener()
 {
   Serial.println("Adding websocket listener");
@@ -157,7 +177,6 @@ void addWebsocketListener()
   client.onEvent(onEventsCallback);
 
   client.onMessage([&](WebsocketsMessage message) {
-    return;
     Serial.print("Got message: ");
     Serial.println(message.data());
 
@@ -166,6 +185,18 @@ void addWebsocketListener()
     Serial.println(data);
     Serial.print("data length: ");
     Serial.println(message.length());
+
+    Serial.println("handing off");
+    uint32_t *gameFrame;
+    get32BitInt(message);
+
+    return;
+
+    if (data[0] == GAME_FRAME)
+    {
+      Serial.println("---> game frame!");
+      handleGameFrame(data, message.length());
+    }
 
     // * New data
 
@@ -184,6 +215,47 @@ void addWebsocketListener()
       // matrixState[i] = currentByte;
     }
   });
+}
+
+void handleGameFrame(const char *data, uint32_t length)
+{
+
+  // uint8_t phaseAndColission * = get32BitInt(data, 32);
+  // uint8_t player = get32BitInt(data, 32 * 2);
+
+  // Serial.print("data: ");
+  // Serial.println(data);
+  // Serial.print("phaseAndColission: ");
+  // Serial.println(phaseAndColission, DEC);
+  // Serial.print("player: ");
+  // Serial.println(player, DEC);
+
+  // payload >>= 32; // * chop off message type
+
+  // Serial.println(payload);
+  // uint32_t lineTwo = payload & 0xFFFFFFFF;
+  // Serial.print("line two: ");
+  // Serial.println(lineTwo);
+
+  // data >>= 32;
+
+  // const payload = Uint32Array.from([
+  //   messageTypeEnum.GAME_FRAME,
+  //   this.playPhase | collision,
+  //   player,
+  //   ...bricks
+  // ])
+}
+
+uint8_t getByte(const char *data, int offset = 0)
+{
+  uint8_t aByte = 0;
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    aByte <<= 1;
+    aByte += data[i + offset];
+  }
+  return aByte;
 }
 
 void render8x8State(int *state, uint32_t color)
