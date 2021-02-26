@@ -92,24 +92,15 @@ class GameManager extends EventEmitter {
       bricks[i] += this.gridColors[i]
     }
 
-    // const payload = Uint32Array.from([
-    //   messageTypeEnum.GAME_FRAME,
-    //   this.playPhase | collision,
-    //   player,
-    //   ...bricks
-    // ])
-    const payload = Uint32Array.from([0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF])
-    console.log(payload.reduce((carry, current) => carry.concat(" - ").concat(current.toString(2)), ""))
+    const payload = Uint32Array.from([
+      messageTypeEnum.GAME_FRAME,
+      this.playPhase | collision,
+      player,
+      ...bricks
+    ])
+    // const payload = Uint32Array.from([0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF])
+    // console.log(payload.reduce((carry, current) => carry.concat(" - ").concat(current.toString(2)), ""))
 
-    // const payload = Uint8Array.from([
-    //   messageTypeEnum.GAME_FRAME,
-    //   this.playPhase | collision,
-    //   this.player.rowIndex,
-    //   this.player.rowState,
-    //   8,
-    //   ...this.gridState,
-    //   ...this.gridColors
-    // ])
 
     this.emit(TICK, payload)
   }
