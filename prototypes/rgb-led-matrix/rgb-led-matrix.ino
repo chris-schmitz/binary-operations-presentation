@@ -149,11 +149,15 @@ void onEventsCallback(WebsocketsEvent event, String data)
   }
 }
 
-void get32BitInt(WebsocketsMessage message)
+void get32BitInt(WebsocketsMessage message, uint32_t *chunks)
 {
   Serial.println("--------------------------------");
   Serial.println("raw parse:");
+
   std::string raw = message.rawData();
+
+  int chunkIndex = 0;
+
   for (int i = 0; i < message.length(); i += 4)
   {
     uint32_t chunk = 0;
@@ -162,8 +166,18 @@ void get32BitInt(WebsocketsMessage message)
       chunk <<= 8;
       chunk |= raw.at(i + j);
     }
-    Serial.println(chunk, BIN);
+    chunks[chunkIndex] = chunk;
+    chunkIndex++;
   }
+
+  Serial.println("parsed chunks:");
+  for (int i = 0; i < 11; i++)
+  {
+    Serial.print(chunks[i], HEX);
+    Serial.print(" == ");
+    Serial.println(chunks[i], BIN);
+  }
+
   Serial.println("--------------------------------");
 }
 
@@ -178,42 +192,31 @@ void addWebsocketListener()
 
   client.onMessage([&](WebsocketsMessage message) {
     Serial.print("Got message: ");
-    Serial.println(message.data());
 
-    const char *data = message.c_str();
-    Serial.print("Extracted data: ");
-    Serial.println(data);
-    Serial.print("data length: ");
-    Serial.println(message.length());
+    Serial.println("handing off to parser");
 
-    Serial.println("handing off");
-    uint32_t *gameFrame;
-    get32BitInt(message);
+    uint32_t gameFrame[message.length() / sizeof(uint32_t)]; // *try moving gameFrame out of scope
+    get32BitInt(message, gameFrame);
+
+    Serial.print("game frame address: ");
+    Serial.println((int)&gameFrame);
+
+    Serial.println("storing first 32 bit integer in a variable");
+    uint32_t firstNumber = *gameFrame;
+
+    Serial.print("game frame first value: ");
+    Serial.println(firstNumber, HEX);
+
+    Serial.println("printing frame:");
+    for (int i = 0; i < 11; i++)
+    {
+      Serial.println(gameFrame[i], HEX);
+    }
 
     return;
 
-    if (data[0] == GAME_FRAME)
-    {
-      Serial.println("---> game frame!");
-      handleGameFrame(data, message.length());
-    }
-
-    // * New data
-
-    // TODO: come back and give better names
-    // TODO: refactor consideration: hard code as an 8?
-    // ? will longer messages blow up the code since the since the matrixState is hardcoded at 8??
-    for (int i = 0; i < message.length(); i++)
-    {
-      uint8_t currentByte = data[i];
-      Serial.print("Message byte: ");
-      Serial.print(i);
-      Serial.print(", value: ");
-      Serial.println(currentByte, BIN);
-
-      // previousMatrixState[i] = matrixState[i];
-      // matrixState[i] = currentByte;
-    }
+    // previousMatrixState[i] = matrixState[i];
+    // matrixState[i] = currentByte;
   });
 }
 
