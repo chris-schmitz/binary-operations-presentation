@@ -30,7 +30,6 @@ class BrickController extends WebsocketClientManager {
   }
 
   private updateBrickColor(changeEvent: Event) {
-    debugger
     const target = changeEvent.target as HTMLInputElement
     let hexColor = parseInt(target.value.slice(1, target.value.length), 16) // ? chop off that `#` from the string
     const blue = hexColor & 0xFF
@@ -44,7 +43,6 @@ class BrickController extends WebsocketClientManager {
   setButtonColor(color: BrickColor) {
     if (!this.brickButtonElement) return
     this.brickButtonElement.style.backgroundColor = `rgb(${color.red}, ${color.green}, ${color.blue})`
-    throw new Error("Method not implemented.");
   }
 
   public setBrickColor(color: BrickColor) {
