@@ -1,40 +1,16 @@
-/**
- * ^ RGB LED Matrix 
- * 
- * * blah blah
- * 
- * ! A couple of things to note!
- * * - I wrote this code for an 8x8 RGB LED matrix, so there are some hardcoded `8`s in here 
- *   * that _could_ be made dynamic, but I'm going for MVP on this one so there's no need for that flexibility
- */
-
 #include "characters.h"
 #include "credentials.h"
+#include "data-classes.h"
+#include "enumerables.h"
+#include "helpers.h"
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoWebsockets.h>
 #include <WiFi.h>
 
 #define _BV(bit) (1 << (bit))
 #define MATRIX_PIN 12
-#define DEBUG_MODE false
 
-enum messageTypeEnum
-{
-  REGISTER_CLIENT = 0x04,
-  CLIENT_REGISTERED,
-  UPDATE_CREDENTIALS,
-  ADD_BRICK,
-  GAME_FRAME,
-  ERROR
-};
-
-enum clientTypeEnum
-{
-  GAMEBOARD = 0x01,
-  BRICK_CONTROLLER,
-  PLAYER_CONTROLLER,
-  TOUCH_CONTROLLER
-};
+#define VERBOSE_MODE false
 
 const char *ssid = WIFI_SSID;
 const char *password = PASSWORD;
@@ -44,11 +20,13 @@ const uint16_t websocket_server_port = WEBSOCKET_SERVER_PORT;
 uint8_t websocketReconnectTotalAttempts = 10;
 uint8_t websocketReconnectCount = 0;
 
-byte currentColor = 0;
-
 using namespace websockets;
 
 WebsocketsClient client;
+
+// TODO: ripout, animation hapens on command with frames
+unsigned long animationInterval = 100;
+unsigned long animationLastCheckpoint = 0;
 
 uint32_t previousMatrixState[8] = {0};
 uint32_t matrixState[8] = {0};
@@ -56,11 +34,12 @@ uint32_t playerState; // * byte 1 == row, byte 2 == column, color separated? we 
 
 Adafruit_NeoPixel matrix = Adafruit_NeoPixel(64, MATRIX_PIN, NEO_RGB + NEO_KHZ800);
 
-uint32_t defaultBackgroundColor = matrix.Color(10, 10, 10);
+// uint32_t defaultBackgroundColor = matrix.Color(20, 20, 20);
 // uint32_t defaultBackgroundColor = matrix.Color(0, 255, 0);
-// uint32_t defaultBackgroundColor = matrix.Color(0, 0, 0);
+uint32_t defaultBackgroundColor = matrix.Color(0, 0, 0);
 uint32_t backgroundColor = defaultBackgroundColor;
 
+// TODO: ripout?
 uint32_t activeColor = matrix.Color(255, 0, 255);
 
 void setup()
@@ -146,18 +125,19 @@ void onEventsCallback(WebsocketsEvent event, String data)
   {
     // TODO: add in reconnect logic
     Serial.println("---> Connection closed.");
+
+    connectToWebsocketServer();
     Serial.println(data);
   }
 }
 
-// TODO: rename this method.
-// * my morning brain can't think of the appropriate name, but we should name it something
-// * that conveys that we're loading a global variable and not passing something back (also
-// * note that this would be resolved naturally if we abstracted all of this logic in a class)
-void convertWebsocketMessageToGameFrame(std::string messageData, uint32_t length, uint32_t *gameFrame)
+void messageToGameFrame(std::string messageData, uint32_t length, uint32_t *gameFrame)
 {
-  // Serial.println("--------------------------------");
-  // Serial.println("message data parse:");
+  if (VERBOSE_MODE)
+  {
+    Serial.println("--------------------------------");
+    Serial.println("message data parse:");
+  }
 
   int frameRowIndex = 0;
 
@@ -176,42 +156,33 @@ void convertWebsocketMessageToGameFrame(std::string messageData, uint32_t length
     frameRowIndex++;
   }
 
-  // TODO: ripout or wrap in a "verbose logging" conditional
-  // Serial.println("parsed game frame:");
-  // for (int i = 0; i < 11; i++)
-  // {
-  //   Serial.print(gameFrame[i], HEX);
-  //   Serial.print(" == ");
-  //   Serial.println(gameFrame[i], BIN);
-  // }
+  if (VERBOSE_MODE)
+  {
+    Serial.println("parsed game frame:");
+    for (int i = 0; i < 11; i++)
+    {
+      Serial.print(gameFrame[i], HEX);
+      Serial.print(" == ");
+      Serial.println(gameFrame[i], BIN);
+    }
 
-  // Serial.println("--------------------------------");
+    Serial.println("--------------------------------");
+  }
 }
 
-void parseGameFrame(uint32_t *gameFrame, uint32_t length)
+void setGameState(uint32_t *gameFrame, uint32_t length)
 {
-
   // * add collision and play phase. it's broken on the server
-
   playerState = gameFrame[2];
 
   // ! index 3 is where the brick information starts. prob a better way of handling this instead of magic numbers
   // TODO: move magic numbers out to constants?
   for (int i = 3; i < length; i++)
   {
-    // Serial.print("game frame at ");
-    // Serial.print(i);
-    // Serial.print(": ");
-    // Serial.println(gameFrame[i], BIN);
-    // previousMatrixState[i - 3] = matrixState[i - 3];
-    // ! check this
     matrixState[i - 3] = gameFrame[i];
   }
 }
 
-// TODO: refactor considerations:
-// * extract state update to a separate function called from the listener
-// * Extract websocket handling to a separate class
 void addWebsocketListener()
 {
   Serial.println("Adding websocket listener");
@@ -219,17 +190,16 @@ void addWebsocketListener()
   client.onEvent(onEventsCallback);
 
   client.onMessage([&](WebsocketsMessage message) {
-    // Serial.print("Got message: ");
-    // Serial.println("handing off to parser");
+    if (VERBOSE_MODE)
+    {
+      Serial.print("===> Got message from server <=== ");
+    }
 
     std::string rawData = message.rawData();
 
-    uint8_t firstByte = rawData.at(0);
-    // Serial.print("firstByte: ");
-    // Serial.println(firstByte, HEX);
-
-    if (firstByte == GAME_FRAME)
+    switch (getFirstMessageByte(rawData))
     {
+    case GAME_FRAME:
       // TODO: refactor consideration
       // * if you end up refactoring the game logic into it's own class, move this to a private
       // * property.
@@ -237,91 +207,17 @@ void addWebsocketListener()
       // ! assigning the memory
       uint32_t gameFrame[message.length() / sizeof(uint32_t)]; // *try moving gameFrame out of scope
 
-      convertWebsocketMessageToGameFrame(rawData, message.length(), gameFrame);
-      parseGameFrame(gameFrame, sizeof(gameFrame) / sizeof(gameFrame[0]));
+      messageToGameFrame(rawData, message.length(), gameFrame);
+      setGameState(gameFrame, sizeof(gameFrame) / sizeof(gameFrame[0]));
       animate();
-      // handleGameFrame();
-
-      // TODO: ripout
-      // Serial.print("game frame address: ");
-      // Serial.println((int)&gameFrame);
-
-      // Serial.println("storing first 32 bit integer in a variable");
-      // uint32_t firstNumber = *gameFrame;
-
-      // Serial.print("game frame first value: ");
-      // Serial.println(firstNumber, HEX);
-
-      // Serial.println("printing frame:");
-      // for (int i = 0; i < 11; i++)
-      // {
-      //   Serial.println(gameFrame[i], HEX);
-      // }
+      break;
     }
   });
 }
 
-void handleGameFrame()
-{
-  // ^ what exactly do we need to do here:
-  // * update the current and previous matrix states so we can determine if we need an update or not
-  // * determine the brick positions
-  // * determine the player position
-  // * determine if there is a collision (change player color)
-  // * merge the player and brick rows
-  // * render
-
-  // * note that this can be hard coded, the matrix will always have 8 rows
-  // TODO: sweep through all of the code, move the row length out to a constant, replace all magic numbers with constant
-  Serial.print("player state: ");
-  Serial.println(playerState, BIN);
-  Serial.println("brick states");
-  for (int i = 0; i < 8; i++)
-  {
-    Serial.print("row: ");
-    Serial.print(i);
-    Serial.print(": ");
-    Serial.println(matrixState[i], HEX);
-  }
-}
-
-uint8_t getByte(const char *data, int offset = 0)
-{
-  uint8_t aByte = 0;
-  for (uint8_t i = 0; i < 8; i++)
-  {
-    aByte <<= 1;
-    aByte += data[i + offset];
-  }
-  return aByte;
-}
-
-// TODO: ripout? are we even using this?
-void render8x8State(int *state, uint32_t color)
-{
-  for (int row = 0; row < 8; row++)
-  {
-    int currentBtye = state[row];
-
-    if (row % 2 != 0)
-    {
-      currentBtye = reverseByte(currentBtye, 8);
-      if (DEBUG_MODE)
-      {
-        Serial.print("original: ");
-        Serial.print(currentBtye, BIN);
-        Serial.print(", flipped: ");
-        Serial.println(currentBtye, BIN);
-      }
-    }
-
-    renderRow(row, currentBtye, color);
-  }
-}
-
 void renderRow(int row, uint16_t data, uint32_t color)
 {
-  if (DEBUG_MODE)
+  if (VERBOSE_MODE)
   {
     Serial.print("For row: ");
     Serial.println(row);
@@ -331,35 +227,44 @@ void renderRow(int row, uint16_t data, uint32_t color)
 
   for (uint8_t i = 0; i < 8; i++)
   {
-    int currentByte = _BV(i) & data;
+    int currentBit = _BV(i) & data;
     int index = (row * 8) + i;
 
-    if (DEBUG_MODE)
+    if (VERBOSE_MODE)
     {
       Serial.print("row: ");
       Serial.print(row * 8);
       Serial.print(", bitmask: ");
       Serial.print(_BV(i), BIN);
       Serial.print(", current byte: ");
-      Serial.print(currentByte, BIN);
+      Serial.print(currentBit, BIN);
       Serial.print(", matrix index: ");
       Serial.print(index);
     }
-    if (currentByte != 0)
+
+    if (currentBit != 0)
     {
-      if (DEBUG_MODE)
+      if (VERBOSE_MODE)
       {
         Serial.print(" index: ");
         Serial.print(index);
         Serial.print(": ON, ");
       }
 
-      matrix.setPixelColor(index, color);
-      // matrix.setPixelColor(index, Wheel(index * 2 & 255));
-      matrix.show();
+      // TODO: check to see if this actually helps re: noise
+      if (matrix.getPixelColor(index) != color)
+      {
+        matrix.setPixelColor(index, color);
+      }
+      // TODO: also, should we move this outside of the loop?
+    }
+    else
+    {
+      matrix.setPixelColor(index, defaultBackgroundColor);
     }
 
-    if (DEBUG_MODE)
+    // matrix.show();
+    if (VERBOSE_MODE)
       Serial.println("");
   }
 }
@@ -370,31 +275,10 @@ uint16_t reverseByte(uint16_t byte, int length)
   for (uint8_t i = 0; i < length; i++)
   {
     reversed <<= 1;
-    reversed += byte & 0x01;
+    reversed += byte & 0x01; // TODO: change to |=
     byte >>= 1;
   }
   return reversed;
-}
-
-void testGridFill()
-{
-  for (int i = 0; i < 8; i++)
-  {
-    testRowFill(i);
-    delay(50);
-  }
-}
-
-void testRowFill(int row)
-{
-
-  for (int i = 0; i < 8; i++)
-  {
-    int index = (row * 8) + i;
-    matrix.setPixelColor(index, matrix.Color(0, 255, 255));
-    matrix.show();
-    // delay(50);
-  }
 }
 
 void clearMatrix(uint32_t color)
@@ -409,87 +293,54 @@ void clearMatrix(uint32_t color)
 
 void clearMatrixState()
 {
+  playerState = 0;
   for (uint8_t i = 0; i < 8; i++)
   {
     matrixState[i] = 0;
   }
 }
 
-void clearRow(uint8_t row, uint32_t color)
-{
-  for (uint8_t i = 0; i < 8; i++)
-  {
-    matrix.setPixelColor(8 * row + i, backgroundColor);
-  }
-  matrix.show();
-}
-
-void clearRowState(uint8_t row)
-{
-  matrixState[row] = 0;
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos)
-{
-  WheelPos = 255 - WheelPos;
-  if (WheelPos < 85)
-  {
-    return matrix.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  }
-  if (WheelPos < 170)
-  {
-    WheelPos -= 85;
-    return matrix.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
-  WheelPos -= 170;
-  return matrix.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-}
-
-unsigned long animationInterval = 100;
-unsigned long animationLastCheckpoint = 0;
+bool writeNewFrameToLEDs = false;
 
 void animate()
 {
-  // clearStrip(backgroundColor);
-  // TODO: if the state has changed (need to track previous state), then render row, otherwise don't
   for (int row = 0; row < 8; row++)
   {
     if (matrixState[row] != previousMatrixState[row])
     {
-      Serial.print("update needed for row: ");
-      Serial.print(row);
-      Serial.print(", current: ");
-      Serial.print(matrixState[row], BIN);
-      Serial.print(", previous: ");
-      Serial.println(previousMatrixState[row], BIN);
+      writeNewFrameToLEDs = true;
+      if (VERBOSE_MODE)
+      {
+        Serial.print("-----------------------");
+        Serial.print("update needed for row: ");
+        Serial.print(row);
+        Serial.print(", current: ");
+        Serial.print(matrixState[row], BIN);
+        Serial.print(", previous: ");
+        Serial.println(previousMatrixState[row], BIN);
+      }
 
       // TODO: ripout, we do this elsewhere
       previousMatrixState[row] = matrixState[row];
 
-      // TODO: abstract
-      uint8_t state = matrixState[row] & 0xFF;
-      matrixState[row] >>= 8;
-      uint8_t red = matrixState[row] & 0xFF;
-      matrixState[row] >>= 8;
-      uint8_t green = matrixState[row] & 0xFF;
-      matrixState[row] >>= 8;
-      uint8_t blue = matrixState[row] & 0xFF;
+      BrickRow brickRow = BrickRow(matrixState[row]);
 
-      uint32_t color = matrix.Color(red, green, blue);
+      uint32_t color = matrix.Color(brickRow.red, brickRow.green, brickRow.blue);
       Serial.print("color: ");
       Serial.println(color, HEX);
       Serial.print("state: ");
-      Serial.println(state, BIN);
+      Serial.println(brickRow.rowState, BIN);
 
-      int renderByte = row % 2 == 0 ? state : reverseByte(state, 8);
+      int renderByte = row % 2 == 0 ? brickRow.rowState : reverseByte(brickRow.rowState, 8);
 
-      clearRow(row, backgroundColor);
       renderRow(row, renderByte, color);
     }
-    // * Leaving in. this was when we were rendering the full matrix every time
-    // render8x8State(matrixState, matrix.Color(255, 0, 255));
+  }
+  if (writeNewFrameToLEDs == true)
+  {
+    Serial.println("writing to the matrix");
+    matrix.show();
+    writeNewFrameToLEDs = false;
   }
 }
 
@@ -500,11 +351,4 @@ void loop()
   {
     client.poll();
   }
-
-  // unsigned long now = millis();
-  // if (now - animationLastCheckpoint > animationInterval)
-  // {
-  //   animationLastCheckpoint = now;
-  //   animate();
-  // }
 }
