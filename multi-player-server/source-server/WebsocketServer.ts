@@ -2,34 +2,31 @@ import WebSocket from "ws"
 import http from "http"
 import { PlayerController } from "./PlayerController";
 import GameManager, { TICK } from "./GameManager";
-import { randomByte } from "./helpers/random-byte";
 import { clientTypeEnum, messageTypeEnum } from "../project-common/Enumerables";
+import { BrickControllerManager } from "./BrickControllerManager"
+import { BrickControllerClient } from "./interfaces/BrickControllerClient";
+import { IdableWebsocket } from "./interfaces/IdableWebsocket";
+import { SocketError } from "./errors/SocketError";
 
-export interface ClientMessage {
-  data: WebSocket.Data,
-  client: WebSocket
-}
 
-interface BrickControllerClient {
-  id: Uint8Array,
-  socket: WebSocket,
-  row: number
-}
 
-class WebsocketServerManager {
+class WebsocketServer {
 
   private websocketServer: WebSocket.Server
   private _verboseDebugging: boolean = false
   private uuidByteLength = 4
 
   private gameBoardClients: WebSocket[] = []
-  private brickControllerClients: BrickControllerClient[] = []
   private playerControllerClient: PlayerController | null = null
   private touchControllerClient: WebSocket[] = []
-  gameManager: GameManager;
-  constructor(server: http.Server, gameManager: GameManager, verboseDebugging = false) {
+  private gameManager: GameManager;
+
+  brickControllerManager: BrickControllerManager;
+
+  constructor(server: http.Server, gameManager: GameManager, brickControllerManager: BrickControllerManager, verboseDebugging = false) {
     this.websocketServer = new WebSocket.Server({ server })
     this.gameManager = gameManager
+    this.brickControllerManager = brickControllerManager
     this._verboseDebugging = verboseDebugging
     console.log("adding game manager listener")
     // TODO: move back to listeners
@@ -37,8 +34,8 @@ class WebsocketServerManager {
     this.addListeners()
 
     console.log("WebsocketManager constructed")
-
     console.log("Starting brick animation")
+
     this.gameManager.begin()
 
   }
@@ -46,6 +43,10 @@ class WebsocketServerManager {
   // TODO: come back and define the specific message types
   public sendToAllClients(message: any) {
     console.log(`Sending message to all clients: ${message}`)
+
+    // TODO: refactor consideration?
+    // * if we end up pulling all client managers out to named classes, should this become a message 
+    // * to each manager to relay the message to their clients?
     this.websocketServer.clients.forEach(client => {
       client.send(message)
     })
@@ -56,22 +57,21 @@ class WebsocketServerManager {
 
     this.websocketServer.on("connection", (socket) => {
       console.log("new socket connected")
-      socket.on("error", this.handleError)
-      socket.on("close", this.handleClose)
+      socket.on("error", this.handleError.bind(this))
+      socket.on("close", (code, reason) => {
+        this.handleClose(socket, code, reason)
+      })
 
       socket.on("message", message => this.handleMessage(message, socket))
-
       console.log("adding tick listener")
     })
   }
   sendGameFrame(frame: Uint8Array) {
-    // console.log("sending frame")
     this.sendToAllGameBoards(frame)
     // * inform controllers?
   }
   sendToAllGameBoards(frame: Uint8Array) {
     this.gameBoardClients.forEach(socket => {
-      // console.log("send")
       socket.send(frame)
     })
   }
@@ -109,6 +109,7 @@ class WebsocketServerManager {
           console.log("----> BRICK COMMAND!!")
 
           this.validateClientId(data, socket)
+          // TODO: move to gameboard manager class
           const client = this.getStoredBrickController(this.getIdFromMessageData(data))
           if (client) {
             this.handleAddBrickCommand(payload, client)
@@ -153,9 +154,8 @@ class WebsocketServerManager {
     return data.slice(2, 6)
   }
 
-  private getStoredBrickController(id: Uint8Array): BrickControllerClient | undefined {
-    return this.brickControllerClients
-      .find(controller => Buffer.compare(controller.id, id) == 0)
+  private getStoredBrickController(id: Uint8Array): BrickControllerClient | null {
+    return this.brickControllerManager.getControllerById(id) || null
   }
 
 
@@ -169,9 +169,11 @@ class WebsocketServerManager {
     console.log(`row: ${row}`)
     process.stdout.write(`brick color:`)
     console.log(color)
-    this.gameManager.addBrick(row, color)
+    if (!row) {
+      throw new SocketError(controller.socket, "You don't have a row assigned so you can't send a brick command. ")
+    }
 
-    // * notify game manager
+    this.gameManager.addBrick(row, color)
   }
 
   private parseMessage(data: Buffer) {
@@ -209,8 +211,6 @@ class WebsocketServerManager {
       console.log(payload)
     }
 
-
-
     return { clientType, messageType, payload }
   }
 
@@ -228,33 +228,12 @@ class WebsocketServerManager {
         break
       case clientTypeEnum.BRICK_CONTROLLER:
         console.log("brick controller")
-        this.registerBrickController(socket)
+        this.brickControllerManager.registerBrickController(socket, this.uuidByteLength)
         break
       // TODO: touch controller
     }
   }
 
-  private registerBrickController(socket: WebSocket) {
-    const id = randomByte(this.uuidByteLength)
-    const idView = new Uint8Array(id)
-
-    const row = this.gameManager.getNextRow()
-    this.brickControllerClients.push({ id: idView, socket, row })
-
-    console.log("Sending registration information:")
-    console.log({ id, row })
-
-    const buffer = new ArrayBuffer(2 + this.uuidByteLength)
-    const messageView = new Uint8Array(buffer)
-
-    messageView[0] = messageTypeEnum.CLIENT_REGISTERED
-    messageView[1] = row
-    for (let i = 0; i < this.uuidByteLength; i++) {
-      messageView[i + 2] = idView[i]
-    }
-    socket.send(messageView)
-
-  }
   private registerGameBoard(socket: WebSocket) {
     this.gameBoardClients.push(socket);
   }
@@ -270,8 +249,10 @@ class WebsocketServerManager {
     console.log(this.playerControllerClient.id);
   }
 
-  private handleClose(code: number, reason: string) {
+  private handleClose(socket: WebSocket, code: number, reason: string) {
+    const idableSocket = socket as IdableWebsocket
     console.log(`Socket closed connection\ncode: ${code}\nreason: ${reason}`)
+    this.brickControllerManager.handleClientDisconnect(idableSocket)
   }
 
   private handleError(error: Error) {
@@ -281,4 +262,4 @@ class WebsocketServerManager {
 
 }
 
-export default WebsocketServerManager
+export default WebsocketServer

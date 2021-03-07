@@ -1,5 +1,3 @@
-import WebsocketServerManager from "./WebsocketServerManager"
-import { ClientMessage } from "./WebsocketServerManager";
 import { EventEmitter } from "events";
 import { messageTypeEnum } from "../project-common/Enumerables";
 
@@ -25,11 +23,13 @@ class GameManager extends EventEmitter {
     rowState: 0x01
   }
 
-  private nextAvailableRow = 0
-  private brickAnimationIntervalId: NodeJS.Timeout | null;
+  private availableRows: Array<number> = []
+
+  private brickAnimationIntervalId: NodeJS.Timeout | null; // TODO: ripout?
   private brickAnimationIntervalDelay: number;
   private totalRows: number;
-  private totalColumns: number;
+  private totalColumns: number; //todo: ripout
+
 
   constructor(verboseDebugging = false, brickAnimationIntervalDelay = 500, totalRows = 8, totalColumns = 8) {
     super();
@@ -40,6 +40,9 @@ class GameManager extends EventEmitter {
     this.totalRows = totalRows
     this.totalColumns = totalColumns
 
+    this.availableRows = [1, 2, 3]
+    // this.availableRows = Array.from(Array(totalRows).keys())
+
     this.initializeGrid()
   }
 
@@ -48,10 +51,21 @@ class GameManager extends EventEmitter {
   }
 
 
-  public getNextRow() {
-    // TODO: how do we want to handle freed up rows when a client disconnects??
-    return this.nextAvailableRow++
+  get thereAreAvailableRows() {
+    return this.availableRows.length !== 0
   }
+  public getNextRow() {
+    if (this.availableRows == undefined) {
+      throw new Error("Error initializing available rows")
+    }
+    return this.availableRows.pop()
+  }
+
+  public makeRowAvailable(row: number) {
+    this.availableRows.push(row)
+  }
+
+
 
   public addBrick(row: number, color: Uint8Array) {
     this.gridState[row] |= 0x100 // ! TEMP FIX -> go back and debug
@@ -94,13 +108,10 @@ class GameManager extends EventEmitter {
 
     const payload = Uint32Array.from([
       messageTypeEnum.GAME_FRAME,
-      this.playPhase | collision,
+      this.playPhase | collision, // TODO: fix, this is wrong, if we're going to do this we should separate each piece of information into separate nibbles or break them out to separate bytes. 
       player,
       ...bricks
     ])
-    // const payload = Uint32Array.from([0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF, 0x55555555, 0xFFFFFFFF])
-    // console.log(payload.reduce((carry, current) => carry.concat(" - ").concat(current.toString(2)), ""))
-
 
     this.emit(TICK, payload)
   }

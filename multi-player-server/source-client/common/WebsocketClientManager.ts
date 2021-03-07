@@ -4,9 +4,14 @@ import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
 import { client } from "websocket";
 
 
+
+
 export enum ClientEvents {
   GAME_FRAME,
-  CLIENT_REGISTRATION_COMPLETE
+  CLIENT_REGISTRATION_COMPLETE,
+  SOCKET_ERROR,
+  WAITING_FOR_TURN,
+  BRICK_ROW_ASSIGNED
 }
 // TODO: consider refactor
 // * I can't tell if this feels sloppy or organized
@@ -25,7 +30,7 @@ class WebsocketClientManager extends EventEmitter {
 
   reconnectConfig?: ReconnectConfig
   reconnectionAttempts: number = 0
-  registerationInformation: {
+  registrationInformation: {
     row: number | null
     id: Uint8Array | null
   }
@@ -42,7 +47,7 @@ class WebsocketClientManager extends EventEmitter {
     this.messageBuilder = messageBuilder
     // this.reconnectCallback = null
 
-    this.registerationInformation = {
+    this.registrationInformation = {
       id: null,
       row: null
     }
@@ -85,8 +90,8 @@ class WebsocketClientManager extends EventEmitter {
 
 
   public storeRegistration(data: ClientRegisteredPayload) {
-    this.registerationInformation.row = data.row
-    this.registerationInformation.id = data.id
+    // this.registrationInformation.row = data.row
+    this.registrationInformation.id = data.id
     this.messageBuilder.setId(data.id)
   }
 
@@ -102,6 +107,7 @@ class WebsocketClientManager extends EventEmitter {
     // * We could handle all of the communication with the subclass via calling passed in handlers or
     // * we could handle it through event emission. I can't decide which one I like more, but I'm kind of 
     // * leaning to event emission so that we don't have to mess around with callback management. 
+    console.log("before switch")
     switch (messageByteArray[0]) {
       case messageTypeEnum.CLIENT_REGISTERED:
         this.storeRegistration(new ClientRegisteredPayload(messageByteArray))
@@ -114,12 +120,19 @@ class WebsocketClientManager extends EventEmitter {
         const frame = data.slice(3, data.length)
         this.emit(ClientEvents.GAME_FRAME.toString(), frame)
         break
+      case messageTypeEnum.CONTROLLER_CONTROL_REMOVED:
+        this.emit(ClientEvents.WAITING_FOR_TURN.toString())
+        break
+      case messageTypeEnum.BRICK_ROW_ASSIGNMENT:
+        this.emit(ClientEvents.BRICK_ROW_ASSIGNED.toString(), messageByteArray[1])
+        break
     }
+
+    console.log("after switch")
   }
 
 
   private openListener(openEvent: any) {
-    // if (this.verboseLogging) {
     console.log("===> Websocket connection open. <===")
     console.log(`Open target: ${openEvent.target}`)
     console.log("====================================")
@@ -127,17 +140,14 @@ class WebsocketClientManager extends EventEmitter {
     this.reconnectionAttempts = 0
 
     this.registerClient()
-    // }
   }
 
   private closeListener(closeEvent: any) {
-    // if (this.verboseLogging) {
     console.log("===> Websocket connection closed. <===")
     console.log(`Close was clean: ${closeEvent.wasClean}`)
     console.log(`Close event code: ${closeEvent.code}`)
     console.log(`Close event reason: ${closeEvent.reason}`)
     console.log("======================================")
-    // }
 
     if (
       this.reconnectConfig?.reconnectAfterLosingConnecton &&

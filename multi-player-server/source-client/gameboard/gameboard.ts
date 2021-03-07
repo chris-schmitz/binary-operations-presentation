@@ -93,7 +93,7 @@ class GameBoard extends WebsocketClientManager {
       // * And we're taking the number apart from right to left using byte masking
       // * so when you see 
       // ^ const blue = color & 0xFF
-      // * we're saying "do an AND comparison to all the bits in the `color` number to the number `0xFF` which is `11111111` in binary form"
+      // * we're saying "do an AND comparison to all the bits in the `color` number to the number `0xFF` which is `11111111 in binary form"
       // ^ 10000000 11111111 10101010 10111011
       // ^ 00000000 00000000 00000000 11111111
       // * which gives us just the first byte from our number

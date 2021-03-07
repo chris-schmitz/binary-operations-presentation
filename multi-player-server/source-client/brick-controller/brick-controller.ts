@@ -59,7 +59,11 @@ class BrickController extends WebsocketClientManager {
 
   private addBrickControllerListeners() {
     console.log("Adding listeners")
-    this.addListener(ClientEvents.CLIENT_REGISTRATION_COMPLETE.toString(), this.activateControls.bind(this))
+    // this.addListener(ClientEvents.CLIENT_REGISTRATION_COMPLETE.toString(), this.activateControls.bind(this))
+    this.addListener(ClientEvents.SOCKET_ERROR.toString(), (message) => {
+      console.log("socket error:")
+      console.log(message)
+    })
 
     // TODO: refactor consideration
     // * we're never going to see the frame on the brick-controller side because on the server side we're only 
@@ -70,40 +74,38 @@ class BrickController extends WebsocketClientManager {
       console.log(message)
     })
 
+    this.addListener(ClientEvents.BRICK_ROW_ASSIGNED.toString(), this.activateControls.bind(this))
+    this.addListener(ClientEvents.WAITING_FOR_TURN.toString(), this.waitForTurn.bind(this))
+
+
     this.brickButtonElement?.addEventListener("click", this.sendBrickCommand.bind(this))
     this.colorPicker?.addEventListener("change", this.updateBrickColor.bind(this))
   }
 
 
   public sendBrickCommand() {
-    if (this.registerationInformation.id) {
+    if (this.registrationInformation.id) {
 
+      // TODO: add the id to the send brick command so we can validate 
       let brickColor = Uint8Array.from([this.brickColor.red, this.brickColor.green, this.brickColor.blue])
 
       this.sendMessage(messageTypeEnum.ADD_BRICK, brickColor)
     }
   }
 
-  // private async controllerMessageHandler(messageArray: ReturnMessagePayloadType) {
+  private waitForTurn() {
+    debugger
+    this.rowNumberElement!.innerHTML = "Waiting for turn"
+    this.brickButtonElement?.classList.add("disabled")
+    this.brickButtonElement?.setAttribute("disabled", true.toString())
 
-  //   // TODO: FIGURE OUT WHY THIS IS BEING CALLED TWICE ON REGISTER
-  //   switch (messageArray?.constructor) {
-  //     case ClientRegisteredPayload:
-  //       this.activateControls()
-  //       break
-  //     // case messageTypeEnum.GAME_FRAME:
-  //     //   console.log("add game frame handler")
-  //     //   break
-  //   }
-  // }
+  }
 
 
-  private activateControls() {
-    if (this.rowNumberElement) {
-      this.rowNumberElement.innerHTML = `Row: ${this.registerationInformation.row}`
-      this.brickButtonElement?.classList.remove("disabled")
-      this.brickButtonElement?.removeAttribute("disabled")
-    }
+  private activateControls(row: number) {
+    this.rowNumberElement!.innerHTML = `Row: ${row}`
+    this.brickButtonElement?.classList.remove("disabled")
+    this.brickButtonElement?.removeAttribute("disabled")
   }
 
   // TODO: ripout

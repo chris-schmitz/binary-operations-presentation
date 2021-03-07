@@ -3,12 +3,12 @@ import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
 
 // TODO: CHANGED MY MIND -> RIP THIS OUT
 export class ClientRegisteredPayload {
-  row: number
+  // row: number
   id: Uint8Array
   constructor(payload: Uint8Array) {
     //  * index 0 is the client type which doesn't matter to us 
-    this.row = payload[1]
-    this.id = payload.slice(2, payload.length)
+    // this.row = payload[1]
+    this.id = payload.slice(1, payload.length)
   }
 }
 

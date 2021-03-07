@@ -5,7 +5,9 @@ export enum messageTypeEnum {
   UPDATE_CREDENTIALS,
   ADD_BRICK,
   GAME_FRAME,
-  ERROR
+  ERROR,
+  BRICK_ROW_ASSIGNMENT,
+  CONTROLLER_CONTROL_REMOVED
 }
 
 export enum clientTypeEnum {
