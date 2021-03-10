@@ -24,7 +24,6 @@ class GameManager extends EventEmitter {
   }
 
   private availableRows: Array<number> = []
-
   private brickAnimationIntervalId: NodeJS.Timeout | null; // TODO: ripout?
   private brickAnimationIntervalDelay: number;
   private totalRows: number;
@@ -40,8 +39,8 @@ class GameManager extends EventEmitter {
     this.totalRows = totalRows
     this.totalColumns = totalColumns
 
-    this.availableRows = [1, 2, 3]
-    // this.availableRows = Array.from(Array(totalRows).keys())
+    // this.availableRows = [1, 2]
+    this.availableRows = Array.from(Array(totalRows).keys())
 
     this.initializeGrid()
   }
@@ -58,7 +57,7 @@ class GameManager extends EventEmitter {
     if (this.availableRows == undefined) {
       throw new Error("Error initializing available rows")
     }
-    return this.availableRows.pop()
+    return this.availableRows.shift()
   }
 
   public makeRowAvailable(row: number) {

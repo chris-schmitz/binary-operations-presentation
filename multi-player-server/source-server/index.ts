@@ -21,7 +21,7 @@ const server = http.createServer(app)
 app.use(express.static(webroot))
 
 const manager = new GameManager(true)
-const brickControllerManager = new BrickControllerManager(manager)
+const brickControllerManager = new BrickControllerManager(manager, 25)
 const socketManager = new WebsocketServer(server, manager, brickControllerManager, true)
 
 

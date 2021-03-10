@@ -1,20 +1,67 @@
 import WebSocket from "ws";
 import { messageTypeEnum } from "../project-common/Enumerables";
 import { BrickControllerClient } from "./interfaces/BrickControllerClient";
-import GameManager from "./GameManager";
+import GameManager, { TICK } from "./GameManager";
 import { randomByte } from "./helpers/random-byte";
 import { IdableWebsocket } from "./interfaces/IdableWebsocket";
 import { UnableToFindController } from "./errors/UnableToFindController";
+import { cloneDeep } from "lodash";
 
 class BrickControllerManager {
   private controllers: BrickControllerClient[] = []
-  gameManager: GameManager;
-  waitingOnTurn: BrickControllerClient[] = []
-  turnDuration: number;
+  gameManager: GameManager
+  waitingOnTurn: Uint8Array[] = []
+  activelyPlaying: Uint8Array[] = []
+  totalTicksPerTurn: number
+  currentTurnCount: number = 0
 
-  constructor(gameManager: GameManager, turnDuration: number = 5000) {
+  constructor(gameManager: GameManager, totalTicksPerTurn: number = 5) {
     this.gameManager = gameManager
-    this.turnDuration = turnDuration
+    this.totalTicksPerTurn = totalTicksPerTurn
+
+    this.gameManager.addListener(TICK, this.incrementTurnShuffle.bind(this))
+  }
+
+  private incrementTurnShuffle() {
+    this.currentTurnCount++
+    if (this.currentTurnCount > this.totalTicksPerTurn) {
+      this.currentTurnCount = 0
+      this.shuffleTurns()
+    }
+  }
+  private shuffleTurns() {
+    if (this.waitingOnTurn.length == 0) {
+      return
+    }
+    if (this.activelyPlaying.length == 0) {
+      return
+    }
+
+    const clientIds = cloneDeep(this.waitingOnTurn)
+    clientIds.forEach(id => {
+      this.swapOrAssignRow(id)
+    })
+  }
+
+  private swapOrAssignRow(clientId: Uint8Array) {
+    const activeController = this.getControllerById(this.shiftOffOfActivelyPlayingQueue()!)
+    let row
+    if (activeController) {
+      row = activeController.row!
+      activeController.row = null
+
+      this.addToWaitingOnTurnQueue(activeController)
+    } else {
+      row = this.gameManager.getNextRow()
+    }
+    if (!row) {
+      throw new Error("Unable to get a row when one should be available")
+    }
+
+    let controllerWaitingTurn = this.getControllerById(clientId)
+    if (!controllerWaitingTurn) throw new Error("Shouldn't get here, right?!")
+    this.removeFromWaitingOnTurnQueue(controllerWaitingTurn)
+    this.assignRowToController(controllerWaitingTurn, row)
   }
 
   public sendToAllClients(message: string | Uint8Array) {
@@ -38,23 +85,67 @@ class BrickControllerManager {
   public handleClientDisconnect(socket: IdableWebsocket) {
     const controller = this.getControllerById(socket.id)
     if (!controller) {
-      throw new UnableToFindController("Unable to find the brick controller", socket)
+      // TODO:throw this??
+      //   throw new UnableToFindController("Unable to find the brick controller", socket)
+      return
     }
     if (controller?.row) {
       this.gameManager.makeRowAvailable(controller.row)
+    }
+    this.removeClientFromAllWorkingArrays(controller)
+  }
+
+  private shiftOffOfActivelyPlayingQueue() {
+    return this.activelyPlaying.shift()
+  }
+
+  private addToActivelyPlayingQueue(controller: BrickControllerClient, row: number) {
+    this.activelyPlaying.push(controller.id)
+    controller.socket.send(Uint8Array.from([messageTypeEnum.BRICK_ROW_ASSIGNMENT, row]))
+  }
+  private addToWaitingOnTurnQueue(controller: BrickControllerClient) {
+    this.waitingOnTurn.push(controller.id)
+    controller.socket.send(Uint8Array.from([messageTypeEnum.CONTROLLER_CONTROL_REMOVED]))
+  }
+
+  private removeFromActivelyPlayingQueue(controller: BrickControllerClient) {
+    const index = this.activelyPlaying.findIndex(clientId => Buffer.compare(clientId, controller.id) === 0)
+    // TODO: consider: should we throw an exception here and, where we don't want the exception to halt everything, catch and ignore?
+    // ? If we do the catch and ignore be sure to make a custom error so we can catch only this specific error
+    if (index !== -1) {
+      this.activelyPlaying.splice(index, 1)
+    }
+  }
+  private removeFromWaitingOnTurnQueue(controller: BrickControllerClient) {
+    const index = this.waitingOnTurn.findIndex(clientId => Buffer.compare(clientId, controller.id) === 0)
+    if (index !== -1) {
+      this.waitingOnTurn.splice(index, 1)
+    }
+  }
+  private removeFromControllerArray(controller: BrickControllerClient) {
+    const index = this.controllers.findIndex(client => Buffer.compare(client.id, controller.id) === 0)
+    if (index !== -1) {
+      this.controllers.splice(index, 1)
+    }
+  }
+
+  private removeClientFromAllWorkingArrays(controller: BrickControllerClient) {
+    try {
+      this.removeFromActivelyPlayingQueue(controller)
+      this.removeFromWaitingOnTurnQueue(controller)
+      this.removeFromControllerArray(controller)
+    } catch (error) {
+      console.log("Remove clients from all working arrays error")
+      console.log(error)
     }
   }
 
   private sendRegisterClientMessage(controller: BrickControllerClient, id: Uint8Array) {
     let message = Uint8Array.from([
-      messageTypeEnum.REGISTER_CLIENT,
+      messageTypeEnum.CLIENT_REGISTERED,
       ...id
     ])
     controller.socket.send(message)
-  }
-
-  private sendBrickRowAssignedMessage(controller: BrickControllerClient, row: number) {
-    controller.socket.send(Uint8Array.from([messageTypeEnum.BRICK_ROW_ASSIGNMENT, row]))
   }
 
   private createId(idByteLength: number) {
@@ -69,32 +160,14 @@ class BrickControllerManager {
     if (row) {
       this.assignRowToController(controller, row)
     } else {
-      this.addControllerToWaitingQueue(controller)
+      this.addToWaitingOnTurnQueue(controller)
     }
-  }
-  private addControllerToWaitingQueue(controller: BrickControllerClient) {
-    this.waitingOnTurn.push(controller)
-    controller.socket.send(Uint8Array.from([messageTypeEnum.CONTROLLER_CONTROL_REMOVED]))
   }
   private assignRowToController(controller: BrickControllerClient, row: number) {
     controller.row = row
-    this.sendBrickRowAssignedMessage(controller, row)
-    this.applyTurnTimeout(controller)
+    this.addToActivelyPlayingQueue(controller, row)
   }
-  applyTurnTimeout(controller: BrickControllerClient) {
-    controller.turnTimeout = setTimeout(() => {
-      if (this.waitingOnTurn.length != 0) {
-        let row = controller.row
-        controller.row = null
-        this.addControllerToWaitingQueue(controller)
 
-        const nextController = this.waitingOnTurn.shift()
-        this.assignRowToController(nextController!, row!)
-      } else {
-        this.applyTurnTimeout(controller)
-      }
-    }, this.turnDuration)
-  }
   private createController(socket: WebSocket, id: Uint8Array): BrickControllerClient {
     const idableSocket = socket as IdableWebsocket
     const idView = new Uint8Array(id)
@@ -102,8 +175,6 @@ class BrickControllerManager {
 
     return { id: idView, socket, row: null }
   }
-
-
 }
 
 export { BrickControllerManager }
