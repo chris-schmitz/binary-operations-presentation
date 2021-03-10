@@ -1,15 +1,15 @@
-import { client } from "websocket";
 import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
 // import { clientTypeEnum, messageTypeEnum } from "../../project-common/Enumerables";
-import ClientMessageBuilder, { ClientRegisteredPayload } from "../common/ClientMessageBuilder";
-import { ServerResponse, BrickColor } from "../common/Interfaces";
-import WebsocketClientManager, { ClientEvents, ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager"
+import ClientMessageBuilder from "../common/ClientMessageBuilder";
+import { ServerResponse } from "../common/Interfaces";
+import WebsocketClientManager, { ClientEvents, ReconnectConfig } from "../common/WebsocketClientManager"
+import { BrickColor } from "../common/BrickColor";
 
 class BrickController extends WebsocketClientManager {
 
   verboseLogging: boolean
 
-  brickColor: BrickColor = { red: 0xff, green: 0x00, blue: 0x00 }
+  brickColor: BrickColor
 
   rowNumberElement: Element | null = null
   brickButtonElement: HTMLButtonElement | null = null
@@ -18,12 +18,14 @@ class BrickController extends WebsocketClientManager {
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect?: ReconnectConfig, verboseLogging = true) {
     super(websocketUrl, clientTypeEnum.BRICK_CONTROLLER, messageBuilder, attemptReconnect)
     this.verboseLogging = verboseLogging
+    this.brickColor = BrickColor.fromRGB({ red: 0, green: 0, blue: 0 })
 
     this.grabUiElements()
   }
 
   public begin() {
-    this.setBrickColor({ red: 0xff, green: 0x00, blue: 0xff })
+    this.setBrickColor(this.brickColor)
+    this.setButtonColor(this.brickColor)
     this.reconnect(() => {
       this.addBrickControllerListeners()
     })
@@ -32,17 +34,14 @@ class BrickController extends WebsocketClientManager {
   private updateBrickColor(changeEvent: Event) {
     const target = changeEvent.target as HTMLInputElement
     let hexColor = parseInt(target.value.slice(1, target.value.length), 16) // ? chop off that `#` from the string
-    const blue = hexColor & 0xFF
-    hexColor >>= 8
-    const green = hexColor & 0xFF
-    hexColor >>= 8
-    const red = hexColor & 0xFF
-    this.setBrickColor({ red, green, blue })
-    this.setButtonColor({ red, green, blue })
+    const color = BrickColor.fromHex(hexColor)
+    this.setBrickColor(color)
+    this.setButtonColor(color)
   }
   setButtonColor(color: BrickColor) {
     if (!this.brickButtonElement) return
-    this.brickButtonElement.style.backgroundColor = `rgb(${color.red}, ${color.green}, ${color.blue})`
+    this.brickButtonElement.style.backgroundColor = color.asCSS()
+    this.brickButtonElement.setAttribute("value", color.asPrefixedHex())
   }
 
   public setBrickColor(color: BrickColor) {
@@ -87,7 +86,8 @@ class BrickController extends WebsocketClientManager {
     if (this.registrationInformation.id) {
 
       // TODO: add the id to the send brick command so we can validate 
-      let brickColor = Uint8Array.from([this.brickColor.red, this.brickColor.green, this.brickColor.blue])
+      const color = this.brickColor.asRGB()
+      let brickColor = Uint8Array.from([color.red, color.green, color.blue])
 
       this.sendMessage(messageTypeEnum.ADD_BRICK, brickColor)
     }
@@ -122,7 +122,7 @@ class BrickController extends WebsocketClientManager {
 
     // ^ We've got an array of bytes, but we don't know how we should interpret or view them. 
     // ? Think of: 3141234567. it' just a random group of numbers, but if we interpret it as
-    // ? a phone number it's `314-123-4567`. The way we interpret the data tells us the meaning
+    // ? a phone number it's `314 - 123 - 4567`. The way we interpret the data tells us the meaning
     // ^ We know that each of the bytes represents a character code for our message, so we want 
     // ^ to view the data as individual bytes since in utf a character is represented by a single 
     // ^ byte. 
