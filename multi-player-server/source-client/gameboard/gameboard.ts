@@ -1,7 +1,6 @@
 
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
-import { websocketServerUrl } from "project-common/config.json";
-import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
+import { clientTypeEnum } from "project-common/Enumerables";
 import WebsocketClientManager, { ClientEvents, ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager";
 
 

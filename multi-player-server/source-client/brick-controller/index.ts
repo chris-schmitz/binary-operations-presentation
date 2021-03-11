@@ -11,6 +11,7 @@ const reconnectConfig: ReconnectConfig = {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log(`Connecting to ${websocketServerUrl}`)
   let brickController = new BrickController(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.BRICK_CONTROLLER), reconnectConfig)
   brickController.begin()
 })
