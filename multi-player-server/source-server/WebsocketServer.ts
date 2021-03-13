@@ -54,6 +54,7 @@ class WebsocketServer {
 
   private addListeners() {
     this.gameManager.on(TICK, this.sendGameFrame.bind(this))
+    this.gameManager.on(TICK, this.sendGameTick.bind(this))
 
     this.websocketServer.on("connection", (socket) => {
       console.log("new socket connected")
@@ -68,7 +69,9 @@ class WebsocketServer {
   }
   sendGameFrame(frame: Uint8Array) {
     this.sendToAllGameBoards(frame)
-    // * inform controllers?
+  }
+  sendGameTick() {
+    this.websocketServer.clients.forEach(client => client.send(Uint8Array.from([messageTypeEnum.GAME_TICK])))
   }
   sendToAllGameBoards(frame: Uint8Array) {
     this.gameBoardClients.forEach(socket => {

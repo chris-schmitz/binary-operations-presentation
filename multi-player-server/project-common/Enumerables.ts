@@ -7,7 +7,8 @@ export enum messageTypeEnum {
   GAME_FRAME,
   ERROR,
   BRICK_ROW_ASSIGNMENT,
-  CONTROLLER_CONTROL_REMOVED
+  CONTROLLER_CONTROL_REMOVED,
+  GAME_TICK
 }
 
 export enum clientTypeEnum {

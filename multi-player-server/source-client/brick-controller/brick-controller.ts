@@ -15,10 +15,21 @@ class BrickController extends WebsocketClientManager {
   brickButtonElement: HTMLButtonElement | null = null
   colorPicker: Element | null = null
 
+  buttonLockTickCountTotal: number
+  buttonLockTickCount: number = 0
+
+  // * Note that there is a difference between locked and disableld 
+  // * we could merge the two, but we want a different look for the two states
+  // ? disabled = player doesn't have control of a row so they can't do anything (button grayed, disabled, and text shows 'waiting for turn')
+  // ? locked = player has control over a row, but we're putting an arbitrary (and hackable) delay on them pushing the brick button 
+  buttonIsLocked: boolean = false
+
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect?: ReconnectConfig, verboseLogging = true) {
     super(websocketUrl, clientTypeEnum.BRICK_CONTROLLER, messageBuilder, attemptReconnect)
     this.verboseLogging = verboseLogging
     this.brickColor = BrickColor.fromRGB({ red: 0, green: 0, blue: 0 })
+
+    this.buttonLockTickCountTotal = 8
 
     this.grabUiElements()
   }
@@ -52,27 +63,21 @@ class BrickController extends WebsocketClientManager {
     this.rowNumberElement = document.querySelector("#row-number")
     this.brickButtonElement = document.querySelector("#brick-button")
     this.colorPicker = document.querySelector("#color-picker")
-  }
 
+    if (!this.rowNumberElement || !this.brickButtonElement || !this.colorPicker) {
+      throw new Error("Unable to grab UI elements!")
+    }
+  }
 
 
   private addBrickControllerListeners() {
     console.log("Adding listeners")
-    // this.addListener(ClientEvents.CLIENT_REGISTRATION_COMPLETE.toString(), this.activateControls.bind(this))
     this.addListener(ClientEvents.SOCKET_ERROR.toString(), (message) => {
       console.log("socket error:")
       console.log(message)
     })
 
-    // TODO: refactor consideration
-    // * we're never going to see the frame on the brick-controller side because on the server side we're only 
-    // * sending the frames to the game boards. That said, there's some info that could be useful, so post MVP (laughs)
-    // * consider whether or not we should send the frames to the other controllers as well. 
-    this.addListener(ClientEvents.GAME_FRAME.toString(), (message) => {
-      console.log("got a game frame")
-      console.log(message)
-    })
-
+    this.addListener(ClientEvents.GAME_TICK.toString(), this.buttonLockListener.bind(this))
     this.addListener(ClientEvents.BRICK_ROW_ASSIGNED.toString(), this.activateControls.bind(this))
     this.addListener(ClientEvents.WAITING_FOR_TURN.toString(), this.waitForTurn.bind(this))
 
@@ -88,24 +93,45 @@ class BrickController extends WebsocketClientManager {
       // TODO: add the id to the send brick command so we can validate 
       const color = this.brickColor.asRGB()
       let brickColor = Uint8Array.from([color.red, color.green, color.blue])
-
       this.sendMessage(messageTypeEnum.ADD_BRICK, brickColor)
+
+      this.lockButton()
     }
   }
 
+
   private waitForTurn() {
-    debugger
     this.rowNumberElement!.innerHTML = "Waiting for turn"
     this.brickButtonElement?.classList.add("disabled")
-    this.brickButtonElement?.setAttribute("disabled", true.toString())
-
+    this.brickButtonElement!.disabled = true
   }
 
+  private buttonLockListener() {
+    if (!this.buttonIsLocked) return
+
+    this.buttonLockTickCount++
+    if (this.buttonLockTickCount > this.buttonLockTickCountTotal) {
+      this.buttonLockTickCount = 0
+      this.unlockButton()
+    }
+  }
+
+  private lockButton() {
+    this.buttonIsLocked = true
+    this.brickButtonElement!.innerText = "locked"
+    this.brickButtonElement!.disabled = true
+  }
+  private unlockButton() {
+    this.buttonIsLocked = false
+    this.brickButtonElement!.innerText = ""
+    this.brickButtonElement!.disabled = false
+  }
 
   private activateControls(row: number) {
     this.rowNumberElement!.innerHTML = `Row: ${row}`
     this.brickButtonElement?.classList.remove("disabled")
     this.brickButtonElement?.removeAttribute("disabled")
+    this.brickButtonElement!.disabled = false
   }
 
   // TODO: ripout

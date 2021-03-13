@@ -1,7 +1,10 @@
 import ClientMessageBuilder, { ClientRegisteredPayload } from "../common/ClientMessageBuilder";
 import EventEmitter from "events"
 import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
-import { client } from "websocket";
+
+
+
+
 
 
 
@@ -11,7 +14,8 @@ export enum ClientEvents {
   CLIENT_REGISTRATION_COMPLETE,
   SOCKET_ERROR,
   WAITING_FOR_TURN,
-  BRICK_ROW_ASSIGNED
+  BRICK_ROW_ASSIGNED,
+  GAME_TICK
 }
 // TODO: consider refactor
 // * I can't tell if this feels sloppy or organized
@@ -90,7 +94,6 @@ class WebsocketClientManager extends EventEmitter {
 
 
   public storeRegistration(data: ClientRegisteredPayload) {
-    // this.registrationInformation.row = data.row
     this.registrationInformation.id = data.id
     this.messageBuilder.setId(data.id)
   }
@@ -107,7 +110,6 @@ class WebsocketClientManager extends EventEmitter {
     // * We could handle all of the communication with the subclass via calling passed in handlers or
     // * we could handle it through event emission. I can't decide which one I like more, but I'm kind of 
     // * leaning to event emission so that we don't have to mess around with callback management. 
-    console.log("before switch")
     switch (messageByteArray[0]) {
       case messageTypeEnum.CLIENT_REGISTERED:
         this.storeRegistration(new ClientRegisteredPayload(messageByteArray))
@@ -126,9 +128,9 @@ class WebsocketClientManager extends EventEmitter {
       case messageTypeEnum.BRICK_ROW_ASSIGNMENT:
         this.emit(ClientEvents.BRICK_ROW_ASSIGNED.toString(), messageByteArray[1])
         break
+      case messageTypeEnum.GAME_TICK:
+        this.emit(ClientEvents.GAME_TICK.toString())
     }
-
-    console.log("after switch")
   }
 
 
