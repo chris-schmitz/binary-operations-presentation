@@ -12,6 +12,13 @@ enum uiStateEnum {
   CONNECTED_BUT_NOT_PLAYING
 }
 
+enum buttonTypesEnum {
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT
+}
+
 class PlayerController extends WebsocketClientManager {
   verboseLogging: boolean;
   upButtonElement: HTMLButtonElement | null = null;
@@ -24,6 +31,7 @@ class PlayerController extends WebsocketClientManager {
 
   // ! Note that we're hardcoding this here, but if we made the id length fully dynamic we'd need to get this info from the server
   idByteLength: number = 4;
+  buttonTimeoutDuration: number = 100;
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect?: ReconnectConfig, verboseLogging = true) {
     super(websocketUrl, clientTypeEnum.PLAYER_CONTROLLER, messageBuilder, attemptReconnect)
     this.verboseLogging = verboseLogging
@@ -87,8 +95,8 @@ class PlayerController extends WebsocketClientManager {
   private addUiListeners() {
     this.addButtonListeners();
     this.addKeyDownListner()
+    this.addKeyUpListener()
     this.addListener(ClientEvents.SOCKET_ERROR.toString(), (byteArray) => {
-      debugger
       console.log(byteArray)
       this.updateUiState(uiStateEnum.CONNECTED_BUT_NOT_PLAYING)
       switch (byteArray[1]) {
@@ -102,10 +110,32 @@ class PlayerController extends WebsocketClientManager {
 
   private addButtonListeners() {
     this.idSubmitButton?.addEventListener("click", this.registerController.bind(this));
-    this.upButtonElement?.addEventListener("click", this.upButtonActivated.bind(this));
-    this.downButtonElement?.addEventListener("click", this.downButtonActivated.bind(this));
-    this.leftButtonElement?.addEventListener("click", this.leftButtonActivated.bind(this));
-    this.rightButtonElement?.addEventListener("click", this.rightButtonActivated.bind(this));
+
+    // ! SLOOOOOOPPPPPPYYYYYYYY
+    this.upButtonElement?.addEventListener("click", () => {
+      this.buttonActivated(buttonTypesEnum.UP)
+      setTimeout(() => {
+        this.buttonDeactivated(buttonTypesEnum.UP)
+      }, this.buttonTimeoutDuration)
+    });
+    this.downButtonElement?.addEventListener("click", () => {
+      this.buttonActivated(buttonTypesEnum.DOWN)
+      setTimeout(() => {
+        this.buttonDeactivated(buttonTypesEnum.DOWN)
+      }, this.buttonTimeoutDuration)
+    });
+    this.leftButtonElement?.addEventListener("click", () => {
+      this.buttonActivated(buttonTypesEnum.LEFT)
+      setTimeout(() => {
+        this.buttonDeactivated(buttonTypesEnum.LEFT)
+      }, this.buttonTimeoutDuration)
+    });
+    this.rightButtonElement?.addEventListener("click", () => {
+      this.buttonActivated(buttonTypesEnum.RIGHT)
+      setTimeout(() => {
+        this.buttonDeactivated(buttonTypesEnum.RIGHT)
+      }, this.buttonTimeoutDuration)
+    });
   }
 
   private registerController() {
@@ -139,20 +169,79 @@ class PlayerController extends WebsocketClientManager {
     document.addEventListener('keydown', event => {
       switch (event.code) {
         case "ArrowUp":
-          this.upButtonActivated()
+          this.buttonActivated(buttonTypesEnum.UP)
           break
         case "ArrowLeft":
-          this.leftButtonActivated()
+          this.buttonActivated(buttonTypesEnum.LEFT)
           break
         case "ArrowRight":
-          this.rightButtonActivated()
+          this.buttonActivated(buttonTypesEnum.RIGHT)
           break
         case "ArrowDown":
-          this.downButtonActivated()
+          this.buttonActivated(buttonTypesEnum.DOWN)
           break
       }
     })
   }
+
+  private addKeyUpListener() {
+    document.addEventListener('keyup', event => {
+      switch (event.code) {
+        case "ArrowUp":
+          this.buttonDeactivated(buttonTypesEnum.UP)
+          break
+        case "ArrowLeft":
+          this.buttonDeactivated(buttonTypesEnum.LEFT)
+          break
+        case "ArrowRight":
+          this.buttonDeactivated(buttonTypesEnum.RIGHT)
+          break
+        case "ArrowDown":
+          this.buttonDeactivated(buttonTypesEnum.DOWN)
+          break
+      }
+    })
+  }
+
+  buttonActivated(button: buttonTypesEnum) {
+    let message = new Uint8Array(1)
+    switch (button) {
+      case buttonTypesEnum.UP:
+        this.upButtonElement?.classList.add("pressed")
+        message[0] = directionEnum.UP
+        break
+      case buttonTypesEnum.DOWN:
+        this.downButtonElement?.classList.add("pressed")
+        message[0] = directionEnum.DOWN
+        break
+      case buttonTypesEnum.LEFT:
+        this.leftButtonElement?.classList.add("pressed")
+        message[0] = directionEnum.LEFT
+        break
+      case buttonTypesEnum.RIGHT:
+        this.rightButtonElement?.classList.add("pressed")
+        message[0] = directionEnum.RIGHT
+        break
+    }
+    this.sendMessage(messageTypeEnum.PLAYER_MOVE, message)
+  }
+  buttonDeactivated(button: buttonTypesEnum) {
+    switch (button) {
+      case buttonTypesEnum.UP:
+        this.upButtonElement?.classList.remove("pressed")
+        break
+      case buttonTypesEnum.DOWN:
+        this.downButtonElement?.classList.remove("pressed")
+        break
+      case buttonTypesEnum.LEFT:
+        this.leftButtonElement?.classList.remove("pressed")
+        break
+      case buttonTypesEnum.RIGHT:
+        this.rightButtonElement?.classList.remove("pressed")
+        break
+    }
+  }
+
   public downButtonActivated() {
     console.log('down')
     this.sendMessage(messageTypeEnum.PLAYER_MOVE, Uint8Array.from([directionEnum.DOWN]))
@@ -167,11 +256,8 @@ class PlayerController extends WebsocketClientManager {
   }
   private upButtonActivated() {
     console.log('up')
-    this.sendMessage(messageTypeEnum.PLAYER_MOVE, Uint8Array.from([directionEnum.UP]))
-    this.upButtonElement?.classList.add("pressed")
   }
 
-  private
 
   private grabUIElements() {
     this.upButtonElement = document.querySelector("button#up")

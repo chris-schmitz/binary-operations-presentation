@@ -10,28 +10,9 @@
       "outFiles": ["${workspaceFolder}/dist/server/**/*.js", "!**/node_modules/**"],
       "preLaunchTask": "npm: build - source-server",
       "request": "launch",
-      // "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"],
-      "type": "pwa-node"
+      "type": "pwa-node",
+      "console": "internalConsole"
     }
-    // {
-    //   "name": "Launch Program",
-    //   "program": "${workspaceFolder}/source-server/index.ts",
-    //   "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**"],
-    //   "request": "launch",
-    //   "skipFiles": ["<node_internals>/**"],
-    //   "type": "pwa-node"
-    // }
-    // {
-    //   "type": "node",
-    //   "request": "launch",
-    //   "name": "Launch Program",
-    //   "skipFiles": ["<node_internals>/**"],
-    //   "sourceMaps": true,
-    //   "preLaunchTask": "npm: build",
-    //   "program": "${workspaceFolder}/source-server/index.ts",
-    //   "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-    //   "console": "integratedTerminal"
-    // }
   ]
 }

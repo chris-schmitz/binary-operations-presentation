@@ -114,7 +114,7 @@ class WebsocketServer {
           this.addBrickToGameBoard(data, socket, payload);
           break
         case messageTypeEnum.PLAYER_MOVE:
-          this.playerControllerManager.playerMove(socket, payload)
+          this.playerControllerManager.playerMove(socket as IdableWebsocket, payload)
           break
         default:
           console.log(`==> message has unknown messageType: ${messageType} <==`)

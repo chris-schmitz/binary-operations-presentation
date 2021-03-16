@@ -12,5 +12,5 @@ const reconnectConfig: ReconnectConfig = {
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log(`Connecting to ${websocketServerUrl}`)
-  new PlayerController(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.BRICK_CONTROLLER), reconnectConfig)
+  new PlayerController(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.PLAYER_CONTROLLER), reconnectConfig)
 })
