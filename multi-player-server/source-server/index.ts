@@ -5,6 +5,7 @@ import WebsocketServer from "./WebsocketServer"
 import { join } from "path"
 import { v4 as uuid } from "uuid";
 import { BrickControllerManager } from "./BrickControllerManager"
+import { PlayerControllerManager } from "./PlayerControllerManager";
 
 const port = 3000
 
@@ -22,7 +23,8 @@ app.use(express.static(webroot))
 
 const manager = new GameManager(true)
 const brickControllerManager = new BrickControllerManager(manager, 25)
-const socketManager = new WebsocketServer(server, manager, brickControllerManager, true)
+const playerControllerManager = new PlayerControllerManager()
+const socketManager = new WebsocketServer(server, manager, brickControllerManager, playerControllerManager, true)
 
 
 server.listen(port, () => {

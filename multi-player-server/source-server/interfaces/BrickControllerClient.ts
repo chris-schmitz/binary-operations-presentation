@@ -1,9 +1,6 @@
-import WebSocket from "ws";
+import { ControllerClient } from "./ControllerClient";
 
-
-export interface BrickControllerClient {
-  id: Uint8Array;
-  socket: WebSocket;
+export interface BrickControllerClient extends ControllerClient {
   row: number | null;
   turnTimeout?: NodeJS.Timeout;
 }

@@ -49,7 +49,6 @@ class WebsocketClientManager extends EventEmitter {
     this.websocketUrl = websocketUrl
     this.reconnectConfig = reconnectConfig
     this.messageBuilder = messageBuilder
-    // this.reconnectCallback = null
 
     this.registrationInformation = {
       id: null,
@@ -70,8 +69,15 @@ class WebsocketClientManager extends EventEmitter {
     this.addListeners()
 
     if (callback) {
-      callback()
+      this.socket.addEventListener("open", callback)
     }
+  }
+
+  public addErrorListener(callback: (error: Event) => void) {
+    this.socket?.addEventListener("error", (errorEvent: Event) => callback(errorEvent))
+  }
+  public addCloseListener(callback: (closeEvent: CloseEvent) => void) {
+    this.socket?.addEventListener("close", (closeEvent: CloseEvent) => callback(closeEvent))
   }
 
   public sendMessage(type: messageTypeEnum, payload: Uint8Array) {
@@ -86,9 +92,22 @@ class WebsocketClientManager extends EventEmitter {
   }
 
   protected registerClient() {
-    const buffer = new Uint8Array(new ArrayBuffer(2))
-    buffer[0] = this.clientType
-    buffer[1] = messageTypeEnum.REGISTER_CLIENT
+    let buffer: Uint8Array
+
+    // ^ on yeah laaaaazy coding!!
+    if (this.registrationInformation.id) {
+      buffer = Uint8Array.from([
+        this.clientType,
+        messageTypeEnum.REGISTER_CLIENT,
+        ...this.registrationInformation.id
+      ])
+    } else {
+      buffer = Uint8Array.from([
+        this.clientType,
+        messageTypeEnum.REGISTER_CLIENT
+      ])
+    }
+
     this.socket?.send(buffer)
   }
 
@@ -130,6 +149,11 @@ class WebsocketClientManager extends EventEmitter {
         break
       case messageTypeEnum.GAME_TICK:
         this.emit(ClientEvents.GAME_TICK.toString())
+        break
+      case messageTypeEnum.ERROR:
+        console.error("An error was thrown on the game server:")
+        console.log(messageByteArray)
+        this.emit(ClientEvents.SOCKET_ERROR.toString(), messageByteArray)
     }
   }
 

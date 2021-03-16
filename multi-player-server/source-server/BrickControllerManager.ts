@@ -6,6 +6,8 @@ import { randomByte } from "./helpers/random-byte";
 import { IdableWebsocket } from "./interfaces/IdableWebsocket";
 import { UnableToFindController } from "./errors/UnableToFindController";
 import { cloneDeep } from "lodash";
+import { PlayerController } from "./PlayerController";
+import { ControllerClient } from "./interfaces/ControllerClient";
 
 class BrickControllerManager {
   private controllers: BrickControllerClient[] = []
@@ -21,6 +23,7 @@ class BrickControllerManager {
 
     this.gameManager.addListener(TICK, this.incrementTurnShuffle.bind(this))
   }
+
 
   private incrementTurnShuffle() {
     this.currentTurnCount++
@@ -140,7 +143,7 @@ class BrickControllerManager {
     }
   }
 
-  private sendRegisterClientMessage(controller: BrickControllerClient, id: Uint8Array) {
+  private sendRegisterClientMessage(controller: ControllerClient, id: Uint8Array) {
     let message = Uint8Array.from([
       messageTypeEnum.CLIENT_REGISTERED,
       ...id

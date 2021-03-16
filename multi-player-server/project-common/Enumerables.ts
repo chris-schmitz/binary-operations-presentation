@@ -8,7 +8,8 @@ export enum messageTypeEnum {
   ERROR,
   BRICK_ROW_ASSIGNMENT,
   CONTROLLER_CONTROL_REMOVED,
-  GAME_TICK
+  GAME_TICK,
+  PLAYER_MOVE
 }
 
 export enum clientTypeEnum {
@@ -16,4 +17,15 @@ export enum clientTypeEnum {
   BRICK_CONTROLLER,
   PLAYER_CONTROLLER,
   TOUCH_CONTROLLER
+}
+
+export enum directionEnum {
+  UP = 0x01,
+  DOWN,
+  LEFT,
+  RIGHT
+}
+
+export enum errorTypes {
+  PLAYER_ID_INCORRECT
 }

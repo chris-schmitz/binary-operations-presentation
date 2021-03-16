@@ -4,6 +4,7 @@ import { PlayerController } from "./PlayerController";
 import GameManager, { TICK } from "./GameManager";
 import { clientTypeEnum, messageTypeEnum } from "../project-common/Enumerables";
 import { BrickControllerManager } from "./BrickControllerManager"
+import { PlayerControllerManager } from "./PlayerControllerManager";
 import { BrickControllerClient } from "./interfaces/BrickControllerClient";
 import { IdableWebsocket } from "./interfaces/IdableWebsocket";
 import { SocketError } from "./errors/SocketError";
@@ -17,16 +18,18 @@ class WebsocketServer {
   private uuidByteLength = 4
 
   private gameBoardClients: WebSocket[] = []
-  private playerControllerClient: PlayerController | null = null
+  // private playerControllerClient: PlayerController | null = null
   private touchControllerClient: WebSocket[] = []
   private gameManager: GameManager;
 
   brickControllerManager: BrickControllerManager;
+  playerControllerManager: PlayerControllerManager;
 
-  constructor(server: http.Server, gameManager: GameManager, brickControllerManager: BrickControllerManager, verboseDebugging = false) {
+  constructor(server: http.Server, gameManager: GameManager, brickControllerManager: BrickControllerManager, playerControllerManager: PlayerControllerManager, verboseDebugging = false) {
     this.websocketServer = new WebSocket.Server({ server })
     this.gameManager = gameManager
     this.brickControllerManager = brickControllerManager
+    this.playerControllerManager = playerControllerManager
     this._verboseDebugging = verboseDebugging
     console.log("adding game manager listener")
     // TODO: move back to listeners
@@ -64,7 +67,6 @@ class WebsocketServer {
       })
 
       socket.on("message", message => this.handleMessage(message, socket))
-      console.log("adding tick listener")
     })
   }
   sendGameFrame(frame: Uint8Array) {
@@ -96,29 +98,24 @@ class WebsocketServer {
     console.log(data)
 
     try {
-
       if (!(data instanceof Buffer)) {
         // ! Note this check and throw is just b/c I'm making things difficult on myself for this demo. 
         throw new Error("Invalid message data type")
       }
 
-      const { messageType, clientType, payload } = this.parseMessage(data)
+      const { messageType, clientType, payload, id } = this.parseMessage(data)
 
       switch (messageType) {
         case messageTypeEnum.REGISTER_CLIENT:
-          this.registerClient(clientType, socket)
+          this.registerClient(clientType, socket, id)
           break
         case messageTypeEnum.ADD_BRICK:
-          console.log("----> BRICK COMMAND!!")
-
-          this.validateClientId(data, socket)
-          // TODO: move to gameboard manager class
-          const client = this.getStoredBrickController(this.getIdFromMessageData(data))
-          if (client) {
-            this.handleAddBrickCommand(payload, client)
-          }
+          // TODO move validation here
+          this.addBrickToGameBoard(data, socket, payload);
           break
-
+        case messageTypeEnum.PLAYER_MOVE:
+          this.playerControllerManager.playerMove(socket, payload)
+          break
         default:
           console.log(`==> message has unknown messageType: ${messageType} <==`)
           console.log("data:")
@@ -138,7 +135,17 @@ class WebsocketServer {
       // ]))
     }
   }
-  validateClientId(data: Buffer, socket: WebSocket) {
+  private addBrickToGameBoard(data: Buffer, socket: WebSocket, payload: Buffer) {
+    console.log("----> BRICK COMMAND!!");
+    this.validateClientId(data, socket);
+    const client = this.brickControllerManager.getControllerById(this.getIdFromMessageData(data));
+    if (!client) {
+      throw new Error("can't find client by id")
+    }
+    this.handleAddBrickCommand(payload, client);
+  }
+
+  private validateClientId(data: Buffer, socket: WebSocket) {
     const id = this.getIdFromMessageData(data)
     const storedController = this.getStoredBrickController(id)
 
@@ -179,6 +186,7 @@ class WebsocketServer {
     this.gameManager.addBrick(row, color)
   }
 
+  // TODO: woof, this is a bit of a mess at the moment. come back and clean this up
   private parseMessage(data: Buffer) {
     function extractUuid(data: Buffer, uuidByteLength: number) {
       let buffer = new ArrayBuffer(uuidByteLength)
@@ -186,13 +194,13 @@ class WebsocketServer {
       for (let i = 0; i < uuidByteLength; i++) {
         view[i] = data[i + 2]
       }
-      return buffer
+      return view
     }
 
     const clientType = data[0] as clientTypeEnum
     const messageType = data[1] as messageTypeEnum
 
-    const uuid = extractUuid(data, this.uuidByteLength)
+    const id = extractUuid(data, this.uuidByteLength)
 
     // TODO: 
     // * instead of slicing till the end, slice based on the payload size data provided in the value in the data
@@ -208,16 +216,16 @@ class WebsocketServer {
       console.log(messageTypeEnum[messageType])
 
       process.stdout.write("controllerId: ")
-      console.log(uuid)
+      console.log(id)
 
       process.stdout.write("payload: ")
       console.log(payload)
     }
 
-    return { clientType, messageType, payload }
+    return { clientType, messageType, payload, id }
   }
 
-  private registerClient(type: clientTypeEnum, socket: WebSocket) {
+  private registerClient(type: clientTypeEnum, socket: WebSocket, id: Uint8Array) {
     console.log("")
     console.log("--> registering client type:")
     switch (type) {
@@ -227,7 +235,7 @@ class WebsocketServer {
         break
       case clientTypeEnum.PLAYER_CONTROLLER:
         console.log("player controller");
-        this.registerPlayerController(socket);
+        this.playerControllerManager.registerPlayerController(socket, id);
         break
       case clientTypeEnum.BRICK_CONTROLLER:
         console.log("brick controller")
@@ -241,16 +249,6 @@ class WebsocketServer {
     this.gameBoardClients.push(socket);
   }
 
-  private registerPlayerController(socket: WebSocket) {
-    if (this.playerControllerClient !== null) { // TODO: add "... or if the id of the client trying to register is not the id of the client we already have -> error"
-      console.log("!! =============================================================== !!")
-      console.log("A controller client is attempting to register but we already have one")
-      socket.send("Forbidden: A controller is already registered")
-      console.log("!! =============================================================== !!")
-    }
-    this.playerControllerClient = new PlayerController(socket);
-    console.log(this.playerControllerClient.id);
-  }
 
   private handleClose(socket: WebSocket, code: number, reason: string) {
     const idableSocket = socket as IdableWebsocket
