@@ -8,8 +8,11 @@ import { getBinaryExpontent } from "./helpers/exponent-tools";
 export class PlayerController implements ControllerClient {
   public socket: WebSocket;
   id: Uint8Array = new Uint8Array();
-  row: number = 0
-  columnState: number = 1
+
+  playerState: PlayerState = {
+    row: 0,
+    columnState: 1
+  }
   totalRows: number
   totalColumns: number
 
@@ -49,25 +52,39 @@ export class PlayerController implements ControllerClient {
       default:
         throw new Error("direction is missing")
     }
-    console.log("---> player state:")
-    console.log(`row: ${this.row}`)
-    console.log(`columnState: ${this.columnState}`)
+  }
+
+  getPlayerState(): PlayerState {
+    return this.playerState
   }
 
   private updateRow(direction: directionEnum) {
 
-    if (direction === directionEnum.UP && this.row > 0) {
-      this.row--
-    } else if (direction === directionEnum.DOWN && this.row < this.totalRows) {
-      this.row++
+    if (direction === directionEnum.UP && this.playerState.row > 0) {
+      this.playerState.row--
+    } else if (direction === directionEnum.DOWN && this.playerState.row < this.totalRows) {
+      this.playerState.row++
     }
   }
 
   private updateColumn(direction: directionEnum) {
-    if (direction === directionEnum.RIGHT && getBinaryExpontent(this.columnState) > 0) {
-      this.columnState >>= 1
-    } else if (direction === directionEnum.LEFT && getBinaryExpontent(this.columnState) < this.totalColumns) {
-      this.columnState <<= 1
+    if (direction === directionEnum.RIGHT && getBinaryExpontent(this.playerState.columnState) > 0) {
+      this.playerState.columnState >>= 1
+    } else if (direction === directionEnum.LEFT && getBinaryExpontent(this.playerState.columnState) < this.totalColumns) {
+      this.playerState.columnState <<= 1
     }
   }
+
+  public get row() {
+    return this.playerState.row
+  }
+  public get columnState() {
+    return this.playerState.columnState
+  }
+}
+
+
+export interface PlayerState {
+  row: number,
+  columnState: number
 }

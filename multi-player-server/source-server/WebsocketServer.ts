@@ -115,6 +115,7 @@ class WebsocketServer {
           break
         case messageTypeEnum.PLAYER_MOVE:
           this.playerControllerManager.playerMove(socket as IdableWebsocket, payload)
+          this.gameManager.updatePlayerState(this.playerControllerManager.getPlayerController())
           break
         default:
           console.log(`==> message has unknown messageType: ${messageType} <==`)

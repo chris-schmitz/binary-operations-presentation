@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import { messageTypeEnum } from "../project-common/Enumerables";
+import { PlayerController, PlayerState } from "./PlayerController";
 
 enum PlayPhaseEnum {
   // * we're going to group this in the first byte with the current collision state (boolean)
@@ -18,16 +19,12 @@ class GameManager extends EventEmitter {
   private gridColors: number[] = []
   private verboseDebuggng: boolean;
 
-  private player = {
-    rowIndex: 0,
-    rowState: 0x01
-  }
-
   private availableRows: Array<number> = []
-  private brickAnimationIntervalId: NodeJS.Timeout | null; // TODO: ripout?
+  private brickAnimationIntervalId: NodeJS.Timeout | null;
   private brickAnimationIntervalDelay: number;
   private totalRows: number;
   private totalColumns: number; //todo: ripout
+  playerController: PlayerController | undefined;
 
 
   constructor(verboseDebugging = false, brickAnimationIntervalDelay = 500, totalRows = 8, totalColumns = 8) {
@@ -73,6 +70,11 @@ class GameManager extends EventEmitter {
     })
   }
 
+  public updatePlayerState(playerController: PlayerController | null) {
+    if (!playerController) return
+    this.playerController = playerController
+  }
+
   private initializeGrid() {
     for (let i = 0; i < this.totalRows; i++) {
       this.gridState[i] = 0
@@ -94,9 +96,12 @@ class GameManager extends EventEmitter {
     // * byte 14 - 22:  row colors
     const collision = 1 // ! faking it out for now
 
-    let player = this.player.rowIndex
-    player <<= 8
-    player += this.player.rowState
+    let player = 0
+    if (this.playerController) {
+      player |= this.playerController.row
+      player <<= 8
+      player |= this.playerController.columnState
+    }
 
     let bricks = new Uint32Array(this.gridState.length)
     for (let i = 0; i < this.totalRows; i++) {

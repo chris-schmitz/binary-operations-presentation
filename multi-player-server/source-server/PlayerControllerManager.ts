@@ -4,6 +4,11 @@ import { directionEnum, errorTypes, messageTypeEnum } from "../project-common/En
 import { IdableWebsocket } from "./interfaces/IdableWebsocket";
 import { writeFile } from "fs";
 
+// TODO: refactor consideration
+// * Is there a point in separating the player manager service and the PlayerController model? 
+// * This use case is simple enough that we could probably merge the two together. That said, we 
+// * could also keep them separate and adjust the manager to work for multiple player models. That would
+// * make a lot more sense. 
 export class PlayerControllerManager {
 
   private playerControllerClient: PlayerController | null = null
@@ -45,9 +50,15 @@ export class PlayerControllerManager {
       ]))
     }
   }
+
   public notifyPlayer(messageType: messageTypeEnum, payload?: Uint8Array) {
     this.playerControllerClient?.notifyPlayer(messageType, payload)
   }
+
+  public getPlayerController() {
+    return this.playerControllerClient
+  }
+
   private storePlayerControllerInstance(socket: IdableWebsocket) {
     this.validateSocketInstance(socket)
     this.playerControllerClient = new PlayerController(socket);
