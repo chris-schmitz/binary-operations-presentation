@@ -3,7 +3,7 @@ import { messageTypeEnum } from "../project-common/Enumerables";
 import { BrickControllerClient } from "./interfaces/BrickControllerClient";
 import GameManager, { TICK } from "./GameManager";
 import { randomByte } from "./helpers/random-byte";
-import { IdableWebsocket } from "./interfaces/IdableWebsocket";
+import { createId, IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
 import { UnableToFindController } from "./errors/UnableToFindController";
 import { cloneDeep } from "lodash";
 import { PlayerController } from "./PlayerController";
@@ -78,7 +78,7 @@ class BrickControllerManager {
   }
 
   public registerBrickController(socket: WebSocket, idByteLength: number) {
-    let id = this.createId(idByteLength)
+    let id = createId(idByteLength)
     const controller = this.createController(socket, id)
     this.attemptRowAssignment(controller)
     this.storeController(controller)
@@ -86,6 +86,7 @@ class BrickControllerManager {
   }
 
   public handleClientDisconnect(socket: IdableWebsocket) {
+    // ! should we add a type to the socket instance? 
     const controller = this.getControllerById(socket.id)
     if (!controller) {
       // TODO:throw this??
@@ -151,16 +152,12 @@ class BrickControllerManager {
     controller.socket.send(message)
   }
 
-  private createId(idByteLength: number) {
-    const id = randomByte(idByteLength)
-    return new Uint8Array(id)
-  }
   private storeController(controller: BrickControllerClient) {
     this.controllers.push(controller)
   }
   private attemptRowAssignment(controller: BrickControllerClient) {
     const row = this.gameManager.getNextRow()
-    if (row) {
+    if (row !== undefined) {
       this.assignRowToController(controller, row)
     } else {
       this.addToWaitingOnTurnQueue(controller)
@@ -175,6 +172,7 @@ class BrickControllerManager {
     const idableSocket = socket as IdableWebsocket
     const idView = new Uint8Array(id)
     idableSocket.id = idView
+    idableSocket.type = IdableWebsocketTypeEnum.BRICK_CONTROLLER
 
     return { id: idView, socket, row: null }
   }

@@ -29,7 +29,7 @@ class BrickController extends WebsocketClientManager {
     this.verboseLogging = verboseLogging
     this.brickColor = BrickColor.fromRGB({ red: 0, green: 0, blue: 0 })
 
-    this.buttonLockTickCountTotal = 8
+    this.buttonLockTickCountTotal = 3
 
     this.grabUiElements()
   }

@@ -6,8 +6,9 @@ import { clientTypeEnum, messageTypeEnum } from "../project-common/Enumerables";
 import { BrickControllerManager } from "./BrickControllerManager"
 import { PlayerControllerManager } from "./PlayerControllerManager";
 import { BrickControllerClient } from "./interfaces/BrickControllerClient";
-import { IdableWebsocket } from "./interfaces/IdableWebsocket";
+import { createId, IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
 import { SocketError } from "./errors/SocketError";
+import { idByteLength } from "../project-common/config.json";
 
 
 
@@ -15,10 +16,9 @@ class WebsocketServer {
 
   private websocketServer: WebSocket.Server
   private _verboseDebugging: boolean = false
-  private uuidByteLength = 4
+  private uuidByteLength = idByteLength
 
-  private gameBoardClients: WebSocket[] = []
-  // private playerControllerClient: PlayerController | null = null
+  private gameBoardClients: IdableWebsocket[] = []
   private touchControllerClient: WebSocket[] = []
   private gameManager: GameManager;
 
@@ -159,7 +159,7 @@ class WebsocketServer {
   }
 
   // TODO: pull all message data parsing out to it's own utility class
-  getIdFromMessageData(data: Buffer) {
+  private getIdFromMessageData(data: Buffer) {
     // * with the current message structure, the UUID are 4 the bytes 
     // * starting at index 2 
     return data.slice(2, 6)
@@ -170,7 +170,7 @@ class WebsocketServer {
   }
 
 
-  handleAddBrickCommand(payload: Uint8Array, controller: BrickControllerClient) {
+  private handleAddBrickCommand(payload: Uint8Array, controller: BrickControllerClient) {
     // * get the row
     // * get the color
 
@@ -247,14 +247,22 @@ class WebsocketServer {
   }
 
   private registerGameBoard(socket: WebSocket) {
-    this.gameBoardClients.push(socket);
+    const idableSocket = socket as IdableWebsocket
+    idableSocket.id = createId(this.uuidByteLength)
+    idableSocket.type = IdableWebsocketTypeEnum.GAMEBOARD
+    this.gameBoardClients.push(idableSocket);
   }
 
 
   private handleClose(socket: WebSocket, code: number, reason: string) {
     const idableSocket = socket as IdableWebsocket
     console.log(`Socket closed connection\ncode: ${code}\nreason: ${reason}`)
-    this.brickControllerManager.handleClientDisconnect(idableSocket)
+    switch (idableSocket.type) {
+      case IdableWebsocketTypeEnum.BRICK_CONTROLLER:
+        this.brickControllerManager.handleClientDisconnect(idableSocket)
+        break
+      // TODO: any other special handling per type?
+    }
   }
 
   private handleError(error: Error) {

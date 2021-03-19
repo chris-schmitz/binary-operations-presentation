@@ -25,9 +25,9 @@ export class PlayerController implements ControllerClient {
     this.totalColumns = totalColumns
   }
 
-  static generateId() {
-    return new Uint8Array(randomByte(4))
-  }
+  // static generateId() {
+  //   return new Uint8Array(randomByte(4))
+  // }
   public notifyPlayer(messageType: messageTypeEnum, payload?: Uint8Array) {
     if (!payload) {
       payload = new Uint8Array()

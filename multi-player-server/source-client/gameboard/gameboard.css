@@ -22,6 +22,7 @@ tr,
 td {
   border: 1px solid darkcyan;
   border-collapse: collapse;
+  background: white;
 }
 td {
   padding: 30px;
@@ -112,4 +113,8 @@ code {
   background: lightgray;
   color: red;
   font-weight: bold;
+}
+
+.collision {
+  background: orangered;
 }

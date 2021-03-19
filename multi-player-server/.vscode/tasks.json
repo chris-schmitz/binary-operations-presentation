@@ -8,7 +8,15 @@
       "group": "build",
       "problemMatcher": [],
       "label": "npm: build - source-server",
-      "detail": "tsc --build tsconfig.json"
+      "detail": "tsc --build tsconfig.json",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
     }
   ]
 }

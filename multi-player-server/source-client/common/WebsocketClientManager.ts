@@ -8,6 +8,10 @@ import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
 
 
 
+export interface GameFrameData {
+  player: number,
+  bricks: Uint32Array
+}
 
 export enum ClientEvents {
   GAME_FRAME,
@@ -137,8 +141,10 @@ class WebsocketClientManager extends EventEmitter {
         break
       case messageTypeEnum.GAME_FRAME:
         const data = new Uint32Array(await message.data.arrayBuffer())
-        console.log(data)
-        const frame = data.slice(3, data.length)
+        const frame: GameFrameData = {
+          player: data.slice(2, 3)[0],
+          bricks: data.slice(3, data.length),
+        }
         this.emit(ClientEvents.GAME_FRAME.toString(), frame)
         break
       case messageTypeEnum.CONTROLLER_CONTROL_REMOVED:

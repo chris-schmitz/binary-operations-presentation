@@ -43,7 +43,7 @@ class GameManager extends EventEmitter {
   }
 
   public begin() {
-    this.brickAnimationIntervalId = setInterval(this.animate.bind(this), this.brickAnimationIntervalDelay)
+    this.brickAnimationIntervalId = setInterval(() => this.animate(), this.brickAnimationIntervalDelay)
   }
 
 
@@ -73,6 +73,8 @@ class GameManager extends EventEmitter {
   public updatePlayerState(playerController: PlayerController | null) {
     if (!playerController) return
     this.playerController = playerController
+    // TODO: this animate shouldn't cause a brick tick
+    this.animate(false)
   }
 
   private initializeGrid() {
@@ -82,25 +84,13 @@ class GameManager extends EventEmitter {
     }
   }
 
-  private animate() {
+  // TODO: OMG ABSTRACT!!!
+  private animate(shiftBricks: boolean = true) {
 
-    for (let i = 0; i < this.totalRows; i++) {
-      this.gridState[i] >>= 1
-    }
-    // * byte 0:        messageTypeEnum game frame
-    // * byte 1:        game data (play state, collision, anything else?)
-    // * byte 2:        player row index
-    // * byte 3:        player row state
-    // * byte 4:        grid length (8 for now)
-    // * byte 5 - 13:   row states
-    // * byte 14 - 22:  row colors
-    const collision = 1 // ! faking it out for now
-
-    let player = 0
-    if (this.playerController) {
-      player |= this.playerController.row
-      player <<= 8
-      player |= this.playerController.columnState
+    if (shiftBricks) {
+      for (let i = 0; i < this.totalRows; i++) {
+        this.gridState[i] >>= 1
+      }
     }
 
     let bricks = new Uint32Array(this.gridState.length)
@@ -110,14 +100,38 @@ class GameManager extends EventEmitter {
       bricks[i] += this.gridColors[i]
     }
 
+    let player = 0
+    if (this.playerController) {
+      const commonRow = this.gridState[this.playerController.row]
+      const commonRowReversed = this.reverseByte(commonRow)
+      const collision = (commonRowReversed & this.playerController?.columnState) > 0
+
+      player |= +collision
+      player <<= 8
+      player |= this.playerController.row
+      player <<= 8
+      player |= this.playerController.columnState
+      console.log(`Player: ${player.toString(2)}`)
+    }
+
     const payload = Uint32Array.from([
       messageTypeEnum.GAME_FRAME,
-      this.playPhase | collision, // TODO: fix, this is wrong, if we're going to do this we should separate each piece of information into separate nibbles or break them out to separate bytes. 
+      this.playPhase, // TODO: fix, this is wrong, if we're going to do this we should separate each piece of information into separate nibbles or break them out to separate bytes. 
       player,
       ...bricks
     ])
 
     this.emit(TICK, payload)
+  }
+
+  private reverseByte(byte: number) {
+    let reversed = 0
+    for (let i = 0; i < 8; i++) {
+      reversed <<= 1
+      reversed |= byte & 0x01
+      byte >>= 1
+    }
+    return reversed
   }
 }
 

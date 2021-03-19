@@ -1,8 +1,9 @@
 import { PlayerController } from "./PlayerController";
 import WebSocket from "ws";
 import { directionEnum, errorTypes, messageTypeEnum } from "../project-common/Enumerables";
-import { IdableWebsocket } from "./interfaces/IdableWebsocket";
+import { createId, IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
 import { writeFile } from "fs";
+import { idByteLength } from "../project-common/config.json";
 
 // TODO: refactor consideration
 // * Is there a point in separating the player manager service and the PlayerController model? 
@@ -13,12 +14,14 @@ export class PlayerControllerManager {
 
   private playerControllerClient: PlayerController | null = null
   playerId: Uint8Array | undefined;
+  private idByteLength: number;
 
   constructor() {
+    this.idByteLength = idByteLength
     this.createPlayerId()
   }
   createPlayerId() {
-    this.playerId = PlayerController.generateId()
+    this.playerId = createId(this.idByteLength)
     console.log(this.playerId)
     writeFile("./player-id.txt", this.playerId, 'utf8', () => {
       "player id stored"
@@ -40,6 +43,7 @@ export class PlayerControllerManager {
     try {
       const idableSocket = socket as IdableWebsocket
       idableSocket.id = id
+      idableSocket.type = IdableWebsocketTypeEnum.PLAYER_CONTROLLER
       this.storePlayerControllerInstance(idableSocket)
       this.notifyPlayer(messageTypeEnum.CLIENT_REGISTERED, this.playerControllerClient!.id)
     } catch (error) {

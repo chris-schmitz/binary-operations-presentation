@@ -1,7 +1,7 @@
 
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
 import { clientTypeEnum } from "project-common/Enumerables";
-import WebsocketClientManager, { ClientEvents, ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager";
+import WebsocketClientManager, { ClientEvents, GameFrameData, ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager";
 
 
 const connectionTimeoutDuration = 1000
@@ -16,6 +16,7 @@ class GameBoard extends WebsocketClientManager {
   animationInterval = 100
   gameFrames = []
   messageBuilder: ClientMessageBuilder;
+  bodyElement: HTMLBodyElement | null = null;
 
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, reconnectConfig?: ReconnectConfig) {
     super(websocketUrl, clientTypeEnum.GAMEBOARD, messageBuilder, reconnectConfig)
@@ -38,6 +39,7 @@ class GameBoard extends WebsocketClientManager {
 
   grabElements() {
     this.gridElement = document.querySelector('tbody')
+    this.bodyElement = document.querySelector('body')
   }
 
   populateGrid() {
@@ -72,7 +74,8 @@ class GameBoard extends WebsocketClientManager {
 
   }
 
-  renderStateFrame(frameData: Uint32Array) {
+
+  renderStateFrame(frameData: GameFrameData) {
     const bitValue = (bit: number) => 1 << bit
 
     if (!this.gridElement) return
@@ -110,7 +113,7 @@ class GameBoard extends WebsocketClientManager {
       // 
       // * And we keep doing that to pull out the rest of our bytes for red and then the row state
 
-      let color = 0xFFFFFF & frameData[row]
+      let color = 0xFFFFFF & frameData.bricks[row]
 
       const blue = color & 0xFF
       color >>= 8
@@ -119,8 +122,8 @@ class GameBoard extends WebsocketClientManager {
       const red = color & 0xFF
 
 
-      frameData[row] >>= 24
-      const state = frameData[row]
+      frameData.bricks[row] >>= 24
+      const state = frameData.bricks[row]
       for (let cell = 0; cell < 8; cell++) {
         if ((state & bitValue(cell)) != 0) {
           // ! we _should_ be able to set the style with a hex value, though I was having problems with it before. 
@@ -132,6 +135,21 @@ class GameBoard extends WebsocketClientManager {
         }
       }
     }
+
+    const playerColumnState = frameData.player & 0xFF
+    const playerColummn = playerColumnState === 0 ? 0 : Math.log(playerColumnState) / Math.log(2)
+    frameData.player >>= 8
+    const playerRow = frameData.player & 0xFF
+    frameData.player >>= 8
+    const collision = frameData.player & 0xFF
+
+    this.gridElement.rows[playerRow].cells[this.columns - playerColummn - 1].style.backgroundColor = `rgb(255, 0, 255)`
+    if (collision) {
+      this.bodyElement?.classList.add("collision")
+    } else {
+      this.bodyElement?.classList.remove("collision")
+    }
+
   }
 
 }
