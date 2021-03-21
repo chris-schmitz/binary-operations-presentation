@@ -8,4 +8,10 @@ function randomByte(numberOfBytes: number, startingNumber = 0): ArrayBuffer {
   return buffer
 }
 
-export { randomByte }
+function uintArrayToHex(array: Uint8Array) {
+  return array.reduce((carry, current) => {
+    return carry + current.toString(16)
+  }, "")
+}
+
+export { randomByte, uintArrayToHex }

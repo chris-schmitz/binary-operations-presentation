@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { randomByte } from "../helpers/random-byte";
+import { randomByte } from "../helpers/helpers";
 
 export enum IdableWebsocketTypeEnum {
   GAMEBOARD,

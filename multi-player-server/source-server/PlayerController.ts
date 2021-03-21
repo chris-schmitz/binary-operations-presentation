@@ -1,7 +1,7 @@
 import WebSocket from "ws";
 import { v4 as uuid } from "uuid";
 import { ControllerClient } from "./interfaces/ControllerClient";
-import { randomByte } from "./helpers/random-byte";
+import { randomByte } from "./helpers/helpers";
 import { directionEnum, messageTypeEnum } from "../project-common/Enumerables";
 import { getBinaryExpontent } from "./helpers/exponent-tools";
 
