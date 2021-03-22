@@ -5,6 +5,7 @@ import { createId, IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces
 import { writeFile } from "fs";
 import { idByteLength } from "../project-common/config.json";
 import { uintArrayToHex } from "./helpers/helpers";
+import { join } from "path";
 
 // TODO: refactor consideration
 // * Is there a point in separating the player manager service and the PlayerController model? 
@@ -23,9 +24,14 @@ export class PlayerControllerManager {
   }
   createPlayerId() {
     this.playerId = createId(this.idByteLength)
+    const writePath = join(__dirname, "player-id.txt")
     console.log(uintArrayToHex(this.playerId))
-    writeFile("../player-id.txt", this.playerId, 'utf8', () => {
-      "player id stored"
+    writeFile(writePath, this.playerId, 'utf8', (error) => {
+      if (error) {
+        console.log("write file error:")
+        console.log(error)
+      }
+      console.log("player id stored")
     })
   }
 
