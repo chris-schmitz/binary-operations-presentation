@@ -42,6 +42,8 @@ uint32_t matrixState[8] = {0};
 uint8_t playerRow; // * byte 1 == row, byte 2 == column, color separated? we only have 4 bytes. no color for now
 uint8_t playerColumnState;
 boolean collision = false;
+int playerTargetPixel;
+int previousPlayerTargetPixel;
 uint8_t previousPlayerRow; // * byte 1 == row, byte 2 == column, color separated? we only have 4 bytes. no color for now
 uint8_t previousPlayerColumnState;
 boolean previousCollision = false;
@@ -191,7 +193,6 @@ void setGameState(uint32_t *gameFrame, uint32_t length)
 
 void setPlayerState(uint32_t playerStateNumber)
 {
-
   playerStateNumber >>= 8; // * chop unused byte
 
   collision = playerStateNumber & 0xFF;
@@ -201,15 +202,6 @@ void setPlayerState(uint32_t playerStateNumber)
 
   playerStateNumber >>= 8;
   playerColumnState = playerStateNumber & 0xFF;
-
-  Serial.println("===================");
-  Serial.print("PlayerColumnState: ");
-  Serial.print(playerColumnState);
-  Serial.print(", row: ");
-  Serial.print(playerRow);
-  Serial.print(", collission: ");
-  Serial.println(collision);
-  Serial.println("===================");
 }
 
 void addWebsocketListener()
@@ -308,14 +300,6 @@ void writeBricksToMatrix()
       previousMatrixState[row] = matrixState[row];
 
       BrickRow brickRow = BrickRow(matrixState[row]);
-      // Serial.print("row: ");
-      // Serial.println(row);
-      // Serial.print("red: ");
-      // Serial.println(brickRow.red);
-      // Serial.print("green: ");
-      // Serial.println(brickRow.green);
-      // Serial.print("blue: ");
-      // Serial.println(brickRow.blue);
       uint32_t color = matrix.Color(brickRow.red, brickRow.green, brickRow.blue);
       int renderByte = row % 2 == 0 ? brickRow.rowState : reverseByte(brickRow.rowState, 8);
       renderRow(row, renderByte, color);
@@ -330,24 +314,21 @@ void writePlayerToMatrix()
     previousPlayerRow = playerRow;
     previousPlayerColumnState = playerColumnState;
     previousCollision = collision;
-    Serial.println("player render");
-    Serial.print("row: ");
-    Serial.print(playerRow);
-    Serial.print(", column: ");
-    Serial.print(playerColumnState);
-    Serial.print(", collision: ");
-    Serial.print(collision);
+    previousPlayerTargetPixel = playerTargetPixel;
+
     writeNewFrameToLEDs = true;
+
     int exponent = log(playerColumnState) / log(2);
-    int targetPixel = playerRow * 8 + exponent;
-    Serial.print(", target pixel: ");
-    Serial.println(targetPixel);
+    int column = playerRow % 2 == 0 ? exponent : 8 - exponent - 1;
+    playerTargetPixel = playerRow * 8 + column;
+
+    matrix.setPixelColor(previousPlayerTargetPixel, defaultBackgroundColor);
     uint32_t color = playerColor;
     if (collision)
     {
       color = matrix.Color(255, 255, 255);
     }
-    matrix.setPixelColor(targetPixel, color);
+    matrix.setPixelColor(playerTargetPixel, color);
   }
 }
 
