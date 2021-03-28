@@ -29,3 +29,10 @@ export enum directionEnum {
 export enum errorTypes {
   PLAYER_ID_INCORRECT
 }
+
+export enum PlayPhaseEnum {
+  // * we're going to group this in the first byte with the current collision state (boolean)
+  IDLE = 0b010,
+  PLAYING,
+  GAME_OVER
+}

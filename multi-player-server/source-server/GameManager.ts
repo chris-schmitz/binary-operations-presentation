@@ -1,20 +1,12 @@
 import { EventEmitter } from "events";
-import { messageTypeEnum } from "../project-common/Enumerables";
+import { messageTypeEnum, PlayPhaseEnum } from "../project-common/Enumerables";
 import { PlayerController, PlayerState } from "./PlayerController";
-
-enum PlayPhaseEnum {
-  // * we're going to group this in the first byte with the current collision state (boolean)
-  IDLE = 0b010,
-  PLAYING,
-  GAME_OVER
-}
-
 export const TICK = 'tick'
 
 // TODO: consider: do we need the event emitter anymore?
 class GameManager extends EventEmitter {
 
-  private playPhase: PlayPhaseEnum = PlayPhaseEnum.IDLE
+  private playPhase: PlayPhaseEnum = PlayPhaseEnum.PLAYING
   private gridState: number[] = []
   private gridColors: number[] = []
   private verboseDebuggng: boolean;
@@ -88,31 +80,12 @@ class GameManager extends EventEmitter {
   private animate(shiftBricks: boolean = true) {
 
     if (shiftBricks) {
-      for (let i = 0; i < this.totalRows; i++) {
-        this.gridState[i] >>= 1
-      }
+      this.shiftBricks()
     }
 
-    let bricks = new Uint32Array(this.gridState.length)
-    for (let i = 0; i < this.totalRows; i++) {
-      bricks[i] = this.gridState[i]
-      bricks[i] <<= 24
-      bricks[i] += this.gridColors[i]
-    }
-
-    let player = 0
-    if (this.playerController) {
-      const commonRow = this.gridState[this.playerController.row]
-      const commonRowReversed = this.reverseByte(commonRow)
-      const collision = (commonRowReversed & this.playerController?.columnState) > 0
-
-      player |= +collision
-      player <<= 8
-      player |= this.playerController.row
-      player <<= 8
-      player |= this.playerController.columnState
-      console.log(`Player: ${player.toString(2)}`)
-    }
+    let bricks = this.packageBrickState()
+    let player = this.packagePlayerState()
+    this.updatePlayPhase()
 
     const payload = Uint32Array.from([
       messageTypeEnum.GAME_FRAME,
@@ -122,6 +95,55 @@ class GameManager extends EventEmitter {
     ])
 
     this.emit(TICK, payload)
+  }
+  // TODO: figure out how else we want to handle this
+  private updatePlayPhase() {
+    if (this.playPhase == PlayPhaseEnum.PLAYING && this.playerController?.columnState == 0) {
+      this.playPhase = PlayPhaseEnum.GAME_OVER
+      this.stopAnimation() // TODO: consider moving this. this method is probably not where we want this
+    }
+  }
+  stopAnimation() {
+    clearInterval(this.brickAnimationIntervalId!)
+  }
+  packagePlayerState() {
+    let player = 0
+    if (this.playerController) {
+      const collision = this.detectCollision()
+      if (collision) this.playerController.pushPlayerBackABrick()
+
+      player |= +collision
+      player <<= 8
+      player |= this.playerController.row
+      player <<= 8
+      player |= this.playerController.columnState
+      console.log(`Player: ${player.toString(2)}`)
+    }
+    return player
+  }
+  private detectCollision() {
+    let collision = false
+    if (this.playerController) {
+      const commonRow = this.gridState[this.playerController.row]
+      collision = (commonRow & this.playerController?.columnState) > 0
+    }
+    return collision
+  }
+
+  private packageBrickState() {
+    let bricks = new Uint32Array(this.gridState.length);
+    for (let i = 0; i < this.totalRows; i++) {
+      bricks[i] = this.gridState[i];
+      bricks[i] <<= 24;
+      bricks[i] += this.gridColors[i];
+    }
+    return bricks;
+  }
+
+  private shiftBricks() {
+    for (let i = 0; i < this.totalRows; i++) {
+      this.gridState[i] >>= 1
+    }
   }
 
   private reverseByte(byte: number) {

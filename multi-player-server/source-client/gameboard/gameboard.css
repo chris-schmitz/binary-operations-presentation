@@ -90,6 +90,31 @@ code {
   font-size: 20px;
 }
 
+.cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+.cover.active {
+  display: flex;
+}
+
+.cover span {
+  color: ORANGERED;
+  font-size: 100px;
+  font-weight: bold;
+  /* background: black; */
+  padding: 10px;
+  border: 10px orangered;
+  border-style: ridge;
+  text-shadow: 0px 1px 2px purple, 0 0 1em orangered, 0 0 0.2em black;
+}
+
 .tools {
   display: flex;
 }
@@ -109,12 +134,12 @@ code {
   background: orangered;
 }
 
+.collision {
+  background: orangered;
+}
+
 .game-over {
   background: lightgray;
   color: red;
   font-weight: bold;
-}
-
-.collision {
-  background: orangered;
 }

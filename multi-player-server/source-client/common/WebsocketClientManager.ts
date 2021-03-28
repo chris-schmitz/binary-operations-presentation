@@ -1,14 +1,10 @@
 import ClientMessageBuilder, { ClientRegisteredPayload } from "../common/ClientMessageBuilder";
 import EventEmitter from "events"
-import { clientTypeEnum, messageTypeEnum } from "project-common/Enumerables";
-
-
-
-
-
-
+import { clientTypeEnum, messageTypeEnum, PlayPhaseEnum } from "project-common/Enumerables";
 
 export interface GameFrameData {
+
+  playPhase: PlayPhaseEnum,
   player: number,
   bricks: Uint32Array
 }
@@ -142,6 +138,7 @@ class WebsocketClientManager extends EventEmitter {
       case messageTypeEnum.GAME_FRAME:
         const data = new Uint32Array(await message.data.arrayBuffer())
         const frame: GameFrameData = {
+          playPhase: data.slice(1, 2)[0],
           player: data.slice(2, 3)[0],
           bricks: data.slice(3, data.length),
         }

@@ -81,6 +81,11 @@ export class PlayerController implements ControllerClient {
   public get columnState() {
     return this.playerState.columnState
   }
+
+  public pushPlayerBackABrick(reverse = false) {
+    // TODO: consider moving into player model
+    this.playerState.columnState >>= 1
+  }
 }
 
 

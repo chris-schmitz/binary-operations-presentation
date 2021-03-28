@@ -9,7 +9,7 @@ struct BrickRow
 
   BrickRow(uint32_t data)
   {
-    // TODO: abstract
+    // TODO: abstract and refactor. as liong as the hex is in the right order we don't need to break out the RGB, we can setPixelColor with just a 32bit integer
     rowState = data & 0xFF;
     data >>= 8;
     red = data & 0xFF;

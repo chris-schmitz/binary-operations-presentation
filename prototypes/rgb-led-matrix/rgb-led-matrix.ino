@@ -3,12 +3,13 @@
 #include "data-classes.h"
 #include "enumerables.h"
 #include "helpers.h"
+#include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoWebsockets.h>
 #include <WiFi.h>
 
 #define _BV(bit) (1 << (bit))
-#define MATRIX_PIN 12
+#define MATRIX_PIN 25
 
 #define VERBOSE_MODE false
 
@@ -24,7 +25,7 @@ using namespace websockets;
 
 WebsocketsClient client;
 
-Adafruit_NeoPixel matrix = Adafruit_NeoPixel(64, MATRIX_PIN, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel matrix = Adafruit_NeoPixel(64, MATRIX_PIN, NEO_RGB + NEO_KHZ400);
 // uint32_t defaultBackgroundColor = matrix.Color(20, 20, 20);
 // uint32_t defaultBackgroundColor = matrix.Color(0, 255, 0);
 uint32_t defaultBackgroundColor = matrix.Color(0, 0, 0);
@@ -300,6 +301,7 @@ void writeBricksToMatrix()
       previousMatrixState[row] = matrixState[row];
 
       BrickRow brickRow = BrickRow(matrixState[row]);
+      // TODO: refactor: we can set the pixel color directly from the hex as long as it's in the right order
       uint32_t color = matrix.Color(brickRow.red, brickRow.green, brickRow.blue);
       int renderByte = row % 2 == 0 ? brickRow.rowState : reverseByte(brickRow.rowState, 8);
       renderRow(row, renderByte, color);

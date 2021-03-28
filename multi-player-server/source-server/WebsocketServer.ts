@@ -90,7 +90,6 @@ class WebsocketServer {
   // ^ byte 4: | x x x x x x x x | UUID
   // ^ byte 5: | x x x x x x x x | UUID
   // ^ byte 6: | x x x x x x x x | UUID
-  // ! byte 7: | x x x x x x x x | payload length // consider adding
   // ^ byte n: | ? ? ? ? ? ? ? ? | payload
   private handleMessage(data: WebSocket.Data, socket: WebSocket) {
     console.log("============================")

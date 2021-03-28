@@ -1,8 +1,10 @@
 
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
-import { clientTypeEnum } from "project-common/Enumerables";
+import { clientTypeEnum, PlayPhaseEnum } from "project-common/Enumerables";
 import WebsocketClientManager, { ClientEvents, GameFrameData, ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager";
+import { frame } from "websocket";
 
+const bitValue = (bit: number) => 1 << bit
 
 const connectionTimeoutDuration = 1000
 
@@ -17,6 +19,7 @@ class GameBoard extends WebsocketClientManager {
   gameFrames = []
   messageBuilder: ClientMessageBuilder;
   bodyElement: HTMLBodyElement | null = null;
+  coverElement: HTMLElement | null = null;
 
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, reconnectConfig?: ReconnectConfig) {
     super(websocketUrl, clientTypeEnum.GAMEBOARD, messageBuilder, reconnectConfig)
@@ -40,6 +43,7 @@ class GameBoard extends WebsocketClientManager {
   grabElements() {
     this.gridElement = document.querySelector('tbody')
     this.bodyElement = document.querySelector('body')
+    this.coverElement = document.querySelector('.cover')
   }
 
   populateGrid() {
@@ -64,22 +68,32 @@ class GameBoard extends WebsocketClientManager {
     console.log('received a message from the server')
     console.log(message)
 
-    // * we'll need to change this up after ripping out the ReturnMessagePayloadType stuff
-    if (message instanceof Uint8Array) {
-
-      const justRows = message.slice(5, message.length)
-
-      // this.renderStateFrame(justRows)
-    }
-
   }
 
 
   renderStateFrame(frameData: GameFrameData) {
-    const bitValue = (bit: number) => 1 << bit
-
     if (!this.gridElement) return
+    this.renderPlayPhase(frameData)
 
+    this.renderBricks(frameData, bitValue);
+    this.renderPlayer(frameData);
+
+  }
+  renderPlayPhase(frameData: GameFrameData) {
+    switch (frameData.playPhase) {
+      case PlayPhaseEnum.PLAYING:
+        this.coverElement?.classList.remove("active")
+        this.bodyElement?.classList.remove("game-over")
+        break
+      case PlayPhaseEnum.GAME_OVER:
+        this.coverElement?.classList.add("active")
+        this.bodyElement?.classList.add("game-over")
+        break
+    }
+  }
+
+
+  private renderBricks(frameData: GameFrameData, bitValue: (bit: number) => number) {
     for (let row = 0; row < 8; row++) {
 
       // * For the frame data, each array element is a single number representing a row's state,
@@ -112,46 +126,48 @@ class GameBoard extends WebsocketClientManager {
       // ^ 00000000 00000000 00000000 10101010 
       // 
       // * And we keep doing that to pull out the rest of our bytes for red and then the row state
+      let color = 0xFFFFFF & frameData.bricks[row];
 
-      let color = 0xFFFFFF & frameData.bricks[row]
-
-      const blue = color & 0xFF
-      color >>= 8
-      const green = color & 0xFF
-      color >>= 8
-      const red = color & 0xFF
+      const blue = color & 0xFF;
+      color >>= 8;
+      const green = color & 0xFF;
+      color >>= 8;
+      const red = color & 0xFF;
 
 
-      frameData.bricks[row] >>= 24
-      const state = frameData.bricks[row]
+      frameData.bricks[row] >>= 24;
+      const state = frameData.bricks[row];
       for (let cell = 0; cell < 8; cell++) {
         if ((state & bitValue(cell)) != 0) {
           // ! we _should_ be able to set the style with a hex value, though I was having problems with it before. 
           // ! that said, deconstructing the 32 bit number here into 4 different bytes that mean different things 
           // ! is a pretty worthy binary operations example :)
-          this.gridElement.rows[row].cells[cell].style.backgroundColor = `rgb(${red}, ${green}, ${blue})`
+          this.gridElement!.rows[row].cells[this.columns - cell - 1].style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
         } else {
-          this.gridElement.rows[row].cells[cell].style.backgroundColor = ""
+          this.gridElement!.rows[row].cells[this.columns - cell - 1].style.backgroundColor = "";
         }
       }
     }
-
-    const playerColumnState = frameData.player & 0xFF
-    const playerColummn = playerColumnState === 0 ? 0 : Math.log(playerColumnState) / Math.log(2)
-    frameData.player >>= 8
-    const playerRow = frameData.player & 0xFF
-    frameData.player >>= 8
-    const collision = frameData.player & 0xFF
-
-    this.gridElement.rows[playerRow].cells[this.columns - playerColummn - 1].style.backgroundColor = `rgb(255, 0, 255)`
-    if (collision) {
-      this.bodyElement?.classList.add("collision")
-    } else {
-      this.bodyElement?.classList.remove("collision")
-    }
-
   }
 
+  private renderPlayer(frameData: GameFrameData) {
+    const playerColumnState = frameData.player & 0xFF;
+    const playerColummn = playerColumnState === 0 ? 0 : Math.log(playerColumnState) / Math.log(2);
+    frameData.player >>= 8;
+    const playerRow = frameData.player & 0xFF;
+    frameData.player >>= 8;
+    const collision = frameData.player & 0xFF;
+
+    if (frameData.playPhase !== PlayPhaseEnum.GAME_OVER) {
+      this.gridElement!.rows[playerRow].cells[this.columns - playerColummn - 1].style.backgroundColor = `rgb(255, 0, 255)`;
+    }
+
+    if (collision) {
+      this.bodyElement?.classList.add("collision");
+    } else {
+      this.bodyElement?.classList.remove("collision");
+    }
+  }
 }
 
 

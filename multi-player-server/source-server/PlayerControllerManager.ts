@@ -25,6 +25,7 @@ export class PlayerControllerManager {
   createPlayerId() {
     this.playerId = createId(this.idByteLength)
     const writePath = join(__dirname, "player-id.txt")
+    console.log(writePath)
     console.log(uintArrayToHex(this.playerId))
     writeFile(writePath, this.playerId, 'utf8', (error) => {
       if (error) {
