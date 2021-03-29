@@ -59,7 +59,7 @@ export class PlayerController implements ControllerClient {
 
     if (direction === directionEnum.UP && this.playerState.row > 0) {
       this.playerState.row--
-    } else if (direction === directionEnum.DOWN && this.playerState.row < this.totalRows) {
+    } else if (direction === directionEnum.DOWN && this.playerState.row < this.totalRows - 1) { // ? -1 to account for the 0 based index
       this.playerState.row++
     }
   }
@@ -67,7 +67,8 @@ export class PlayerController implements ControllerClient {
   private updateColumn(direction: directionEnum) {
     if (direction === directionEnum.RIGHT && getBinaryExpontent(this.playerState.columnState) > 0) {
       this.playerState.columnState >>= 1
-    } else if (direction === directionEnum.LEFT && getBinaryExpontent(this.playerState.columnState) < this.totalColumns) {
+    } else if (direction === directionEnum.LEFT && getBinaryExpontent(this.playerState.columnState) < this.totalColumns - 1) {// ? -1 to account for the 0 based index
+
       this.playerState.columnState <<= 1
     }
   }
