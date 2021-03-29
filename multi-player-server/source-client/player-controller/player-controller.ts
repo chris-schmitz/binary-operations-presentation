@@ -19,6 +19,7 @@ enum buttonTypesEnum {
   RIGHT
 }
 
+
 class PlayerController extends WebsocketClientManager {
   verboseLogging: boolean;
   upButtonElement: HTMLButtonElement | null = null;
@@ -69,7 +70,7 @@ class PlayerController extends WebsocketClientManager {
         this.idSubmitButton!.innerText = "✔"
         this.idSubmitButton?.classList.add("disabled")
         this.idSubmitButton!.disabled = true
-        this.idElement!.disabled = true
+        // this.idElement!.disabled = true
 
         this.leftButtonElement!.disabled = false
         this.rightButtonElement!.disabled = false
@@ -82,7 +83,7 @@ class PlayerController extends WebsocketClientManager {
         this.idSubmitButton!.innerText = "CONNECT"
         this.idSubmitButton?.classList.remove("disabeled")
         this.idSubmitButton!.disabled = false
-        this.idElement!.disabled = false
+        // this.idElement!.disabled = false
 
         this.leftButtonElement!.disabled = true
         this.rightButtonElement!.disabled = true
@@ -269,9 +270,14 @@ class PlayerController extends WebsocketClientManager {
     this.messageElement = document.querySelector("#message") as HTMLParagraphElement
   }
 
+  public resetGame() {
+    const idString = this.idElement?.value
+    const id = this.hexStringToUint8Array(idString)
+    if (id) {
+      this.sendAdminMessage(messageTypeEnum.RESTART_GAME, id)
+    }
+  }
 }
-
-
 
 
 export { PlayerController }

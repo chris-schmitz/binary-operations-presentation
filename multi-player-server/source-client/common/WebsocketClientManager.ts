@@ -83,6 +83,10 @@ class WebsocketClientManager extends EventEmitter {
   public sendMessage(type: messageTypeEnum, payload: Uint8Array) {
     this.socket?.send(this.messageBuilder.build(type, payload))
   }
+  public sendAdminMessage(type: messageTypeEnum, adminId: Uint8Array) {
+    const message = this.messageBuilder.build(type, undefined, adminId)
+    this.socket?.send(message)
+  }
 
   private addListeners() {
     this.socket?.addEventListener("close", this.closeListener.bind(this))

@@ -116,6 +116,9 @@ class WebsocketServer {
           this.playerControllerManager.playerMove(socket as IdableWebsocket, payload)
           this.gameManager.updatePlayerState(this.playerControllerManager.getPlayerController())
           break
+        case messageTypeEnum.RESTART_GAME:
+          this.gameManager.restartGame(id)
+          break
         default:
           console.log(`==> message has unknown messageType: ${messageType} <==`)
           console.log("data:")

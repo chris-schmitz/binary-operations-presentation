@@ -10,7 +10,11 @@ const reconnectConfig: ReconnectConfig = {
   totalAttempts: 100
 }
 
+declare global {
+  interface Window { player: PlayerController; }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log(`Connecting to ${websocketServerUrl}`)
-  new PlayerController(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.PLAYER_CONTROLLER), reconnectConfig)
+  window.player = new PlayerController(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.PLAYER_CONTROLLER), reconnectConfig)
 })

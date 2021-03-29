@@ -9,14 +9,16 @@ export enum messageTypeEnum {
   BRICK_ROW_ASSIGNMENT,
   CONTROLLER_CONTROL_REMOVED,
   GAME_TICK,
-  PLAYER_MOVE
+  PLAYER_MOVE,
+  RESTART_GAME
 }
 
 export enum clientTypeEnum {
   GAMEBOARD = 0x01,
   BRICK_CONTROLLER,
   PLAYER_CONTROLLER,
-  TOUCH_CONTROLLER
+  TOUCH_CONTROLLER,
+  ADMIN
 }
 
 export enum directionEnum {

@@ -1,10 +1,17 @@
 import { EventEmitter } from "events";
 import { messageTypeEnum, PlayPhaseEnum } from "../project-common/Enumerables";
+import { uintArrayToHex } from "./helpers/helpers";
+import { createId } from "./interfaces/IdableWebsocket";
 import { PlayerController, PlayerState } from "./PlayerController";
+import { join } from "path"
+import { writeFile } from "fs";
+import { idByteLength } from "../project-common/config.json";
+
 export const TICK = 'tick'
 
 // TODO: consider: do we need the event emitter anymore?
 class GameManager extends EventEmitter {
+  idByteLength: number = idByteLength;
 
   private playPhase: PlayPhaseEnum = PlayPhaseEnum.PLAYING
   private gridState: number[] = []
@@ -12,11 +19,12 @@ class GameManager extends EventEmitter {
   private verboseDebuggng: boolean;
 
   private availableRows: Array<number> = []
-  private brickAnimationIntervalId: NodeJS.Timeout | null;
-  private brickAnimationIntervalDelay: number;
-  private totalRows: number;
-  private totalColumns: number; //todo: ripout
-  playerController: PlayerController | undefined;
+  private brickAnimationIntervalId: NodeJS.Timeout | null
+  private brickAnimationIntervalDelay: number
+  private totalRows: number
+  private totalColumns: number //todo: ripout
+  playerController: PlayerController | undefined
+  adminId: Uint8Array | undefined
 
 
   constructor(verboseDebugging = false, brickAnimationIntervalDelay = 500, totalRows = 8, totalColumns = 8) {
@@ -28,16 +36,46 @@ class GameManager extends EventEmitter {
     this.totalRows = totalRows
     this.totalColumns = totalColumns
 
-    // this.availableRows = [1, 2]
     this.availableRows = Array.from(Array(totalRows).keys())
 
     this.initializeGrid()
+    this.createGameManagerAdminId()
   }
 
   public begin() {
+    this.setPlayPhase(PlayPhaseEnum.PLAYING);
+    this.initializeGrid()
+    this.clearPlayerController()
     this.brickAnimationIntervalId = setInterval(() => this.animate(), this.brickAnimationIntervalDelay)
   }
+  private setPlayPhase(phase: PlayPhaseEnum) {
+    this.playPhase = phase
+  }
 
+  public restartGame(id: Uint8Array) {
+    this.verifyAdminId(id)
+    this.begin()
+  }
+  private clearPlayerController() {
+    this.playerController = undefined
+  }
+  private verifyAdminId(id: Uint8Array) {
+    if (Buffer.compare(id, this.adminId!) !== 0) {
+      throw new Error("Invalid admin ID")
+    }
+  }
+
+  private createGameManagerAdminId() {
+    this.adminId = createId(this.idByteLength)
+    const writePath = join(__dirname, "admin-id.txt")
+    writeFile(writePath, this.adminId, 'utf8', (error) => {
+      if (error) {
+        console.log("write file error:")
+        console.log(error)
+      }
+      console.log("admin id stored")
+    })
+  }
 
   get thereAreAvailableRows() {
     return this.availableRows.length !== 0

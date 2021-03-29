@@ -31,7 +31,6 @@ class ClientMessageBuilder {
   }
 
   public static interpret(payload: Uint8Array) {
-    debugger
     switch (payload[0]) {
       case messageTypeEnum.CLIENT_REGISTERED:
         return new ClientRegisteredPayload(payload)
@@ -43,10 +42,16 @@ class ClientMessageBuilder {
     }
   }
 
-  public build(messageType: messageTypeEnum, payload: Uint8Array | null = null) {
+  public build(messageType: messageTypeEnum, payload?: Uint8Array, adminId?: Uint8Array) {
     if (!this.id) {
       throw new Error("The ClientMessage helper class doesn't have an ID assigned")
     }
+    let id = this.id
+
+    if (adminId) {
+      id = adminId
+    }
+
     if (!payload) {
       payload = Uint8Array.from([])
     }
@@ -54,7 +59,7 @@ class ClientMessageBuilder {
     return Uint8Array.from([
       this.clientType,
       messageType,
-      ...this.id,
+      ...id,
       ...payload
     ])
   }

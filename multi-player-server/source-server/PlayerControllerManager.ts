@@ -77,6 +77,10 @@ export class PlayerControllerManager {
     this.playerControllerClient.id = socket.id
   }
 
+  public removePlayerControllerInstance() {
+    this.playerControllerClient = null
+  }
+
   private validateSocketInstance(socket: IdableWebsocket) {
     if (!this.playerId) {
       throw new Error("this error should be somewhere else")
