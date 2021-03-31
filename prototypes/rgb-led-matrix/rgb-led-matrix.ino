@@ -3,13 +3,13 @@
 #include "data-classes.h"
 #include "enumerables.h"
 #include "helpers.h"
-#include <Adafruit_NeoMatrix.h>
-#include <Adafruit_NeoPixel.h>
 #include <ArduinoWebsockets.h>
+#include <FastLED.h>
 #include <WiFi.h>
 
 #define _BV(bit) (1 << (bit))
 #define MATRIX_PIN 12
+#define TOTAL_LEDS 64
 
 #define VERBOSE_MODE false
 
@@ -25,14 +25,14 @@ using namespace websockets;
 
 WebsocketsClient client;
 
-Adafruit_NeoPixel matrix = Adafruit_NeoPixel(64, MATRIX_PIN, NEO_RGB + NEO_KHZ400);
-// uint32_t defaultBackgroundColor = matrix.Color(20, 20, 20);
-// uint32_t defaultBackgroundColor = matrix.Color(0, 255, 0);
-uint32_t defaultBackgroundColor = matrix.Color(0, 0, 0);
-uint32_t backgroundColor = defaultBackgroundColor;
+CRGB matrix[TOTAL_LEDS];
+
+uint32_t defaultBackgroundColor = CRGB(20, 20, 20);
+// CRGB defaultBackgroundColor = CRGB(0, 0, 0);
+CRGB backgroundColor = defaultBackgroundColor;
 
 // TODO: ripout?
-uint32_t activeColor = matrix.Color(255, 0, 255);
+CRGB activeColor = CRGB(255, 0, 255);
 // TODO: ripout, animation hapens on command with frames
 unsigned long animationInterval = 100;
 unsigned long animationLastCheckpoint = 0;
@@ -48,14 +48,13 @@ int previousPlayerTargetPixel;
 uint8_t previousPlayerRow; // * byte 1 == row, byte 2 == column, color separated? we only have 4 bytes. no color for now
 uint8_t previousPlayerColumnState;
 boolean previousCollision = false;
-uint32_t playerColor = matrix.Color(255, 0, 255);
+CRGB playerColor = CRGB(255, 0, 255);
 
 void setup()
 {
   Serial.begin(115200);
   Serial.println("Setting up");
-  matrix.begin();
-  matrix.show();
+  FastLED.addLeds<WS2811, MATRIX_PIN, RGB>(matrix, TOTAL_LEDS);
 
   clearMatrix(backgroundColor);
   clearMatrixState();
@@ -236,7 +235,7 @@ void addWebsocketListener()
   });
 }
 
-void renderRow(int row, uint16_t data, uint32_t color)
+void renderRow(int row, uint16_t data, CRGB color)
 {
   for (uint8_t i = 0; i < 8; i++)
   {
@@ -245,16 +244,23 @@ void renderRow(int row, uint16_t data, uint32_t color)
 
     if (currentBit != 0)
     {
-      // TODO: check to see if this actually helps re: noise
-      if (matrix.getPixelColor(index) != color)
+      if (matrix[index] != color)
       {
-        matrix.setPixelColor(index, color);
+        matrix[index] = color;
       }
-      // TODO: also, should we move this outside of the loop?
+
+      // TODO: ripout
+      // if (matrix.getPixelColor(index) != color)
+      // {
+      //   matrix.setPixelColor(index, color);
+      // }
+      // // TODO: also, should we move this outside of the loop?
     }
     else
     {
-      matrix.setPixelColor(index, defaultBackgroundColor);
+      matrix[index] = defaultBackgroundColor;
+      // TODO: ripout
+      // matrix.setPixelColor(index, defaultBackgroundColor);
     }
 
     if (VERBOSE_MODE)
@@ -262,14 +268,14 @@ void renderRow(int row, uint16_t data, uint32_t color)
   }
 }
 
-void clearMatrix(uint32_t color)
+void clearMatrix(CRGB color)
 {
   // * one by one for all 64
   for (int i = 0; i < 64; i++)
   {
-    matrix.setPixelColor(i, color);
+    matrix[i] = color;
   }
-  matrix.show();
+  FastLED.show();
 }
 
 void clearMatrixState()
@@ -301,7 +307,7 @@ void writeBricksToMatrix()
 
       BrickRow brickRow = BrickRow(matrixState[row]);
       // TODO: refactor: we can set the pixel color directly from the hex as long as it's in the right order
-      uint32_t color = matrix.Color(brickRow.red, brickRow.green, brickRow.blue);
+      CRGB color = CRGB(brickRow.red, brickRow.green, brickRow.blue);
       int renderByte = row % 2 == 0 ? brickRow.rowState : reverseByte(brickRow.rowState, 8);
       renderRow(row, renderByte, color);
     }
@@ -323,13 +329,13 @@ void writePlayerToMatrix()
     int column = playerRow % 2 == 0 ? exponent : 8 - exponent - 1;
     playerTargetPixel = playerRow * 8 + column;
 
-    matrix.setPixelColor(previousPlayerTargetPixel, defaultBackgroundColor);
-    uint32_t color = playerColor;
+    matrix[previousPlayerTargetPixel] = defaultBackgroundColor;
+    CRGB color = playerColor;
     if (collision)
     {
-      color = matrix.Color(255, 255, 255);
+      color = CRGB(255, 255, 255);
     }
-    matrix.setPixelColor(playerTargetPixel, color);
+    matrix[playerTargetPixel] = color;
   }
 }
 
@@ -339,7 +345,7 @@ void animate()
   writePlayerToMatrix();
   if (writeNewFrameToLEDs == true)
   {
-    matrix.show();
+    FastLED.show();
     writeNewFrameToLEDs = false;
   }
 }
