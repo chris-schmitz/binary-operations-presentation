@@ -9,7 +9,7 @@
 #include <WiFi.h>
 
 #define _BV(bit) (1 << (bit))
-#define MATRIX_PIN 25
+#define MATRIX_PIN 12
 
 #define VERBOSE_MODE false
 
@@ -181,7 +181,6 @@ void messageToGameFrame(std::string messageData, uint32_t length, uint32_t *game
 void setGameState(uint32_t *gameFrame, uint32_t length)
 {
   // * add collision and play phase. it's broken on the server
-  // playerState = gameFrame[2];
   setPlayerState(gameFrame[2]);
 
   // ! index 3 is where the brick information starts. prob a better way of handling this instead of magic numbers
@@ -340,7 +339,6 @@ void animate()
   writePlayerToMatrix();
   if (writeNewFrameToLEDs == true)
   {
-    Serial.println("writing to the matrix");
     matrix.show();
     writeNewFrameToLEDs = false;
   }

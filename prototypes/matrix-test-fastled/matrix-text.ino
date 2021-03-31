@@ -1,4 +1,4 @@
-#include <Adafruit_NeoPixel.h>
+#include <FastLED.h>
 
 #define _BV(bit) (1 << (bit))
 // #define MATRIX_PIN 1
@@ -9,13 +9,15 @@
 
 uint8_t matrixState[8] = {0};
 
-Adafruit_NeoPixel matrix = Adafruit_NeoPixel(64, MATRIX_PIN, NEO_RGB + NEO_KHZ400);
+#define TOTAL_LEDS 64
+
+CRGB matrix[TOTAL_LEDS];
 
 void setup()
 {
+  delay(2000);
   Serial.begin(115200);
-  matrix.begin();
-  matrix.show();
+  FastLED.addLeds<WS2811, MATRIX_PIN, RGB>(matrix, TOTAL_LEDS);
 
   for (uint8_t i = 0; i < 8; i++)
   {
@@ -23,7 +25,7 @@ void setup()
   }
 }
 
-void render8x8State(int *state, uint32_t color)
+void render8x8State(int *state, CRGB color)
 {
 
   for (int row = 0; row < 8; row++)
@@ -47,7 +49,7 @@ void render8x8State(int *state, uint32_t color)
   }
 }
 
-void renderRow(int row, uint16_t data, uint32_t color)
+void renderRow(int row, uint16_t data, CRGB color)
 {
   if (DEBUG_MODE)
   {
@@ -81,8 +83,8 @@ void renderRow(int row, uint16_t data, uint32_t color)
         Serial.print(index);
         Serial.print(": ON, ");
       }
-      matrix.setPixelColor(index, color);
-      matrix.show();
+      matrix[index] = color;
+      FastLED.show();
       // delay(50);
     }
     else
@@ -93,12 +95,10 @@ void renderRow(int row, uint16_t data, uint32_t color)
         Serial.print(index);
         Serial.print(": OFF, ");
       }
-      // matrix.setPixelColor(index, matrix.Color(0, 0, 0));
     }
     if (DEBUG_MODE)
       Serial.println("");
   }
-  // matrix.show();
   delay(10);
 }
 
@@ -129,20 +129,20 @@ void testRowFill(int row)
   for (int i = 0; i < 8; i++)
   {
     int index = (row * 8) + i;
-    matrix.setPixelColor(index, matrix.Color(0, 255, 255));
-    matrix.show();
+    matrix[index] = CRGB::DarkGoldenrod;
+    FastLED.show();
     // delay(50);
   }
 }
 
-void clearStrip(uint32_t color)
+void clearStrip()
 {
   // * one by one for all 64
   for (int i = 0; i < 64; i++)
   {
-    matrix.setPixelColor(i, color);
+    matrix[i] = CRGB::Black;
   }
-  matrix.show();
+  FastLED.show();
 }
 
 void loop()
@@ -164,105 +164,47 @@ void loop()
   int tripleBang[8] = {0, 0x54, 0x54, 0x54, 0x54, 0x0, 0x54, 0};
   int space[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-  render8x8State(boxInBox, matrix.Color(255, 0, 255));
+  render8x8State(boxInBox, CRGB::Aquamarine);
   delay(1000);
-  matrix.clear();
-  matrix.show();
-  render8x8State(fullGrid, matrix.Color(121, 20, 23));
+  clearStrip();
+  FastLED.show();
+  render8x8State(fullGrid, CRGB::Violet);
   delay(1000);
-  matrix.clear();
-  matrix.show();
-  render8x8State(stairStep, matrix.Color(217, 175, 45));
+  clearStrip();
+  FastLED.show();
+  render8x8State(stairStep, CRGB::Thistle);
   delay(1000);
-  matrix.clear();
-  matrix.show();
-  render8x8State(random, matrix.Color(36, 159, 233));
+  clearStrip();
+  FastLED.show();
+  render8x8State(random, CRGB::Tomato);
   delay(1000);
-  matrix.clear();
-  matrix.show();
+  clearStrip();
+  FastLED.show();
 
-  // matrix.clear();
-  // matrix.show();
-
-  // render8x8State(boxInBox, matrix.Color(255, 0, 0));
-  // matrix.clear();
-  // matrix.show();
-
-  // delay(1000);
-
-  // testGridFill();
-  // delay(1000);
-
-  // matrix.clear();
-  // matrix.show();
-  // delay(1000);
-
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(O, matrix.Color(255, 0, 255));
+  clearStrip();
+  render8x8State(O, CRGB::SteelBlue);
   delay(500);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(H, matrix.Color(255, 0, 255));
+  clearStrip();
+  render8x8State(H, CRGB::SteelBlue);
   delay(500);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(space, matrix.Color(255, 0, 255));
+  clearStrip();
+  render8x8State(space, CRGB::SteelBlue);
   delay(500);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(Y, matrix.Color(255, 0, 255));
+  clearStrip();
+  render8x8State(Y, CRGB::SteelBlue);
   delay(500);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(E, matrix.Color(255, 0, 255));
+  clearStrip();
+  render8x8State(E, CRGB::SteelBlue);
   delay(500);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(A, matrix.Color(255, 0, 255));
+  clearStrip();
+  render8x8State(A, CRGB::SteelBlue);
   delay(500);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(H, matrix.Color(255, 0, 255));
+  clearStrip();
+  render8x8State(H, CRGB::SteelBlue);
   delay(500);
-  clearStrip(matrix.Color(0, 255, 0));
-  render8x8State(tripleBang, matrix.Color(255, 0, 255));
+  clearStrip();
+  render8x8State(tripleBang, CRGB::SteelBlue);
   delay(500);
-  clearStrip(matrix.Color(0, 255, 0));
+  clearStrip();
   return;
-
-  // * one by one for all 64
-  for (int i = 0; i < 64; i++)
-  {
-    matrix.setPixelColor(i, matrix.Color(255, 0, 0));
-    matrix.show();
-    delay(50);
-  }
-  delay(3000);
-  clearStrip(matrix.Color(0, 0, 0));
-
-  // * Row by row without function calls
-  for (int i = 0; i < 8; i++)
-  {
-    for (int j = 0; j < 8; j++)
-    {
-      matrix.setPixelColor((8 * i) + j, matrix.Color(0, 255, 0));
-    }
-    matrix.show();
-    delay(50);
-  }
-  delay(3000);
-  clearStrip(matrix.Color(0, 0, 0));
-
-  // * Row by row extracted to two functions
-  testGridFill();
-  delay(1000);
-  clearStrip(matrix.Color(0, 0, 0));
-
-  // * original row by row
-  render8x8State(fullGrid, matrix.Color(255, 255, 0));
-  clearStrip(matrix.Color(0, 0, 0));
-
-  delay(1000);
-
-  // * original row by row
-  render8x8State(boxInBox, matrix.Color(255, 255, 255));
-  clearStrip(matrix.Color(0, 0, 0));
-
-  delay(1000);
-  // matrix.clear();
-  clearStrip(matrix.Color(0, 0, 0));
 }
