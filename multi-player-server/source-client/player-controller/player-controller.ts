@@ -1,8 +1,6 @@
 import { clientTypeEnum, directionEnum, errorTypes, messageTypeEnum } from "project-common/Enumerables";
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
-import { ServerResponse } from "../common/Interfaces";
 import WebsocketClientManager, { ClientEvents, ReconnectConfig } from "../common/WebsocketClientManager"
-import { BrickColor } from "../common/BrickColor";
 
 
 // ? fiddling around. does this make sense? should it just be on/off?
@@ -70,7 +68,7 @@ class PlayerController extends WebsocketClientManager {
         this.idSubmitButton!.innerText = "✔"
         this.idSubmitButton?.classList.add("disabled")
         this.idSubmitButton!.disabled = true
-        // this.idElement!.disabled = true
+        this.idElement!.disabled = true
 
         this.leftButtonElement!.disabled = false
         this.rightButtonElement!.disabled = false
@@ -83,7 +81,7 @@ class PlayerController extends WebsocketClientManager {
         this.idSubmitButton!.innerText = "CONNECT"
         this.idSubmitButton?.classList.remove("disabeled")
         this.idSubmitButton!.disabled = false
-        // this.idElement!.disabled = false
+        this.idElement!.disabled = false
 
         this.leftButtonElement!.disabled = true
         this.rightButtonElement!.disabled = true
