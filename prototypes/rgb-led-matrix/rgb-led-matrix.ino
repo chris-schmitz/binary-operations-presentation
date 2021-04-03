@@ -27,8 +27,8 @@ WebsocketsClient client;
 
 CRGB matrix[TOTAL_LEDS];
 
-uint32_t defaultBackgroundColor = CRGB(20, 20, 20);
-// CRGB defaultBackgroundColor = CRGB(0, 0, 0);
+// uint32_t defaultBackgroundColor = CRGB(20, 20, 20);
+CRGB defaultBackgroundColor = CRGB(0x2C3643);
 CRGB backgroundColor = defaultBackgroundColor;
 
 // TODO: ripout?
@@ -179,7 +179,6 @@ void messageToGameFrame(std::string messageData, uint32_t length, uint32_t *game
 
 void setGameState(uint32_t *gameFrame, uint32_t length)
 {
-  // * add collision and play phase. it's broken on the server
   setPlayerState(gameFrame[2]);
 
   // ! index 3 is where the brick information starts. prob a better way of handling this instead of magic numbers
@@ -248,20 +247,11 @@ void renderRow(int row, uint16_t data, CRGB color)
       {
         matrix[index] = color;
       }
-
-      // TODO: ripout
-      // if (matrix.getPixelColor(index) != color)
-      // {
-      //   matrix.setPixelColor(index, color);
-      // }
-      // // TODO: also, should we move this outside of the loop?
     }
-    else
-    {
-      matrix[index] = defaultBackgroundColor;
-      // TODO: ripout
-      // matrix.setPixelColor(index, defaultBackgroundColor);
-    }
+    // else // TODO: if we wipe the whole matrix each time this is not needed
+    // {
+    //   matrix[index] = backgroundColor;
+    // }
 
     if (VERBOSE_MODE)
       Serial.println("");
@@ -293,65 +283,96 @@ bool writeNewFrameToLEDs = false;
 
 boolean frameHasChange()
 {
+  if (playerRow != previousPlayerRow || playerColumnState != previousPlayerColumnState)
+  {
+    return true;
+  }
+
+  for (int row = 0; row < 8; row++)
+  {
+    if (matrixState[row] != previousMatrixState[row])
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 void writeBricksToMatrix()
 {
   for (int row = 0; row < 8; row++)
   {
-    if (matrixState[row] != previousMatrixState[row])
-    {
-      writeNewFrameToLEDs = true;
+    // writeNewFrameToLEDs = true;
 
-      previousMatrixState[row] = matrixState[row];
+    previousMatrixState[row] = matrixState[row];
 
-      BrickRow brickRow = BrickRow(matrixState[row]);
-      // TODO: refactor: we can set the pixel color directly from the hex as long as it's in the right order
-      CRGB color = CRGB(brickRow.red, brickRow.green, brickRow.blue);
-      int renderByte = row % 2 == 0 ? brickRow.rowState : reverseByte(brickRow.rowState, 8);
-      renderRow(row, renderByte, color);
-    }
+    BrickRow brickRow = BrickRow(matrixState[row]);
+    // TODO: refactor: we can set the pixel color directly from the hex as long as it's in the right order
+    CRGB color = CRGB(brickRow.red, brickRow.green, brickRow.blue);
+    int renderByte = row % 2 == 0 ? brickRow.rowState : reverseByte(brickRow.rowState, 8);
+    renderRow(row, renderByte, color);
   }
 }
 
 void writePlayerToMatrix()
 {
-  if (playerRow != previousPlayerRow || playerColumnState != previousPlayerColumnState)
+  previousPlayerRow = playerRow;
+  previousPlayerColumnState = playerColumnState;
+  previousCollision = collision;
+  previousPlayerTargetPixel = playerTargetPixel;
+
+  // writeNewFrameToLEDs = true;
+
+  int exponent = log(playerColumnState) / log(2);
+  int column = playerRow % 2 == 0 ? exponent : 8 - exponent - 1;
+  playerTargetPixel = playerRow * 8 + column;
+
+  // matrix[previousPlayerTargetPixel] = defaultBackgroundColor; // TODO: ripout if we keep the whole matrix wipe
+
+  CRGB color = playerColor;
+  if (collision)
   {
-    previousPlayerRow = playerRow;
-    previousPlayerColumnState = playerColumnState;
-    previousCollision = collision;
-    previousPlayerTargetPixel = playerTargetPixel;
-
-    writeNewFrameToLEDs = true;
-
-    int exponent = log(playerColumnState) / log(2);
-    int column = playerRow % 2 == 0 ? exponent : 8 - exponent - 1;
-    playerTargetPixel = playerRow * 8 + column;
-
-    matrix[previousPlayerTargetPixel] = defaultBackgroundColor;
-    CRGB color = playerColor;
-    if (collision)
-    {
-      color = CRGB(255, 255, 255);
-    }
-    matrix[playerTargetPixel] = color;
+    // color = CRGB(255, 255, 255);
+    // backgroundColor = CRGB::OrangeRed;
   }
+  // else
+  // {
+  //   backgroundColor = defaultBackgroundColor;
+  // }
+  matrix[playerTargetPixel] = color;
 }
 
 void animate()
 {
+  if (!frameHasChange())
+  {
+    return;
+  }
+
+  if (collision)
+  {
+    clearMatrix(CRGB::OrangeRed);
+  }
+  else
+  {
+    clearMatrix(defaultBackgroundColor);
+  }
   writeBricksToMatrix();
   writePlayerToMatrix();
-  if (writeNewFrameToLEDs == true)
-  {
-    FastLED.show();
-    writeNewFrameToLEDs = false;
-  }
+  // if (writeNewFrameToLEDs == true)
+  // {
+  FastLED.show();
+  //   writeNewFrameToLEDs = false;
+  // }
 }
 
 void loop()
 {
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    connectToWifi();
+  }
+
   // TODO: add a reconnect if not available
   if (client.available())
   {
