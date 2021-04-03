@@ -117,7 +117,7 @@ class WebsocketServer {
           this.gameManager.updatePlayerState(this.playerControllerManager.getPlayerController())
           break
         case messageTypeEnum.RESTART_GAME:
-          this.gameManager.restartGame(id)
+          this.restartGame(id)
           break
         default:
           console.log(`==> message has unknown messageType: ${messageType} <==`)
@@ -138,6 +138,12 @@ class WebsocketServer {
       // ]))
     }
   }
+
+  private restartGame(id: Uint8Array) {
+    this.playerControllerManager.reset()
+    this.gameManager.restartGame(id)
+  }
+
   private addBrickToGameBoard(data: Buffer, socket: WebSocket, payload: Buffer) {
     console.log("----> BRICK COMMAND!!");
     this.validateClientId(data, socket);
@@ -182,7 +188,8 @@ class WebsocketServer {
     console.log(`row: ${row}`)
     process.stdout.write(`brick color:`)
     console.log(color)
-    if (!row) {
+    // TODO: seems like this should be part of the validate 
+    if (row === null) {
       throw new SocketError(controller.socket, "You don't have a row assigned so you can't send a brick command. ")
     }
 

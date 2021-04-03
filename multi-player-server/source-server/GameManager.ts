@@ -68,7 +68,8 @@ class GameManager extends EventEmitter {
   private createGameManagerAdminId() {
     this.adminId = createId(this.idByteLength)
     const writePath = join(__dirname, "admin-id.txt")
-    writeFile(writePath, this.adminId, 'utf8', (error) => {
+
+    writeFile(writePath, Uint8Array.from([0x05, 0x0E, ...this.adminId]), 'utf8', (error) => {
       if (error) {
         console.log("write file error:")
         console.log(error)

@@ -9,10 +9,7 @@ export class PlayerController implements ControllerClient {
   public socket: WebSocket;
   id: Uint8Array = new Uint8Array();
 
-  playerState: PlayerState = {
-    row: 0,
-    columnState: 1
-  }
+  playerState!: PlayerState
   totalRows: number
   totalColumns: number
 
@@ -23,6 +20,14 @@ export class PlayerController implements ControllerClient {
     this.socket = socket
     this.totalRows = totalRows
     this.totalColumns = totalColumns
+    this.resetState()
+  }
+
+  public resetState() {
+    this.playerState = {
+      row: 0,
+      columnState: 1
+    }
   }
 
   public notifyPlayer(messageType: messageTypeEnum, payload?: Uint8Array) {

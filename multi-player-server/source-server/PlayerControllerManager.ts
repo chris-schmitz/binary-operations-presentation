@@ -22,7 +22,8 @@ export class PlayerControllerManager {
     this.idByteLength = idByteLength
     this.createPlayerId()
   }
-  createPlayerId() {
+
+  public createPlayerId() {
     this.playerId = createId(this.idByteLength)
     const writePath = join(__dirname, "player-id.txt")
     console.log(writePath)
@@ -34,6 +35,10 @@ export class PlayerControllerManager {
       }
       console.log("player id stored")
     })
+  }
+  reset() {
+    // * if we were doing multiple player characters this could be a loop through all connected players
+    this.playerControllerClient?.resetState()
   }
 
   public playerMove(socket: IdableWebsocket, payload: Buffer) {
