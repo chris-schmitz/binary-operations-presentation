@@ -12,7 +12,8 @@
     "sync&host": "npm run rsync:public && npm run host",
     "kill-port": "npx kill-port 3000",
     "host": "npm run kill-port && node ./dist/server/index.js",
-    "rsync:public": "rsync -avzhP --exclude '*.ts' src/public/* dist/public"
+    "rsync:public": "rsync -avzhP --exclude '*.ts' src/public/* dist/public",
+    "restart-game": "cat ../dist/server/source-server/admin-id.txt | xargs -0 printf | websocat -b ws://localhost:3000"
   },
   "repository": {
     "type": "git",
