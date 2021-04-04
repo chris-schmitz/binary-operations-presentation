@@ -57,7 +57,7 @@ class BrickControllerManager {
     } else {
       row = this.gameManager.getNextRow()
     }
-    if (!row) {
+    if (row === undefined || row === null) {
       throw new Error("Unable to get a row when one should be available")
     }
 
