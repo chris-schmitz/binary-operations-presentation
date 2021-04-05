@@ -1,9 +1,8 @@
 import WebSocket from "ws";
 import { v4 as uuid } from "uuid";
 import { ControllerClient } from "./interfaces/ControllerClient";
-import { randomByte } from "./helpers/helpers";
 import { directionEnum, messageTypeEnum } from "../project-common/Enumerables";
-import { getBinaryExpontent } from "./helpers/exponent-tools";
+import { getBinaryExpontent } from "./helpers/number-tools";
 
 export class PlayerController implements ControllerClient {
   public socket: WebSocket;

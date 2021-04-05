@@ -4,7 +4,7 @@ import { directionEnum, errorTypes, messageTypeEnum } from "../project-common/En
 import { createId, IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
 import { writeFile } from "fs";
 import { idByteLength } from "../project-common/config.json";
-import { uintArrayToHex } from "./helpers/helpers";
+import { uintArrayToHex } from "./helpers/number-tools";
 import { join } from "path";
 
 // TODO: refactor consideration

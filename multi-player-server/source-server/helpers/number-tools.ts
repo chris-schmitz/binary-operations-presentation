@@ -1,3 +1,5 @@
+// ^ file names are hard :|
+
 function randomByte(numberOfBytes: number, startingNumber = 0): ArrayBuffer {
   let buffer = new ArrayBuffer(numberOfBytes)
   let view = new Uint8Array(buffer)
@@ -14,4 +16,8 @@ function uintArrayToHex(array: Uint8Array) {
   }, "")
 }
 
-export { randomByte, uintArrayToHex }
+function getBinaryExpontent(bit: number) {
+  return Math.log(bit) / Math.log(2)
+}
+
+export { randomByte, uintArrayToHex, getBinaryExpontent }

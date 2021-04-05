@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import { messageTypeEnum, PlayPhaseEnum } from "../project-common/Enumerables";
-import { uintArrayToHex } from "./helpers/helpers";
+import { uintArrayToHex } from "./helpers/number-tools";
 import { createId } from "./interfaces/IdableWebsocket";
 import { PlayerController, PlayerState } from "./PlayerController";
 import { join } from "path"

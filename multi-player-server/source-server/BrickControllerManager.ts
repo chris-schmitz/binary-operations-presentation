@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import { messageTypeEnum } from "../project-common/Enumerables";
 import { BrickControllerClient } from "./interfaces/BrickControllerClient";
 import GameManager, { TICK } from "./GameManager";
-import { randomByte } from "./helpers/helpers";
+import { randomByte } from "./helpers/number-tools";
 import { createId, IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
 import { UnableToFindController } from "./errors/UnableToFindController";
 import { cloneDeep } from "lodash";
