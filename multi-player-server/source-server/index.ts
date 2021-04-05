@@ -26,6 +26,25 @@ const brickControllerManager = new BrickControllerManager(manager, 25)
 const playerControllerManager = new PlayerControllerManager()
 const socketManager = new WebsocketServer(server, manager, brickControllerManager, playerControllerManager, true)
 
+app.get("/brick-controller", (request, response) => {
+  console.log(request.query)
+  if (request.query["test"] === 'worked') {
+    const indexPath = join(__dirname, "indexes", "brick-controller", "index.html")
+    response.sendFile(indexPath)
+  } else {
+    response.send("access denied")
+  }
+})
+app.get("/player-controller", (request, response) => {
+  console.log(request.query)
+  if (request.query["test"] === 'worked') {
+    const indexPath = join(__dirname, "indexes", "player-controller", "index.html")
+    response.sendFile(indexPath)
+  } else {
+    response.send("access denied")
+  }
+})
+
 
 server.listen(port, () => {
   console.log(`Listening on port ${port}`)

@@ -41,13 +41,14 @@ const config = {
   plugins: [
     new CopyPlugin({
       patterns: [
-        {
-          from: `./${brickControllerDirectoryName}`,
-          to: 'brick-controller',
-          globOptions: {
-            ignore: ['**/*.ts'],
-          },
-        },
+        // ! disabled b/c css is in index file. if we pull it out we'll want toput this back
+        // {
+        //   from: `./${brickControllerDirectoryName}`,
+        //   to: 'brick-controller',
+        //   globOptions: {
+        //     ignore: ['**/*.ts'],
+        //   },
+        // },
         {
           from: `./${playerControllerDirectoryName}`,
           to: 'player-controller',

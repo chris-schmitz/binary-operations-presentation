@@ -4,7 +4,8 @@
   "description": "A websocket driven multi-player server for the binary operations talk ",
   "main": "dist/server/index.js",
   "scripts": {
-    "build": "tsc --build tsconfig.json",
+    "build": "tsc --build tsconfig.json && npm run build:move-indexes",
+    "build:move-indexes": "rsync -avzhP indexes ../dist/server/source-server",
     "watch": "tsc --watch",
     "todo": "echo delete all npm scripts under this if they're no longer needed",
     "start": "node ../dist/server",
@@ -12,7 +13,6 @@
     "sync&host": "npm run rsync:public && npm run host",
     "kill-port": "npx kill-port 3000",
     "host": "npm run kill-port && node ./dist/server/index.js",
-    "rsync:public": "rsync -avzhP --exclude '*.ts' src/public/* dist/public",
     "restart-game": "cat ../dist/server/source-server/admin-id.txt | xargs -0 printf | websocat -b ws://localhost:3000"
   },
   "repository": {
