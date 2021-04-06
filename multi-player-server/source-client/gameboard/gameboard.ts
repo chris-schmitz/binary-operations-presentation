@@ -2,7 +2,6 @@
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
 import { clientTypeEnum, PlayPhaseEnum } from "project-common/Enumerables";
 import WebsocketClientManager, { ClientEvents, GameFrameData, ReconnectConfig, ReturnMessagePayloadType } from "../common/WebsocketClientManager";
-import { frame } from "websocket";
 
 const bitValue = (bit: number) => 1 << bit
 
