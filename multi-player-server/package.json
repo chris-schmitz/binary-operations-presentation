@@ -5,6 +5,7 @@
   "main": "dist/server/index.js",
   "scripts": {
     "start": "node dist/server/index.js",
+    "install:all": "(cd source-client && npm install) ; (cd source-server && npm install)",
     "dev": "nodemon dist/server/source-server/index.js",
     "build": "npm run build:clients & npm run build:server",
     "build:server": "cd source-server && npm run build",
