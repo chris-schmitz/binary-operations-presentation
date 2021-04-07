@@ -2,6 +2,31 @@
 
 The slightly-cleaner and multi-player-friendly version of the brick game demo.
 
+## Up and running
+
+The multi-player version of the brick game is separated into two parts: the `source-client` and the `source-server`.
+
+Each sub-codebase has it's own package.json with build scripts. The package.json at the root level of the multiplayer-server also has a package.json that calls the builds for each sub-codebase.
+
+The end result is a `dist` folder that contains both the server and client code.
+
+```
+cd multi-player-server
+npm run build
+
+# or to build each individually (order doesn't matter):
+cd source-server
+npm run build
+cd ../source-client
+npm run build
+
+# To launch the codeabse:
+npm run start
+open http://localhost:3000/gameboard
+open http://localhost:3000/brick-controller
+open http://localhost:3000/player-controller
+```
+
 ## Future considerations
 
 There a pretty strong chance that I won't spend much time updating this codebase after the talk, or at least if I do I'll likely not be keeping it as a muliplayer game. That said, if future me does return there are a couple of thoughts worth considering:

@@ -4,7 +4,7 @@
   "description": "A websocket driven multi-player server for the binary operations talk ",
   "main": "dist/server/index.js",
   "scripts": {
-    "start": "node dist/server/index.js",
+    "start": "node dist/server/source-server/index.js",
     "install:all": "(cd source-client && npm install) ; (cd source-server && npm install)",
     "dev": "nodemon dist/server/source-server/index.js",
     "build": "npm run build:clients & npm run build:server",
