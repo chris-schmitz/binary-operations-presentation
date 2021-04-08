@@ -12,6 +12,7 @@ The end result is a `dist` folder that contains both the server and client code.
 
 ```
 cd multi-player-server
+npm run install:all
 npm run build
 
 # or to build each individually (order doesn't matter):
