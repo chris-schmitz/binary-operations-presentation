@@ -4,8 +4,9 @@
   "description": "A websocket driven multi-player server for the binary operations talk ",
   "main": "dist/server/index.js",
   "scripts": {
-    "build": "tsc --build tsconfig.json && npm run build:move-indexes",
-    "build:move-indexes": "cp -R indexes ../dist/server/source-server",
+    "build": "tsc --build tsconfig.json && npm run build:move-indexes && npm run build:move-node_modules",
+    "build:move-indexes": "rsync -avz indexes ../dist/server/source-server",
+    "build:move-node_modules": "rsync -avz node_modules ../dist/server/source-server",
     "watch": "tsc --watch",
     "todo": "echo delete all npm scripts under this if they're no longer needed",
     "start": "node ../dist/server",
