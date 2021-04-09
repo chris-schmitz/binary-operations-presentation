@@ -1,4 +1,3 @@
 {
-  "idByteLength": 4,
-  "websocketServerUrl": "ws://localhost:3000"
+  "idByteLength": 4
 }

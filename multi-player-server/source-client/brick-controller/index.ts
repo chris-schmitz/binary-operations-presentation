@@ -1,6 +1,6 @@
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
 import { clientTypeEnum } from "../../project-common/Enumerables";
-import { websocketServerUrl } from "project-common/config.json";
+import { websocketServerUrl } from "project-common/environment.json";
 import { BrickController } from "./brick-controller";
 import { ReconnectConfig } from "common/WebsocketClientManager";
 
