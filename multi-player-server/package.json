@@ -14,8 +14,8 @@
     "watch:server": "cd source-server && npm run watch",
     "watch:clients": "cd source-client && npm run watch",
     "game:restart": "cat dist/server/source-server/admin-id.txt | xargs -0 printf | websocat -b ws://localhost:3000",
-    "game:print-player-id": "xxd -p dist/server/source-server/player-id.txt",
-    "game:print-admin-id": "xxd -p dist/server/source-server/admin-id.txt"
+    "game:print-player-id": "xxd -p dist/server/source-server/cachedPasswords/playerId.txt",
+    "game:print-admin-id": "xxd -p dist/server/source-server/cachedPasswords/adminId.txt"
   },
   "repository": {
     "type": "git",

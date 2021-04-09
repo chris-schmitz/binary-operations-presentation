@@ -2,6 +2,23 @@
 
 The slightly-cleaner and multi-player-friendly version of the brick game demo.
 
+# What's left?
+
+- [x] player out of bounds
+- [x] 0 row brick issue
+  - render issue is resolved, but now it seems like there's a collision issue
+- [ ] reset on led matrix
+- [x] glitches on matrix
+- [x] mount circuit board
+- [x] can't get row 0 assigned
+- [x] host`
+- [x] post install adds rsync??
+- [~] troubleshoot hosted version
+- [ ] pull multiplayer out to it's own repository?
+- [ ] move server classes into subfolders
+- [ ] clean up and write out readme
+- [x] use new password manager class in place of individual id writes in the controller server classes
+
 ## Up and running
 
 The multi-player version of the brick game is separated into two parts: the `source-client` and the `source-server`.
@@ -10,22 +27,64 @@ Each sub-codebase has it's own package.json with build scripts. The package.json
 
 The end result is a `dist` folder that contains both the server and client code.
 
-```
+```bash
 cd multi-player-server
-npm run install:all
-npm run build
 
-# or to build each individually (order doesn't matter):
-cd source-server
-npm run build
-cd ../source-client
+cp project-common/example.environment.json project-common/environment.json
+# edit the environment.json to point to the correct domain name.
+# Note: it's already set to ws://localhost:3000, so if you're launching it
+# on your local computer (and not a server behind a domain name), you don't need to edit it
+
+npm run install:all
 npm run build
 
 # To launch the codeabse:
 npm run start
+# open the directory `dist/server/source-server/cachedPasswords/`
+# - the `controllerPagePassword.txt` contains the password to get to the brick-controller and player-controller pages for this session.
+
+
 open http://localhost:3000/gameboard
-open http://localhost:3000/brick-controller
-open http://localhost:3000/player-controller
+open http://localhost:3000/brick-controller?pw=<password from controllerPagePassword.txt>
+open http://localhost:3000/player-controller?pw=<password from controllerPagePassword.txt>
+
+```
+
+## Hex passwords
+
+There are two passwords that are stored as binary (b/c why note :P). Both are stored in the `dist/server/source-server/cachedPasswords/` directory, one is `adminId.txt` and the other is `playerId.txt`.
+
+You can't just open these files in the editor to read them, they're binary numbers, not the utf representations of those numbers.
+
+Instead, you need to do a hex dump and use those values. You can do this via the npm scripts:
+
+```
+npm run game:print-player-id
+npm run game:print-admin-id
+```
+
+The player id is what's requested when you go to the player page. This is to prevent people from grabbing the player page before the person who's supposed to be the player can get it.
+
+The admin id is used to restart the game. You don't actually _need_ it, because you can restart the game via an npm command that reads that file.
+
+## Restart the game
+
+You can restart the game by firing the script
+
+```bash
+npm run game:restart
+```
+
+## Building individual codebases
+
+The server and client codebases can be built individually (i.e. if you're only modifying one )
+
+```bash
+cd source-server
+npm run build
+
+cd ../source-client
+npm run build
 ```
 
 ## Future considerations

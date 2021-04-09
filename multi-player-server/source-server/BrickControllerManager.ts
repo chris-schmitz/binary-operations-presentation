@@ -2,12 +2,11 @@ import WebSocket from "ws";
 import { messageTypeEnum } from "../project-common/Enumerables";
 import { BrickControllerClient } from "./interfaces/BrickControllerClient";
 import GameManager, { TICK } from "./GameManager";
-import { randomByte } from "./helpers/number-tools";
-import { createId, IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
-import { UnableToFindController } from "./errors/UnableToFindController";
+import { IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
 import { cloneDeep } from "lodash";
-import { PlayerController } from "./PlayerController";
 import { ControllerClient } from "./interfaces/ControllerClient";
+import passwordManager, { BytePasswordType } from "./PasswordManager";
+
 
 class BrickControllerManager {
   private controllers: BrickControllerClient[] = []
@@ -78,7 +77,7 @@ class BrickControllerManager {
   }
 
   public registerBrickController(socket: WebSocket, idByteLength: number) {
-    let id = createId(idByteLength)
+    let id = passwordManager.generateByteArrayPassword(BytePasswordType.BRICK)
     const controller = this.createController(socket, id)
     this.attemptRowAssignment(controller)
     this.storeController(controller)

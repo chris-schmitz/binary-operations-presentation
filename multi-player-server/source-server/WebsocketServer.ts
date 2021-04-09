@@ -6,9 +6,10 @@ import { clientTypeEnum, messageTypeEnum } from "../project-common/Enumerables";
 import { BrickControllerManager } from "./BrickControllerManager"
 import { PlayerControllerManager } from "./PlayerControllerManager";
 import { BrickControllerClient } from "./interfaces/BrickControllerClient";
-import { createId, IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
+import { IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
 import { SocketError } from "./errors/SocketError";
 import { idByteLength } from "../project-common/config.json";
+import passwordManager, { BytePasswordType } from "./PasswordManager";
 
 
 
@@ -257,7 +258,7 @@ class WebsocketServer {
 
   private registerGameBoard(socket: WebSocket) {
     const idableSocket = socket as IdableWebsocket
-    idableSocket.id = createId(this.uuidByteLength)
+    idableSocket.id = passwordManager.generateByteArrayPassword(BytePasswordType.GAMEBOARD)
     idableSocket.type = IdableWebsocketTypeEnum.GAMEBOARD
     this.gameBoardClients.push(idableSocket);
   }

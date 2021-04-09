@@ -1,11 +1,12 @@
 import { PlayerController } from "./PlayerController";
 import WebSocket from "ws";
 import { directionEnum, errorTypes, messageTypeEnum } from "../project-common/Enumerables";
-import { createId, IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
+import { IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
 import { writeFile } from "fs";
 import { idByteLength } from "../project-common/config.json";
 import { uintArrayToHex } from "./helpers/number-tools";
 import { join } from "path";
+import passwordManager, { BytePasswordType } from "./PasswordManager";
 
 // TODO: refactor consideration
 // * Is there a point in separating the player manager service and the PlayerController model? 
@@ -24,7 +25,7 @@ export class PlayerControllerManager {
   }
 
   public createPlayerId() {
-    this.playerId = createId(this.idByteLength)
+    this.playerId = passwordManager.generateByteArrayPassword(BytePasswordType.PLAYER)
     const writePath = join(__dirname, "player-id.txt")
     console.log(writePath)
     console.log(uintArrayToHex(this.playerId))

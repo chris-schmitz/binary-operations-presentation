@@ -1,5 +1,4 @@
 import WebSocket from "ws";
-import { randomByte } from "../helpers/number-tools";
 
 export enum IdableWebsocketTypeEnum {
   GAMEBOARD,
@@ -7,11 +6,6 @@ export enum IdableWebsocketTypeEnum {
   PLAYER_CONTROLLER
 }
 
-
-export function createId(idByteLength: number) {
-  const id = randomByte(idByteLength)
-  return new Uint8Array(id)
-}
 
 export interface IdableWebsocket extends WebSocket {
   id: Uint8Array;

@@ -1,11 +1,10 @@
 import { EventEmitter } from "events";
 import { messageTypeEnum, PlayPhaseEnum } from "../project-common/Enumerables";
-import { uintArrayToHex } from "./helpers/number-tools";
-import { createId } from "./interfaces/IdableWebsocket";
-import { PlayerController, PlayerState } from "./PlayerController";
+import { PlayerController } from "./PlayerController";
 import { join } from "path"
 import { writeFile } from "fs";
 import { idByteLength } from "../project-common/config.json";
+import passwordManager, { BytePasswordType } from "./PasswordManager";
 
 export const TICK = 'tick'
 
@@ -66,7 +65,7 @@ class GameManager extends EventEmitter {
   }
 
   private createGameManagerAdminId() {
-    this.adminId = createId(this.idByteLength)
+    this.adminId = passwordManager.generateByteArrayPassword(BytePasswordType.ADMIN)
     const writePath = join(__dirname, "admin-id.txt")
 
     writeFile(writePath, Uint8Array.from([0x05, 0x0E, ...this.adminId]), 'utf8', (error) => {
