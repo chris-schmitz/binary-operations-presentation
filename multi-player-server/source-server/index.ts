@@ -43,6 +43,10 @@ app.get("/player-controller", (request, response) => {
   }
 })
 
+app.get("/", (request, response) => {
+  response.redirect("/gameboard")
+})
+
 
 server.listen(port, () => {
   console.log(`Listening on port ${port}`)
