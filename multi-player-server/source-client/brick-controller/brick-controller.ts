@@ -31,12 +31,19 @@ class BrickController extends WebsocketClientManager {
     this.buttonLockTickCountTotal = 3
 
     this.grabUiElements()
+
+    window.addEventListener("beforeunload", () => {
+      localStorage.removeItem("active")
+    })
   }
 
   public begin() {
     this.setBrickColor(this.brickColor)
     this.setButtonColor(this.brickColor)
+
+    if (localStorage.getItem("active") == "true") return
     this.reconnect(() => {
+      localStorage.setItem("active", "true")
       this.addBrickControllerListeners()
     })
   }
