@@ -95,10 +95,12 @@ class GameManager extends EventEmitter {
 
 
   public addBrick(row: number, color: Uint8Array) {
-    this.gridState[row] |= 0x100 // ! TEMP FIX -> go back and debug
-    this.gridColors[row] = color.reduce((carry, current) => {
-      carry <<= 8; return carry + current
-    })
+    if (this.playPhase == PlayPhaseEnum.PLAYING) {
+      this.gridState[row] |= 0x100 // ! TEMP FIX -> go back and debug
+      this.gridColors[row] = color.reduce((carry, current) => {
+        carry <<= 8; return carry + current
+      })
+    }
   }
 
   public updatePlayerState(playerController: PlayerController | null) {
