@@ -115,9 +115,6 @@ void registerAsAGameBoard()
   const char *buffer = data;
   size_t size = strlen(buffer);
 
-  Serial.print("Reg size:");
-  Serial.println(size);
-
   client.sendBinary(buffer, size);
 }
 
@@ -165,7 +162,6 @@ void messageToGameFrame(std::string messageData, uint32_t length, uint32_t *game
 
   if (VERBOSE_MODE)
   {
-    Serial.println("parsed game frame:");
     for (int i = 0; i < 11; i++)
     {
       Serial.print(gameFrame[i], HEX);
@@ -302,8 +298,6 @@ void writeBricksToMatrix()
 {
   for (int row = 0; row < 8; row++)
   {
-    // writeNewFrameToLEDs = true;
-
     previousMatrixState[row] = matrixState[row];
 
     BrickRow brickRow = BrickRow(matrixState[row]);
@@ -321,25 +315,18 @@ void writePlayerToMatrix()
   previousCollision = collision;
   previousPlayerTargetPixel = playerTargetPixel;
 
-  // writeNewFrameToLEDs = true;
-
   int exponent = log(playerColumnState) / log(2);
   int column = playerRow % 2 == 0 ? exponent : 8 - exponent - 1;
   playerTargetPixel = playerRow * 8 + column;
 
-  // matrix[previousPlayerTargetPixel] = defaultBackgroundColor; // TODO: ripout if we keep the whole matrix wipe
-
-  CRGB color = playerColor;
-  if (collision)
-  {
-    // color = CRGB(255, 255, 255);
-    // backgroundColor = CRGB::OrangeRed;
-  }
-  // else
-  // {
-  //   backgroundColor = defaultBackgroundColor;
-  // }
-  matrix[playerTargetPixel] = color;
+  // TODO: troubleshoot starting here
+  // Serial.print("pixel: ");
+  // Serial.print(playerTargetPixel);
+  // Serial.print(", color: ");
+  // Serial.print(CRGB(0xFF00FF), HEX);
+  // Serial.print(", ");
+  // Serial.println(CRGB::Crimson, HEX);
+  matrix[playerTargetPixel] = CRGB::Crimson;
 }
 
 void animate()
@@ -359,11 +346,7 @@ void animate()
   }
   writeBricksToMatrix();
   writePlayerToMatrix();
-  // if (writeNewFrameToLEDs == true)
-  // {
   FastLED.show();
-  //   writeNewFrameToLEDs = false;
-  // }
 }
 
 void loop()
