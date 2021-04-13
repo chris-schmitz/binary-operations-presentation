@@ -13,7 +13,7 @@
     "watch": "npm run watch:server & npm run watch:clients",
     "watch:server": "cd source-server && npm run watch",
     "watch:clients": "cd source-client && npm run watch",
-    "game:restart": "cat dist/server/source-server/cachedPasswords/adminId.txt | xargs -0 printf | websocat -b ws://localhost:3000",
+    "game:restart": "cat dist/server/source-server/cachedPasswords/restartCommand.txt | xargs -0 printf '%s\n' | websocat -b ws://localhost:3000",
     "game:print-controller-password": "cat dist/server/source-server/cachedPasswords/controllerPagePassword.txt",
     "game:print-player-id": "xxd -p dist/server/source-server/cachedPasswords/playerId.txt",
     "game:print-admin-id": "xxd -p dist/server/source-server/cachedPasswords/adminId.txt"

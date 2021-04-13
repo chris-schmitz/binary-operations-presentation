@@ -51,6 +51,8 @@ export class PasswordManager {
     switch (type) {
       case BytePasswordType.ADMIN:
         this.writeToFile("adminId.txt", id)
+        const command = Uint8Array.from([0x05, 0x0E, ...id])
+        this.writeToFile("restartCommand.txt", command)
         break
       case BytePasswordType.PLAYER:
         this.writeToFile("playerId.txt", id)
