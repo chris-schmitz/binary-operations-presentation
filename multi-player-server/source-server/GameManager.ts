@@ -53,10 +53,11 @@ class GameManager extends EventEmitter {
 
   public restartGame(id: Uint8Array) {
     this.verifyAdminId(id)
+    this.stopAnimation()
     this.begin()
   }
   private clearPlayerController() {
-    this.playerController = undefined
+    // this.playerController = undefined
   }
   private verifyAdminId(id: Uint8Array) {
     if (Buffer.compare(id, this.adminId!) !== 0) {
