@@ -133,6 +133,7 @@ class GameManager extends EventEmitter {
       ...bricks
     ])
 
+    console.log('------> gameManager: emitting a tick')
     this.emit(TICK, payload)
   }
   // TODO: figure out how else we want to handle this
