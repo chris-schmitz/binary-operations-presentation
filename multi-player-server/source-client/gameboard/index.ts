@@ -1,7 +1,6 @@
 import { GameBoard } from "./gameboard";
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
 import { clientTypeEnum } from "../../project-common/Enumerables";
-import { websocketServerUrl } from "../../project-common/environment.json";
 import { ReconnectConfig } from "common/WebsocketClientManager";
 
 const reconnectConfig: ReconnectConfig = {
@@ -10,10 +9,11 @@ const reconnectConfig: ReconnectConfig = {
   totalAttempts: 100
 }
 
+const url = `ws://${window.location.host}`
 
-const gameBoard = new GameBoard(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.GAMEBOARD), reconnectConfig)
+const gameBoard = new GameBoard(url, new ClientMessageBuilder(clientTypeEnum.GAMEBOARD), reconnectConfig)
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log(`Connecting to ${websocketServerUrl}`)
+  console.log(`Connecting to websocket host at: ${url}`)
   gameBoard.begin()
 })

@@ -1,6 +1,5 @@
 import ClientMessageBuilder from "../common/ClientMessageBuilder";
 import { clientTypeEnum } from "../../project-common/Enumerables";
-import { websocketServerUrl } from "project-common/environment.json";
 import { PlayerController } from "./player-controller";
 import { ReconnectConfig } from "common/WebsocketClientManager";
 
@@ -10,8 +9,8 @@ const reconnectConfig: ReconnectConfig = {
   totalAttempts: 100
 }
 
-
+const url = `ws://${window.location.host}`
 document.addEventListener("DOMContentLoaded", () => {
-  console.log(`Connecting to ${websocketServerUrl}`)
-  new PlayerController(websocketServerUrl, new ClientMessageBuilder(clientTypeEnum.PLAYER_CONTROLLER), reconnectConfig)
+  console.log(`Connecting to websocket host at: ${url}`)
+  new PlayerController(url, new ClientMessageBuilder(clientTypeEnum.PLAYER_CONTROLLER), reconnectConfig)
 })

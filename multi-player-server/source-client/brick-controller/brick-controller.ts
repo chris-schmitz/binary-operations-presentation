@@ -22,6 +22,7 @@ class BrickController extends WebsocketClientManager {
   // ? disabled = player doesn't have control of a row so they can't do anything (button grayed, disabled, and text shows 'waiting for turn')
   // ? locked = player has control over a row, but we're putting an arbitrary (and hackable) delay on them pushing the brick button 
   buttonIsLocked: boolean = false
+  fireTextElement: HTMLElement | null = null;
 
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect?: ReconnectConfig, verboseLogging = true) {
     super(websocketUrl, clientTypeEnum.BRICK_CONTROLLER, messageBuilder, attemptReconnect)
@@ -68,6 +69,7 @@ class BrickController extends WebsocketClientManager {
   private grabUiElements() {
     this.rowNumberElement = document.querySelector("#row-number")
     this.brickButtonElement = document.querySelector("#brick-button")
+    this.fireTextElement = document.querySelector("#fire-text")
     this.colorPicker = document.querySelector("#color-picker")
 
     if (!this.rowNumberElement || !this.brickButtonElement || !this.colorPicker) {
@@ -124,12 +126,13 @@ class BrickController extends WebsocketClientManager {
 
   private lockButton() {
     this.buttonIsLocked = true
-    this.brickButtonElement!.innerText = "locked"
+    this.fireTextElement!.innerText = "Locked!"
+    // this.brickButtonElement!.innerText = "locked"
     this.brickButtonElement!.disabled = true
   }
   private unlockButton() {
     this.buttonIsLocked = false
-    this.brickButtonElement!.innerText = ""
+    this.fireTextElement!.innerText = "Fire!"
     this.brickButtonElement!.disabled = false
   }
 

@@ -7,7 +7,7 @@ The slightly-cleaner and multi-player-friendly version of the brick game demo.
 - [x] player out of bounds
 - [x] 0 row brick issue
   - render issue is resolved, but now it seems like there's a collision issue
-- [ ] reset on led matrix
+- [x] game reset broken
 - [x] glitches on matrix
 - [x] mount circuit board
 - [x] can't get row 0 assigned
@@ -18,6 +18,9 @@ The slightly-cleaner and multi-player-friendly version of the brick game demo.
 - [ ] move server classes into subfolders
 - [ ] clean up and write out readme
 - [x] use new password manager class in place of individual id writes in the controller server classes
+- [?] game restart locks up on remote
+- [ ] clean up style on brick controller
+- [x] add brick stuck on server after a game restart
 
 ## Up and running
 
@@ -29,11 +32,6 @@ The end result is a `dist` folder that contains both the server and client code.
 
 ```bash
 cd multi-player-server
-
-cp project-common/example.environment.json project-common/environment.json
-# edit the environment.json to point to the correct domain name.
-# Note: it's already set to ws://localhost:3000, so if you're launching it
-# on your local computer (and not a server behind a domain name), you don't need to edit it
 
 npm run install:all
 npm run build
