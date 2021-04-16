@@ -7,6 +7,11 @@ const bitValue = (bit: number) => 1 << bit
 
 const connectionTimeoutDuration = 1000
 
+enum VolumeEnum {
+  ON,
+  OFF
+}
+
 class GameBoard extends WebsocketClientManager {
 
   gridElement: HTMLTableSectionElement | null = null
@@ -19,6 +24,16 @@ class GameBoard extends WebsocketClientManager {
   messageBuilder: ClientMessageBuilder;
   bodyElement: HTMLBodyElement | null = null;
   coverElement: HTMLElement | null = null;
+  moveSound: HTMLAudioElement | null = null;
+  collisionSound: HTMLAudioElement | null = null;
+  playerMoveSound: HTMLAudioElement | null = null;
+
+  soundOn: HTMLElement | null = null;
+  soundOff: HTMLElement | null = null;
+  playSounds: boolean = false;
+
+  private previousColumn: number = 0;
+  private previousRow: number = 0;
 
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, reconnectConfig?: ReconnectConfig) {
     super(websocketUrl, clientTypeEnum.GAMEBOARD, messageBuilder, reconnectConfig)
@@ -34,8 +49,22 @@ class GameBoard extends WebsocketClientManager {
       })
       this.grabElements()
       this.populateGrid()
+      this.addSoundToggleListeners()
+      this.activateSoundIcon(VolumeEnum.OFF)
     } catch (error) {
       console.error(error)
+    }
+  }
+  activateSoundIcon(state: VolumeEnum) {
+    switch (state) {
+      case VolumeEnum.OFF:
+        this.soundOn?.classList.add("invisible")
+        this.soundOff?.classList.remove("invisible")
+        break
+      case VolumeEnum.ON:
+        this.soundOn?.classList.remove("invisible")
+        this.soundOff?.classList.add("invisible")
+        break
     }
   }
 
@@ -43,6 +72,28 @@ class GameBoard extends WebsocketClientManager {
     this.gridElement = document.querySelector('tbody')
     this.bodyElement = document.querySelector('body')
     this.coverElement = document.querySelector('.cover')
+    this.moveSound = document.querySelector("#move-sound")
+    this.collisionSound = document.querySelector("#collision-sound")
+    this.playerMoveSound = document.querySelector("#player-move-sound")
+    this.soundOn = document.querySelector("#on")
+    this.soundOff = document.querySelector("#off")
+  }
+
+  addSoundToggleListeners() {
+    this.soundOn?.addEventListener('click', () => this.setSound(VolumeEnum.OFF))
+    this.soundOff?.addEventListener('click', () => this.setSound(VolumeEnum.ON))
+  }
+  setSound(state: VolumeEnum) {
+    switch (state) {
+      case VolumeEnum.ON:
+        this.playSounds = true
+        this.activateSoundIcon(VolumeEnum.ON)
+        break
+      case VolumeEnum.OFF:
+        this.playSounds = false
+        this.activateSoundIcon(VolumeEnum.OFF)
+        break
+    }
   }
 
   populateGrid() {
@@ -76,6 +127,7 @@ class GameBoard extends WebsocketClientManager {
 
     this.renderBricks(frameData, bitValue);
     this.renderPlayer(frameData);
+
 
   }
   renderPlayPhase(frameData: GameFrameData) {
@@ -141,6 +193,9 @@ class GameBoard extends WebsocketClientManager {
           // ! we _should_ be able to set the style with a hex value, though I was having problems with it before. 
           // ! that said, deconstructing the 32 bit number here into 4 different bytes that mean different things 
           // ! is a pretty worthy binary operations example :)
+
+          this.playBrickMoveSound()
+
           this.gridElement!.rows[row].cells[this.columns - cell - 1].style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
         } else {
           this.gridElement!.rows[row].cells[this.columns - cell - 1].style.backgroundColor = "";
@@ -149,11 +204,26 @@ class GameBoard extends WebsocketClientManager {
     }
   }
 
+
   private renderPlayer(frameData: GameFrameData) {
     const playerColumnState = frameData.player & 0xFF;
     const playerColummn = playerColumnState === 0 ? 0 : Math.log(playerColumnState) / Math.log(2);
+
+    let moved = false
+
     frameData.player >>= 8;
     const playerRow = frameData.player & 0xFF;
+
+    if (playerColummn !== this.previousColumn) {
+      moved = true
+      this.previousColumn = playerColummn
+    }
+
+    if (playerRow !== this.previousRow) {
+      moved = true
+      this.previousRow = playerRow
+    }
+
     frameData.player >>= 8;
     const collision = frameData.player & 0xFF;
 
@@ -163,8 +233,32 @@ class GameBoard extends WebsocketClientManager {
 
     if (collision) {
       this.bodyElement?.classList.add("collision");
+      this.playCollisionSound()
+
     } else {
+      if (moved) this.playPlayerMovedSound()
       this.bodyElement?.classList.remove("collision");
+    }
+  }
+
+  playCollisionSound() {
+    if (this.playSounds) {
+      this.moveSound?.pause()
+      this.collisionSound?.play()
+    }
+  }
+
+  playBrickMoveSound() {
+    if (this.playSounds) {
+      this.moveSound?.play()
+    }
+  }
+
+  playPlayerMovedSound() {
+    if (this.playSounds) {
+      this.playerMoveSound?.pause();
+      this.playerMoveSound!.currentTime = 0;
+      this.playerMoveSound?.play()
     }
   }
 }

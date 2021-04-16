@@ -22,7 +22,8 @@ class BrickController extends WebsocketClientManager {
   // ? disabled = player doesn't have control of a row so they can't do anything (button grayed, disabled, and text shows 'waiting for turn')
   // ? locked = player has control over a row, but we're putting an arbitrary (and hackable) delay on them pushing the brick button 
   buttonIsLocked: boolean = false
-  fireTextElement: HTMLElement | null = null;
+  fireTextElement: HTMLElement | null = null
+  shootSound: HTMLAudioElement | null = null
 
   constructor(websocketUrl: string, messageBuilder: ClientMessageBuilder, attemptReconnect?: ReconnectConfig, verboseLogging = true) {
     super(websocketUrl, clientTypeEnum.BRICK_CONTROLLER, messageBuilder, attemptReconnect)
@@ -71,6 +72,7 @@ class BrickController extends WebsocketClientManager {
     this.brickButtonElement = document.querySelector("#brick-button")
     this.fireTextElement = document.querySelector("#fire-text")
     this.colorPicker = document.querySelector("#color-picker")
+    this.shootSound = document.querySelector("#shoot-sound")
 
     if (!this.rowNumberElement || !this.brickButtonElement || !this.colorPicker) {
       throw new Error("Unable to grab UI elements!")
@@ -97,6 +99,8 @@ class BrickController extends WebsocketClientManager {
 
   public sendBrickCommand() {
     if (this.registrationInformation.id) {
+
+      this.shootSound?.play()
 
       // TODO: add the id to the send brick command so we can validate 
       const color = this.brickColor.asRGB()

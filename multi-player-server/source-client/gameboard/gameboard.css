@@ -143,3 +143,15 @@ code {
   color: red;
   font-weight: bold;
 }
+
+.volume {
+  font-size: 30pt;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin: 10px;
+}
+
+.invisible {
+  display: none;
+}
