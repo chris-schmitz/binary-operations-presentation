@@ -83,6 +83,7 @@ export class PlayerControllerManager {
     this.playerControllerClient.id = socket.id
   }
 
+
   public removePlayerControllerInstance() {
     this.playerControllerClient = null
   }

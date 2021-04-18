@@ -19,7 +19,7 @@ The slightly-cleaner and multi-player-friendly version of the brick game demo.
 - [ ] clean up and write out readme
 - [x] use new password manager class in place of individual id writes in the controller server classes
 - [?] game restart locks up on remote
-- [ ] clean up style on brick controller
+- [x] clean up style on brick controller
 - [x] add brick stuck on server after a game restart
 
 ## Up and running
@@ -50,7 +50,7 @@ open http://localhost:3000/player-controller?pw=<password from controllerPagePas
 
 ## Hex passwords
 
-There are two passwords that are stored as binary (b/c why note :P). Both are stored in the `dist/server/source-server/cachedPasswords/` directory, one is `adminId.txt` and the other is `playerId.txt`.
+There are two passwords that are stored as binary (b/c why not :P). Both are stored in the `dist/server/source-server/cachedPasswords/` directory, one is `adminId.txt` and the other is `playerId.txt`.
 
 You can't just open these files in the editor to read them, they're binary numbers, not the utf representations of those numbers.
 

@@ -12,7 +12,8 @@
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "type": "pwa-node",
-      "console": "internalConsole"
+      "console": "internalConsole",
+      "runtimeExecutable": "/Users/christopherschmitz/.nvm/versions/node/v15.9.0/bin/node"
     }
   ]
 }

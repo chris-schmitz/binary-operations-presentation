@@ -76,9 +76,10 @@ class BrickControllerManager {
     })
   }
 
-  public registerBrickController(socket: WebSocket, idByteLength: number) {
+  public registerBrickController(socket: WebSocket) {
     let id = passwordManager.generateByteArrayPassword(BytePasswordType.BRICK)
     const controller = this.createController(socket, id)
+    // TODO: branch if multi or create a different register handler
     this.attemptRowAssignment(controller)
     this.storeController(controller)
     this.sendRegisterClientMessage(controller, id)

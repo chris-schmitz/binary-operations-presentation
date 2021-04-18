@@ -128,14 +128,29 @@ class GameManager extends EventEmitter {
     let player = this.packagePlayerState()
     this.updatePlayPhase()
 
+    // ^ Byte number in the 32 bit array value
+    // ^ |       3|       2|       1|       0|
+    // * +--------|--------|--------|--------+
+    // * |        |        |        |msg type| message type
+    // * |        |        |        |ply phas| play phase
+    // * |        |collisin|row #   |clmn sta| player info (collision, row number, column state)
+    // * |row 0 st|red     |green   |blue    | grid row state (row # state, red, green, blue )
+    // * |row 1 st|red     |green   |blue    | grid row state (row # state, red, green, blue )
+    // * |row 2 st|red     |green   |blue    | grid row state (row # state, red, green, blue )
+    // * |row 3 st|red     |green   |blue    | grid row state (row # state, red, green, blue )
+    // * |row 4 st|red     |green   |blue    | grid row state (row # state, red, green, blue )
+    // * |row 5 st|red     |green   |blue    | grid row state (row # state, red, green, blue )
+    // * |row 6 st|red     |green   |blue    | grid row state (row # state, red, green, blue )
+    // * |row 7 st|red     |green   |blue    | grid row state (row # state, red, green, blue )
+    // * +--------|--------|--------|--------+
+
     const payload = Uint32Array.from([
       messageTypeEnum.GAME_FRAME,
-      this.playPhase, // TODO: fix, this is wrong, if we're going to do this we should separate each piece of information into separate nibbles or break them out to separate bytes. 
+      this.playPhase,
       player,
       ...bricks
     ])
 
-    // console.log('------> gameManager: emitting a tick')
     this.emit(TICK, payload)
   }
   // TODO: figure out how else we want to handle this

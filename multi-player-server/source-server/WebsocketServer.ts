@@ -121,6 +121,9 @@ class WebsocketServer {
         case messageTypeEnum.RESTART_GAME:
           this.restartGame(id)
           break
+        case messageTypeEnum.REMOVE_PLAYER_CONTROLLER:
+          this.playerControllerManager.removePlayerControllerInstance()
+          break
         default:
           console.log(`==> message has unknown messageType: ${messageType} <==`)
           console.log("data:")
@@ -166,6 +169,8 @@ class WebsocketServer {
     if (storedController.socket !== socket) {
       throw new Error("Stored controller doesn't match the socket that sent the message.")
     }
+
+    // if(this row is assigned to this brick controller )
   }
 
   // TODO: pull all message data parsing out to it's own utility class
@@ -184,7 +189,14 @@ class WebsocketServer {
     // * get the row
     // * get the color
 
-    const row = controller.row
+    // TODO: haaaacky! come back and fix
+    // * for future chris: the 4th index in the payload is for the web multi-brick controller. It's just to 
+    // * hack in the controller. Really we should prob have a separate method for handling it's message 
+    let row = controller.row
+    if (payload.length > 3) {
+      row = payload[3]
+      payload = Uint8Array.from([payload[0], payload[1], payload[2]])
+    }
     const color = payload
 
     console.log(`row: ${row}`)
@@ -251,9 +263,12 @@ class WebsocketServer {
         break
       case clientTypeEnum.BRICK_CONTROLLER:
         console.log("brick controller")
-        this.brickControllerManager.registerBrickController(socket, this.uuidByteLength)
+        this.brickControllerManager.registerBrickController(socket)
         break
-      // TODO: touch controller
+      case clientTypeEnum.MULTI_BRICK_CONTROLLER:
+        console.log("multi brick controller")
+        this.brickControllerManager.registerBrickController(socket)
+        break
     }
   }
 

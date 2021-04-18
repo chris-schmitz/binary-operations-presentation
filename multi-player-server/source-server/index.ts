@@ -35,6 +35,13 @@ app.get("/brick-controller", (request, response) => {
     response.send("access denied")
   }
 })
+app.get("/multi-brick-controller", (request, response) => {
+  if (request.query["pw"] === queryParameterPassword) {
+    response.sendFile(join(__dirname, "indexes", "multi-brick-controller", "index.html"))
+  } else {
+    response.send("access denied")
+  }
+})
 app.get("/player-controller", (request, response) => {
   if (request.query["pw"] === queryParameterPassword) {
     response.sendFile(join(__dirname, "indexes", "player-controller", "index.html"))
