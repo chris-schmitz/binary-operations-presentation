@@ -1,6 +1,14 @@
 import { BrickColor as RGBBrickColor } from "./Interfaces";
 
 export class BrickColor {
+  static withRandomColor(): BrickColor {
+    const color = new BrickColor()
+    color.setColorRGB({ red: BrickColor.getRandomColorValue(), green: BrickColor.getRandomColorValue(), blue: BrickColor.getRandomColorValue() })
+    return color
+  }
+  public static getRandomColorValue() {
+    return Math.floor(Math.random() * 255)
+  }
   private color: RGBBrickColor;
 
   constructor() {
@@ -25,11 +33,11 @@ export class BrickColor {
   public asHex() {
     let hex = 0;
     hex |= this.color.red;
-    hex <<= 16;
+    hex <<= 8;
     hex |= this.color.green;
-    hex <<= 16;
+    hex <<= 8;
     hex |= this.color.blue;
-    return hex;
+    return hex.toString(16);
   }
 
   public asPrefixedHex() {
@@ -56,4 +64,5 @@ export class BrickColor {
     color >>= 8;
     this.color.red = color & 0xFF;
   }
+
 }
