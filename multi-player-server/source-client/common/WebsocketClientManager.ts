@@ -41,7 +41,7 @@ class WebsocketClientManager extends EventEmitter {
   messageBuilder: ClientMessageBuilder
   clientType: clientTypeEnum;
   reconnectCallback: () => void = () => { };
-  messageHandlers: Array<(messageArray: ReturnMessagePayloadType) => any> = [];
+  messageHandlers: Array<(messageArray: ReturnMessagePayloadType) => any> = []; // TODO: ripout?
 
   constructor(websocketUrl: string, clientType: clientTypeEnum, messageBuilder: ClientMessageBuilder, reconnectConfig?: ReconnectConfig) {
     super()
@@ -121,6 +121,7 @@ class WebsocketClientManager extends EventEmitter {
     this.messageBuilder.setId(data.id)
   }
 
+  // TODO: ripout?
   public addMessageHandler(callback: (message: ReturnMessagePayloadType) => any) {
     this.messageHandlers.push(callback)
   }
