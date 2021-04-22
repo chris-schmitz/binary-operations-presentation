@@ -73,6 +73,7 @@ class BrickController extends WebsocketClientManager {
     this.fireTextElement = document.querySelector("#fire-text")
     this.colorPicker = document.querySelector("#color-picker")
     this.shootSound = document.querySelector("#shoot-sound")
+    this.shootSound!.volume = 0.1
 
     if (!this.rowNumberElement || !this.brickButtonElement || !this.colorPicker) {
       throw new Error("Unable to grab UI elements!")
