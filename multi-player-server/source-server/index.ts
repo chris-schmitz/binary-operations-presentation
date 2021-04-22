@@ -52,8 +52,6 @@ app.get("/player-controller", (request, response) => {
 })
 
 app.get("/", async (request, response) => {
-  const domainName = "localhost:3000" // TODO: pull from an env file
-
   const replacements: { [key: string]: string } = {
     "!!playerControllerUrl!!": `/player-controller?pw=${queryParameterPassword}`,
     "!!brickControllerUrl!!": `/brick-controller?pw=${queryParameterPassword}`,
@@ -61,12 +59,8 @@ app.get("/", async (request, response) => {
   }
 
   const html = await readFile(join(__dirname, "indexes", "lobby", "index.html"), { encoding: "utf-8" })
-
   const search = new RegExp(`${Object.keys(replacements).join("|")}`, "g")
-
-  const dataInserted = html.replace(search, match => {
-    return replacements[match]
-  })
+  const dataInserted = html.replace(search, match => replacements[match])
   response.send(dataInserted)
 })
 
