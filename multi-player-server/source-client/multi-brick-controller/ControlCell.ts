@@ -25,7 +25,6 @@ export default class ControlCell extends EventEmitter {
     this.buttonLockTickCountTotal = buttonLockTickCountTotal;
     this.grabElements();
     this.addButtonListener();
-    debugger
     const randomColor = BrickColor.withRandomColor()
     this.setBrickColor(randomColor);
     this.colorPicker!.value = `#${randomColor.asHex()}`
