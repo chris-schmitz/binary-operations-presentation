@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Document</title>
-    <link href="brick-controller.css" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       html,
@@ -21,14 +20,35 @@
       ul {
         list-style-type: square;
       }
+      .description {
+        width: 50vw;
+      }
+      .description p {
+        font-size: 15pt;
+      }
     </style>
   </head>
   <body>
     <h1>Brick Game</h1>
-    <ul>
-      <li><a href="!!gameboardUrl!!">Gameboard</a></li>
-      <li><a href="!!brickControllerUrl!!">Brick Controller</a></li>
-      <li><a href="!!playerControllerUrl!!">Player Controller</a></li>
-    </ul>
+    <div class="description">
+      <p>Each player should open the Gameboard in one browser window.</p>
+      <p>
+        In a separate browser window each player should open the Player Controller (id provided by the admin) and all other
+        players should grab a Brick Controller.
+      </p>
+      <p>
+        The object of the game is for the players with the Brick Controllers to send bricks down their assigned row to push the
+        player off of the gameboard. The player with the Player Controller should, you know, not get pushed off the gameboard.
+      </p>
+    </div>
+    <div>
+      <ul>
+        <li><a href="!!gameboardUrl!!">Gameboard</a></li>
+      </ul>
+      <ul>
+        <li><a href="!!brickControllerUrl!!">Brick Controller</a></li>
+        <li><a href="!!playerControllerUrl!!">Player Controller</a></li>
+      </ul>
+    </div>
   </body>
 </html>

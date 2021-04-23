@@ -158,10 +158,15 @@ class WebsocketClientManager extends EventEmitter {
       case messageTypeEnum.GAME_TICK:
         this.emit(ClientEvents.GAME_TICK.toString())
         break
+      case messageTypeEnum.BACK_TO_LOBBY:
+        window.location.replace(`http://${window.location.host}`)
       case messageTypeEnum.ERROR:
         console.error("An error was thrown on the game server:")
         console.log(messageByteArray)
         this.emit(ClientEvents.SOCKET_ERROR.toString(), messageByteArray)
+      default:
+        console.log("unknown message:")
+        console.log(messageByteArray.forEach(byte => console.log(byte.toString(16))))
     }
   }
 

@@ -45,7 +45,7 @@ class WebsocketServer {
   }
 
   // TODO: come back and define the specific message types
-  public sendToAllClients(message: any) {
+  public sendToAllClients(message: Uint8Array) {
     console.log(`Sending message to all clients: ${message}`)
 
     // TODO: refactor consideration?
@@ -145,8 +145,10 @@ class WebsocketServer {
   }
 
   private restartGame(id: Uint8Array) {
-    this.playerControllerManager.reset()
+    this.sendToAllClients(Uint8Array.from([messageTypeEnum.BACK_TO_LOBBY]))
     this.gameManager.restartGame(id)
+    this.playerControllerManager.reset()
+    this.disconnectAllClients()
   }
 
   private addBrickToGameBoard(data: Buffer, socket: WebSocket, payload: Buffer) {
@@ -296,6 +298,15 @@ class WebsocketServer {
     console.log(error)
   }
 
+
+  private disconnectAllClients() {
+    this.websocketServer.clients.forEach(client => {
+      this.gameManager
+      client.terminate()
+    })
+    this.brickControllerManager.clearAllClients()
+    this.playerControllerManager.clearAllClients()
+  }
 }
 
 export default WebsocketServer

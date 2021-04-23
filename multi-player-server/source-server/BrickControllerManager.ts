@@ -176,6 +176,16 @@ class BrickControllerManager {
 
     return { id: idView, socket, row: null }
   }
+
+  clearAllClients() {
+    this.controllers = []
+    for (let i = 0; i < this.waitingOnTurn.length; i++) {
+      this.waitingOnTurn.pop()
+    }
+    for (let i = 0; i < this.activelyPlaying.length; i++) {
+      this.activelyPlaying.pop()
+    }
+  }
 }
 
 export { BrickControllerManager }

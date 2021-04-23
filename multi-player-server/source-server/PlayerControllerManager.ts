@@ -39,7 +39,8 @@ export class PlayerControllerManager {
   }
   reset() {
     // * if we were doing multiple player characters this could be a loop through all connected players
-    this.playerControllerClient?.resetState()
+    this.createPlayerId()
+    // this.playerControllerClient?.resetState()
   }
 
   public playerMove(socket: IdableWebsocket, payload: Buffer) {
@@ -95,5 +96,9 @@ export class PlayerControllerManager {
     if (Buffer.compare(socket.id, this.playerId) !== 0) {
       throw new Error("incorrect player password")
     }
+  }
+
+  clearAllClients() {
+    this.playerControllerClient = null
   }
 }
