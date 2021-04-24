@@ -159,7 +159,8 @@ class WebsocketClientManager extends EventEmitter {
         this.emit(ClientEvents.GAME_TICK.toString())
         break
       case messageTypeEnum.BACK_TO_LOBBY:
-        window.location.replace(`http://${window.location.host}`)
+        // window.location.replace(`http://${window.location.host}`)
+        window.close()
       case messageTypeEnum.ERROR:
         console.error("An error was thrown on the game server:")
         console.log(messageByteArray)
