@@ -3,3 +3,6 @@ credentials.h
 arduino.json
 c_cpp_properties.json
 settings.json
+node_modules
+.DS_Store
+dist
