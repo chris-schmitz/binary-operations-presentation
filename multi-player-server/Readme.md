@@ -1,6 +1,24 @@
-# Multiplayer server
+# Multi player brick game
 
-The slightly-cleaner and multi-player-friendly version of the brick game demo.
+A websocket driven multi-player game where one player tries to avoid bricks sent down rows buy one to eight other players.
+
+![demo](./readme_attachments/brick_demo.gif)
+
+## The gist
+
+I want to give a couple of meetup talks centered around number systems in computers (binary, hex, how they're used), websockets, arduino, 3d modeling/printing. I like being able to use practical demos as examples for talks so I thought I'd create a simple game that threads the needles for all of those topics.
+
+The game is a super simple avoidance game. It uses websockets to facilitate the communication between the game controllers, the server, and the game boards. The message payloads are all bit arrays, either 8 bit or 32 bits.
+
+## Up and running
+
+## A note about ... the cruft
+
+This codebase is wasn't rushed, it was much the opposite. I wrote this codebase over the course of months in ~45 minute daily sprints (the time between helping get the family squared away for the day and starting work). Because of this there's a low of code sprawl, things that should be refactored, and a variety of approaches and styles all lumped together based on where my mind was at on a particular day.
+
+So, keep that in mind as you dig through the code. It's not an apology, just a "when you look at a particular section of code and interrobang, that may be why".
+
+## The payloads
 
 # What's left?
 
@@ -13,12 +31,12 @@ The slightly-cleaner and multi-player-friendly version of the brick game demo.
 - [x] can't get row 0 assigned
 - [x] host`
 - [x] post install adds rsync??
-- [~] troubleshoot hosted version
+- [x] troubleshoot hosted version
 - [ ] pull multiplayer out to it's own repository?
 - [ ] move server classes into subfolders
 - [ ] clean up and write out readme
 - [x] use new password manager class in place of individual id writes in the controller server classes
-- [?] game restart locks up on remote
+- [x] game restart locks up on remote
 - [x] clean up style on brick controller
 - [x] add brick stuck on server after a game restart
 
