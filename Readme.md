@@ -43,7 +43,16 @@ Once the `dist` directory is built you can launch the project. Note that unless 
 There's a lot to get done to get this whole project up and running. I got irritated by this so I boiled it down to a couple of npm scripts:
 
 ```sh
-npm run
+npm start # This will launch the server
+open http://localhost:3000
+
+# The player controller requires an ID that has to come from the server, to get it run the following command:
+npm run game:print-player-id
+
+# Also, once the game has finished, you can restart it by running the command:
+npm run game:restart
+
+# Note that after you restart the game you'll need to print a new player id
 ```
 
 ## A note about ... the cruft
@@ -52,90 +61,40 @@ This codebase is wasn't rushed, it was much the opposite. I wrote this codebase 
 
 So, keep that in mind as you dig through the code. It's not an apology, just a "when you look at a particular section of code and interrobang, that may be why".
 
+## A note about "security" in this project
+
+TODO: fill this in
+
 ## The payloads
 
-# What's left?
+The main reason I built this codebase is to use it as a practical talking point for number formats (e.g. binary, hex, etc) and common practices around using specific formats. Because of this, and to facilitate low-latency/high-frequency communication all of the data payloads coming from and being sent to the server are bit arrays.
 
-- [x] player out of bounds
-- [x] 0 row brick issue
-  - render issue is resolved, but now it seems like there's a collision issue
-- [x] game reset broken
-- [x] glitches on matrix
-- [x] mount circuit board
-- [x] can't get row 0 assigned
-- [x] host`
-- [x] post install adds rsync??
-- [x] troubleshoot hosted version
-- [ ] pull multiplayer out to it's own repository?
-- [ ] move server classes into subfolders
-- [ ] clean up and write out readme
-- [x] use new password manager class in place of individual id writes in the controller server classes
-- [x] game restart locks up on remote
-- [x] clean up style on brick controller
-- [x] add brick stuck on server after a game restart
+### Controller clients -> Server payloads
 
-## Up and running
-
-The multi-player version of the brick game is separated into two parts: the `source-client` and the `source-server`.
-
-Each sub-codebase has it's own package.json with build scripts. The package.json at the root level of the multiplayer-server also has a package.json that calls the builds for each sub-codebase.
-
-The end result is a `dist` folder that contains both the server and client code.
-
-```bash
-cd multi-player-server
-
-npm run install:all
-npm run build
-
-# To launch the codeabse:
-npm run start
-# open the directory `dist/server/source-server/cachedPasswords/`
-# - the `controllerPagePassword.txt` contains the password to get to the brick-controller and player-controller pages for this session.
-
-
-open http://localhost:3000/gameboard
-open http://localhost:3000/brick-controller?pw=<password from controllerPagePassword.txt>
-open http://localhost:3000/player-controller?pw=<password from controllerPagePassword.txt>
+The controller clients send simple byte array data payloads to the server for their commands. These payloads consist of a couple of meta data bytes and an optional payload:
 
 ```
-
-## Hex passwords
-
-There are two passwords that are stored as binary (b/c why not :P). Both are stored in the `dist/server/source-server/cachedPasswords/` directory, one is `adminId.txt` and the other is `playerId.txt`.
-
-You can't just open these files in the editor to read them, they're binary numbers, not the utf representations of those numbers.
-
-Instead, you need to do a hex dump and use those values. You can do this via the npm scripts:
-
-```
-npm run game:print-player-id
-npm run game:print-admin-id
+[
+  CLIENT TYPE, // * the clientTypeEnum value for the particular client type
+  MESSAGE TYPE, // * the messageTypeEnum denoting the type of message being sent
+  ID BYTE 1, // * A randomly generated 4 byte ID
+  ID BYTE 2,
+  ID BYTE 3,
+  ID BYTE 4,
+  OPTIONAL DATA, // * any accompanying data (e.g. the brick color to use for a send brick command)
+  ...
+]
 ```
 
-The player id is what's requested when you go to the player page. This is to prevent people from grabbing the player page before the person who's supposed to be the player can get it.
+You can see how this message is built in []()
 
-The admin id is used to restart the game. You don't actually _need_ it, because you can restart the game via an npm command that reads that file.
+And how the server parses the messages in [WebsocketServer's `parseMessage` method](./source-server/WebsocketServer.ts)
 
-## Restart the game
+Messages from the Server back down to controller clients is in the same byte array shape, but with just the data that the client needs (i.e. no payload and now client type).
 
-You can restart the game by firing the script
+Something worth considering in future projects is to add in a payload length byte so we can validate the data we're getting and potentially add more data after the payload if that's called for.
 
-```bash
-npm run game:restart
-```
-
-## Building individual codebases
-
-The server and client codebases can be built individually (i.e. if you're only modifying one )
-
-```bash
-cd source-server
-npm run build
-
-cd ../source-client
-npm run build
-```
+### Server -> gameboards
 
 ## Future considerations
 
@@ -154,3 +113,9 @@ This is fine, we do display collisions slightly differently on each board, but r
 When I thought about this I almost sat down and started the logic migration, but there's another snag to consider: our game frames represent the state of _things on the gameboard_, but it doesn't represent the gameboard itself. That is, the frames don't contain color information for any non-occupied cell.
 
 So, if we were going to set the color of the unoccupied cells on the server during a collision, we'd need to also set the color of the unoccupied cells all of the time. Really, this isn't a bad idea, and it would allow for the gameboards to truly match (right now everything matches except for unoccupied cells), but it's more work than what I feel like doing now.
+
+### Dynamic grid size
+
+My initial plan was to make the codebase completely adjustable as far as gameboard grid size so that it could accommodate any number of players and columns. You can see that in the original prototype and a bit in the final classes.
+
+But, I decided part of the way through the build that I would hard code the gameboard to an 8x8 grid. This is primarily because I decided to build an RGB LED matrix to go with the game and it would be 8x8. It made the code a bit easier to write by hard coding it to 8x8. That said it would be really cool to make the codebase fully dynamic based on a project-common configuration that sets the grid size or by an adjustable parameter in the API.
