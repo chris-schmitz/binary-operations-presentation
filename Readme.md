@@ -2,7 +2,7 @@
 
 A websocket driven multi-player game where one player tries to avoid bricks sent down rows buy one to eight other players.
 
-![demo](./readme_attachments/brick_demo.gif)
+![demo](./_readme_attachments/brick_demo.gif)
 
 ## The gist
 
@@ -11,6 +11,40 @@ I want to give a couple of meetup talks centered around number systems in comput
 The game is a super simple avoidance game. It uses websockets to facilitate the communication between the game controllers, the server, and the game boards. The message payloads are all bit arrays, either 8 bit or 32 bits.
 
 ## Up and running
+
+Here's how to get up and running with this codebase. Before we go over the steps, there are a couple of things that are assumed:
+
+- You have nodejs installed. I'm running version 15.9.0, though I imagine this would also run on older versions. You can install node (which comes bundled with npm) from:
+  - [The official nodejs site](https://nodejs.org/en/download/)
+  - Using [Node Version Manager](https://github.com/nvm-sh/nvm#installing-and-updating) which allows for easy switching between versions
+- You have the version control tool [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) installed
+
+Also, I don't have a windows computer so I'm not sure how many of these notes would need to be adjusted for a windows user :grimace:
+
+### Installation
+
+Pop open a terminal, `cd` to whatever directory you want to install the code base in, and type in:
+
+```sh
+git clone https://github.com/chris-schmitz/binary-operations-presentation
+cd binary-operations-presentation
+npm run install:all
+npm run build
+```
+
+At this point if you run an `ls -l` you should notice a `dist` directory
+
+![successful build of dist directory](./_readme_attachments/build-dist-directory.png)
+
+### Launching the project
+
+Once the `dist` directory is built you can launch the project. Note that unless you're adjusting the source code you don't need to rebuild the `dist` directory between launches.
+
+There's a lot to get done to get this whole project up and running. I got irritated by this so I boiled it down to a couple of npm scripts:
+
+```sh
+npm run
+```
 
 ## A note about ... the cruft
 
