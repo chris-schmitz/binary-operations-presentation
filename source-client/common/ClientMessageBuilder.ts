@@ -56,6 +56,9 @@ class ClientMessageBuilder {
       payload = Uint8Array.from([])
     }
 
+    // * Here's where we build our byte array message to send to the server.
+    // * note that with the use of the spread operator for `id` and `payload` this
+    // * becomes a flat array of unsigned 8 bit integers.
     return Uint8Array.from([
       this.clientType,
       messageType,

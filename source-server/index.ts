@@ -1,11 +1,11 @@
 import express from "express"
 import http from "http"
-import GameManager from "./GameManager"
-import WebsocketServer from "./WebsocketServer"
+import GameManager from "./managers/GameManager"
+import WebsocketServer from "./managers/WebsocketServer"
 import { join } from "path"
-import { BrickControllerManager } from "./BrickControllerManager"
-import { PlayerControllerManager } from "./PlayerControllerManager";
-import passwordManager from "./PasswordManager";
+import { BrickControllerManager } from "./managers/BrickControllerManager"
+import { PlayerControllerManager } from "./managers/PlayerControllerManager";
+import passwordManager from "./managers/PasswordManager";
 import { idByteLength } from "../project-common/config.json";
 import { readFile } from "fs/promises";
 

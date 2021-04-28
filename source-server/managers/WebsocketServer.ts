@@ -1,14 +1,13 @@
 import WebSocket from "ws"
 import http from "http"
-import { PlayerController } from "./PlayerController";
 import GameManager, { TICK } from "./GameManager";
-import { clientTypeEnum, messageTypeEnum } from "../project-common/Enumerables";
+import { clientTypeEnum, messageTypeEnum } from "../../project-common/Enumerables";
 import { BrickControllerManager } from "./BrickControllerManager"
 import { PlayerControllerManager } from "./PlayerControllerManager";
-import { BrickControllerClient } from "./interfaces/BrickControllerClient";
-import { IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
-import { SocketError } from "./errors/SocketError";
-import { idByteLength } from "../project-common/config.json";
+import { BrickControllerClient } from "../interfaces/BrickControllerClient";
+import { IdableWebsocket, IdableWebsocketTypeEnum } from "../interfaces/IdableWebsocket";
+import { SocketError } from "../errors/SocketError";
+import { idByteLength } from "../../project-common/config.json";
 import passwordManager, { BytePasswordType } from "./PasswordManager";
 
 
@@ -229,7 +228,7 @@ class WebsocketServer {
 
     const id = extractUuid(data, this.uuidByteLength)
 
-    // TODO: 
+    // TODO: rebuild consideration
     // * instead of slicing till the end, slice based on the payload size data provided in the value in the data
     const payload = data.slice(2 + this.uuidByteLength)
 

@@ -1,14 +1,12 @@
 import { EventEmitter } from "events";
-import { messageTypeEnum, PlayPhaseEnum } from "../project-common/Enumerables";
+import { messageTypeEnum, PlayPhaseEnum } from "../../project-common/Enumerables";
 import { PlayerController } from "./PlayerController";
 import { join } from "path"
 import { writeFile } from "fs";
-import { idByteLength } from "../project-common/config.json";
+import { idByteLength } from "../../project-common/config.json";
 import passwordManager, { BytePasswordType } from "./PasswordManager";
 
 export const TICK = 'tick'
-
-// TODO: consider: do we need the event emitter anymore?
 class GameManager extends EventEmitter {
   idByteLength: number = idByteLength;
 

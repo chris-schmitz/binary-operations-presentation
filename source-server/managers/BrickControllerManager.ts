@@ -1,10 +1,10 @@
 import WebSocket from "ws";
-import { messageTypeEnum } from "../project-common/Enumerables";
-import { BrickControllerClient } from "./interfaces/BrickControllerClient";
+import { messageTypeEnum } from "../../project-common//Enumerables";
+import { BrickControllerClient } from "../interfaces/BrickControllerClient";
 import GameManager, { TICK } from "./GameManager";
-import { IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
+import { IdableWebsocket, IdableWebsocketTypeEnum } from "../interfaces/IdableWebsocket";
 import { cloneDeep } from "lodash";
-import { ControllerClient } from "./interfaces/ControllerClient";
+import { ControllerClient } from "../interfaces/ControllerClient";
 import passwordManager, { BytePasswordType } from "./PasswordManager";
 
 

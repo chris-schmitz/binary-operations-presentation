@@ -1,7 +1,7 @@
-import { getRandomWord } from "./helpers/random-words"
+import { getRandomWord } from "../helpers/random-words"
 import { writeFileSync, mkdir } from "fs";
 import { join } from "path";
-import { randomByte } from "./helpers/number-tools";
+import { randomByte } from "../helpers/number-tools";
 
 
 export enum BytePasswordType {

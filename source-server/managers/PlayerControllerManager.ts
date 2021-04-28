@@ -1,12 +1,12 @@
-import { PlayerController } from "./PlayerController";
-import WebSocket from "ws";
-import { directionEnum, errorTypes, messageTypeEnum } from "../project-common/Enumerables";
-import { IdableWebsocket, IdableWebsocketTypeEnum } from "./interfaces/IdableWebsocket";
 import { writeFile } from "fs";
-import { idByteLength } from "../project-common/config.json";
-import { uintArrayToHex } from "./helpers/number-tools";
 import { join } from "path";
+import WebSocket from "ws";
+import { idByteLength } from "../../project-common/config.json";
+import { directionEnum, errorTypes, messageTypeEnum } from "../../project-common/Enumerables";
+import { uintArrayToHex } from "../helpers/number-tools";
+import { IdableWebsocket, IdableWebsocketTypeEnum } from "../interfaces/IdableWebsocket";
 import passwordManager, { BytePasswordType } from "./PasswordManager";
+import { PlayerController } from "./PlayerController";
 
 // TODO: refactor consideration
 // * Is there a point in separating the player manager service and the PlayerController model? 
