@@ -213,6 +213,8 @@ row >>= 8
 const state = row
 ```
 
+Now, all that our game frame parsing loop on the gameboard needs to do is walk down each brick row number, pull apart the number into bytes, and use those as instructions to light up the LED matrix or set the css for the grid on the webpage.
+
 It's worth noting here that there is no branching logic here and no loop, this using math to pull apart the values. In terms of speed the computer or microcontroller can execute this non-branching logic faster than if it has to jump around the machine instructions because of a conditional or a loop.
 
 # Future considerations
