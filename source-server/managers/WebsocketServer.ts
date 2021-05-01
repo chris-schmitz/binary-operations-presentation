@@ -44,7 +44,7 @@ class WebsocketServer {
   }
 
   // TODO: come back and define the specific message types
-  public sendToAllClients(message: Uint8Array) {
+  public sendToAllClients(message: ArrayBuffer) {
     console.log(`Sending message to all clients: ${message}`)
 
     // TODO: refactor consideration?
@@ -56,6 +56,20 @@ class WebsocketServer {
   }
 
   private addListeners() {
+    this.gameManager.on(TICK, this.sendGameFrame.bind(this))
+    this.gameManager.on(TICK, this.sendGameTick.bind(this))
+
+    this.websocketServer.on("connection", (socket) => {
+      console.log("new socket connected")
+      socket.on("error", this.handleError.bind(this))
+      socket.on("close", (code, reason) => {
+        this.handleClose(socket, code, reason)
+      })
+
+      socket.on("message", message => this.handleMessage(message, socket))
+    })
+  }
+  sendGameFrame(frame: ArrayBuffer) {
     const artFrame = Uint32Array.from([
       messageTypeEnum.ART_FRAME,
       0x005075EF,
@@ -123,23 +137,9 @@ class WebsocketServer {
       0x005075EF,
       0x00000000,
     ])
-    this.sendGameFrame(artFrame)
-    console.log("art frame")
-    // this.gameManager.on(TICK, this.sendGameFrame.bind(this))
-    // this.gameManager.on(TICK, this.sendGameTick.bind(this))
-
-    this.websocketServer.on("connection", (socket) => {
-      console.log("new socket connected")
-      socket.on("error", this.handleError.bind(this))
-      socket.on("close", (code, reason) => {
-        this.handleClose(socket, code, reason)
-      })
-
-      socket.on("message", message => this.handleMessage(message, socket))
-    })
-  }
-  sendGameFrame(frame: ArrayBuffer) {
-    this.sendToAllGameBoards(frame)
+    this.sendToAllClients(artFrame)
+    // console.log("art frame")
+    // this.sendToAllGameBoards(frame)
   }
   sendGameTick() {
     // console.log("-------> heard a game tick, relaying to clients")
