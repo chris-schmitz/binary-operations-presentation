@@ -12,7 +12,8 @@ export enum messageTypeEnum {
   PLAYER_MOVE,
   RESTART_GAME,
   REMOVE_PLAYER_CONTROLLER,
-  BACK_TO_LOBBY
+  BACK_TO_LOBBY,
+  ART_FRAME
 }
 
 

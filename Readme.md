@@ -63,7 +63,9 @@ So, keep that in mind as you dig through the code. It's not an apology, just a "
 
 # A note about "security" in this project
 
-TODO: fill this in
+The security is _light_ in this demo. Really, it's there to make sure people can't grab controllers or send commands to rows that their controller isn't registered for. All of the IDs and passwords (outside of the controller page passwords) are just 4 byte arrays. I'm not even hosting this demo with an TLS certificate because I want participants to be able to pop up wireshark and see the data payloads unencrypted.
+
+There's no real reason to add in tighter security for this demo, but I want to call this out because I don't want anyone looking to this project as a way of securing a project.
 
 ---
 
@@ -216,6 +218,24 @@ const state = row
 Now, all that our game frame parsing loop on the gameboard needs to do is walk down each brick row number, pull apart the number into bytes, and use those as instructions to light up the LED matrix or set the css for the grid on the webpage.
 
 It's worth noting here that there is no branching logic here and no loop, this using math to pull apart the values. In terms of speed the computer or microcontroller can execute this non-branching logic faster than if it has to jump around the machine instructions because of a conditional or a loop.
+
+## Exploring the data with Wireshark
+
+[Wireshark](https://www.wireshark.org) is a tool that allows you to intercept and inspect network data packets.
+
+![]()
+
+It's a cool tool to use for poking around in general, but it's particularly helpful in this project.
+
+All of the websocket data payloads going back and forth are sent in binary, which makes inspecting data hard using browser developer tools which are geared towards displaying text payloads.
+
+E.g. you can't actually display the binary value 10101 to a console in it's binary form because the numbers `1` and `0` don't correspond to any character encoding values. You'd have to write the string version of 10101 which is 3130313031. Most dev tools make this easy, but the websocket inspection tool (at least in chrome) doesn't do this for you.
+
+TODO: COME BACK AND CLEAN UP THIS WORDING
+
+But, we can use wireshark to catch those packets and display the actual binary data:
+
+![]()
 
 # Future considerations
 

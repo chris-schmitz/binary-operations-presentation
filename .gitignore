@@ -6,3 +6,6 @@ settings.json
 node_modules
 .DS_Store
 dist
+spellright.dict
+player-id.txt
+project-common/environment.json

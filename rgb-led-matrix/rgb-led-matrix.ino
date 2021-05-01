@@ -226,6 +226,8 @@ void addWebsocketListener()
       setGameState(gameFrame, sizeof(gameFrame) / sizeof(gameFrame[0]));
       animate();
       break;
+    case ART_FRAME:
+      Serial.println("Art frame");
     }
   });
 }

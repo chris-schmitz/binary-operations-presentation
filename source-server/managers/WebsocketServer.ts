@@ -56,6 +56,74 @@ class WebsocketServer {
   }
 
   private addListeners() {
+    const artFrame = Uint32Array.from([
+      messageTypeEnum.ART_FRAME,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+      0x005075EF,
+      0x00000000,
+    ])
+    this.sendGameFrame(artFrame)
     this.gameManager.on(TICK, this.sendGameFrame.bind(this))
     this.gameManager.on(TICK, this.sendGameTick.bind(this))
 
@@ -69,14 +137,14 @@ class WebsocketServer {
       socket.on("message", message => this.handleMessage(message, socket))
     })
   }
-  sendGameFrame(frame: Uint8Array) {
+  sendGameFrame(frame: ArrayBuffer) {
     this.sendToAllGameBoards(frame)
   }
   sendGameTick() {
     // console.log("-------> heard a game tick, relaying to clients")
     this.websocketServer.clients.forEach(client => client.send(Uint8Array.from([messageTypeEnum.GAME_TICK])))
   }
-  sendToAllGameBoards(frame: Uint8Array) {
+  sendToAllGameBoards(frame: ArrayBuffer) {
     this.gameBoardClients.forEach(socket => {
       socket.send(frame)
     })
