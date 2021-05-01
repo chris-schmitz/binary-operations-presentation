@@ -124,8 +124,9 @@ class WebsocketServer {
       0x00000000,
     ])
     this.sendGameFrame(artFrame)
-    this.gameManager.on(TICK, this.sendGameFrame.bind(this))
-    this.gameManager.on(TICK, this.sendGameTick.bind(this))
+    console.log("art frame")
+    // this.gameManager.on(TICK, this.sendGameFrame.bind(this))
+    // this.gameManager.on(TICK, this.sendGameTick.bind(this))
 
     this.websocketServer.on("connection", (socket) => {
       console.log("new socket connected")
