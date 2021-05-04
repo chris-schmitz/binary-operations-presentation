@@ -13,14 +13,20 @@ export enum BytePasswordType {
 
 export class PasswordManager {
   private static _instance: PasswordManager
-  passwordDirectoryPath: string = join(__dirname, "cachedPasswords");
+  passwordDirectoryPath: string = join(__dirname, "..", "cachedPasswords");
   byteIdPasswordLength: number = 1;
 
   private constructor() {
     this.makeCachedPasswordDirectory()
   }
   private makeCachedPasswordDirectory() {
-    mkdir(this.passwordDirectoryPath, { recursive: true }, () => {
+    mkdir(this.passwordDirectoryPath, { recursive: true }, (error) => {
+      if (error) {
+        console.log("=====> Error <=====")
+        console.log(error)
+      }
+
+      console.log(this.passwordDirectoryPath)
       console.log("cache directory created")
     })
   }

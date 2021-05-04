@@ -101,4 +101,8 @@ export class PlayerControllerManager {
   clearAllClients() {
     this.playerControllerClient = null
   }
+
+  sendToPlayer(message: Uint8Array) {
+    this.playerControllerClient?.socket.send(message)
+  }
 }

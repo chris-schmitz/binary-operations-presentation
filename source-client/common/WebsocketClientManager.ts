@@ -15,7 +15,8 @@ export enum ClientEvents {
   SOCKET_ERROR,
   WAITING_FOR_TURN,
   BRICK_ROW_ASSIGNED,
-  GAME_TICK
+  GAME_TICK,
+  Back_TO_LOBBY
 }
 // TODO: consider refactor
 // * I can't tell if this feels sloppy or organized
@@ -159,8 +160,7 @@ class WebsocketClientManager extends EventEmitter {
         this.emit(ClientEvents.GAME_TICK.toString())
         break
       case messageTypeEnum.BACK_TO_LOBBY:
-        // window.location.replace(`http://${window.location.host}`)
-        window.close()
+        this.emit(ClientEvents.Back_TO_LOBBY.toString())
       case messageTypeEnum.ERROR:
         console.error("An error was thrown on the game server:")
         console.log(messageByteArray)

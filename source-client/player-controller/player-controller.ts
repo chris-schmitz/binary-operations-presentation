@@ -105,6 +105,10 @@ class PlayerController extends WebsocketClientManager {
           break
       }
     })
+    this.addListener(ClientEvents.Back_TO_LOBBY.toString(), () => {
+      alert("The game has been restarted. This window will close.")
+      window.close()
+    })
   }
 
   private addButtonListeners() {

@@ -70,76 +70,7 @@ class WebsocketServer {
     })
   }
   sendGameFrame(frame: ArrayBuffer) {
-    const artFrame = Uint32Array.from([
-      messageTypeEnum.ART_FRAME,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-      0x005075EF,
-      0x00000000,
-    ])
-    this.sendToAllClients(artFrame)
-    // console.log("art frame")
-    // this.sendToAllGameBoards(frame)
+    this.sendToAllGameBoards(frame)
   }
   sendGameTick() {
     // console.log("-------> heard a game tick, relaying to clients")
@@ -214,7 +145,7 @@ class WebsocketServer {
 
   private restartGame(id: Uint8Array) {
     // TODO only send to brick and player controllers! no reason to redirect gameboards
-    this.sendToAllClients(Uint8Array.from([messageTypeEnum.BACK_TO_LOBBY]))
+    this.playerControllerManager.sendToPlayer(Uint8Array.from([messageTypeEnum.BACK_TO_LOBBY]))
     this.gameManager.restartGame(id)
     this.playerControllerManager.reset()
     this.disconnectAllClients()

@@ -30,25 +30,25 @@ const queryParameterPassword = passwordManager.generateWordPassword()
 // * So, anytime we reload the server process we generate a new random word (prob wouldn't be a bad idea to switch this up via an admin
 // * websocket command as well), so that to get into the current game session you need to know the correct easily typed password to get in 
 app.get("/brick-controller", (request, response) => {
-  if (request.query["pw"] === queryParameterPassword) {
-    response.sendFile(join(__dirname, "indexes", "brick-controller", "index.html"))
-  } else {
-    response.send("access denied")
-  }
+  // if (request.query["pw"] === queryParameterPassword) {
+  response.sendFile(join(__dirname, "indexes", "brick-controller", "index.html"))
+  // } else {
+  //   response.send("access denied")
+  // }
 })
 app.get("/multi-brick-controller", (request, response) => {
-  if (request.query["pw"] === queryParameterPassword) {
-    response.sendFile(join(__dirname, "indexes", "multi-brick-controller", "index.html"))
-  } else {
-    response.send("access denied")
-  }
+  // if (request.query["pw"] === queryParameterPassword) {
+  response.sendFile(join(__dirname, "indexes", "multi-brick-controller", "index.html"))
+  // } else {
+  //   response.send("access denied")
+  // }
 })
 app.get("/player-controller", (request, response) => {
-  if (request.query["pw"] === queryParameterPassword) {
-    response.sendFile(join(__dirname, "indexes", "player-controller", "index.html"))
-  } else {
-    response.send("access denied")
-  }
+  // if (request.query["pw"] === queryParameterPassword) {
+  response.sendFile(join(__dirname, "indexes", "player-controller", "index.html"))
+  // } else {
+  //   response.send("access denied")
+  // }
 })
 
 app.get("/", async (request, response) => {
