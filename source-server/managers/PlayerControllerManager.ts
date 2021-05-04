@@ -44,7 +44,7 @@ export class PlayerControllerManager {
   }
 
   public playerMove(socket: IdableWebsocket, payload: Buffer) {
-    this.validateSocketInstance(socket)
+    this.validateSocketId(socket)
     // * update player's state based on the movement
     // * call the game manager with the updated player state
 
@@ -59,13 +59,19 @@ export class PlayerControllerManager {
       const idableSocket = socket as IdableWebsocket
       idableSocket.id = id
       idableSocket.type = IdableWebsocketTypeEnum.PLAYER_CONTROLLER
+
+      this.validateSocketId(idableSocket)
+      this.checkIfPlayerIsAlreadyRegistered()
       this.storePlayerControllerInstance(idableSocket)
       this.notifyPlayer(messageTypeEnum.CLIENT_REGISTERED, this.playerControllerClient!.id)
+
     } catch (error) {
+      switch (error.message) {
+      }
       console.log(error)
       socket.send(Uint8Array.from([
         messageTypeEnum.ERROR,
-        errorTypes.PLAYER_ID_INCORRECT
+        error.message
       ]))
     }
   }
@@ -79,7 +85,6 @@ export class PlayerControllerManager {
   }
 
   private storePlayerControllerInstance(socket: IdableWebsocket) {
-    this.validateSocketInstance(socket)
     this.playerControllerClient = new PlayerController(socket);
     this.playerControllerClient.id = socket.id
   }
@@ -89,12 +94,31 @@ export class PlayerControllerManager {
     this.playerControllerClient = null
   }
 
-  private validateSocketInstance(socket: IdableWebsocket) {
+  // TODO: I don't like this. refactor
+  // * I do like the use of enums to throw and catch so we can switch on it, so maybe this is no big deal, but 
+  // * it feels really weird. 
+  private validateSocketId(socket: IdableWebsocket) {
     if (!this.playerId) {
-      throw new Error("this error should be somewhere else")
+      throw new Error(errorTypes.PLAYER_ID_NOT_GENERATED.toString())
     }
     if (Buffer.compare(socket.id, this.playerId) !== 0) {
-      throw new Error("incorrect player password")
+      throw new Error(errorTypes.PLAYER_ID_INCORRECT.toString())
+    }
+  }
+
+  private checkIfPlayerIsAlreadyRegistered() {
+    if (this.playerControllerClient != null) {
+      throw new Error(errorTypes.PLAYER_ALREADY_REGISTERED.toString())
+    }
+  }
+
+  handleClientDisconnect(socket: IdableWebsocket) {
+    // ! note we need to check the id here, otherwise if someone went to the player page 
+    // ! and reloaded it would trigger this method even if they didn't submit an id. Yeah that's 
+    // ! def a flaw, but I'm at the point where I want this codebase finished so I'm going to leave a 
+    // ! note to future me vs fixing it :|
+    if (Buffer.compare(socket.id, this.playerId!) == 0) {
+      this.clearAllClients()
     }
   }
 

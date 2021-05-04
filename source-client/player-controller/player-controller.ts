@@ -98,11 +98,15 @@ class PlayerController extends WebsocketClientManager {
     this.addListener(ClientEvents.SOCKET_ERROR.toString(), (byteArray) => {
       console.log(byteArray)
       this.updateUiState(uiStateEnum.CONNECTED_BUT_NOT_PLAYING)
+      debugger
       switch (byteArray[1]) {
         case errorTypes.PLAYER_ID_INCORRECT:
-
           this.updateMessage("The provided player id is incorrect")
           break
+        case errorTypes.PLAYER_ALREADY_REGISTERED:
+          this.updateMessage("A player controller has already been registered")
+          break
+
       }
     })
     this.addListener(ClientEvents.Back_TO_LOBBY.toString(), () => {

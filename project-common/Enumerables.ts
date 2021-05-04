@@ -33,8 +33,11 @@ export enum directionEnum {
   RIGHT
 }
 
+
 export enum errorTypes {
-  PLAYER_ID_INCORRECT
+  PLAYER_ID_INCORRECT,
+  PLAYER_ALREADY_REGISTERED,
+  PLAYER_ID_NOT_GENERATED
 }
 
 export enum PlayPhaseEnum {

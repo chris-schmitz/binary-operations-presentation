@@ -289,7 +289,9 @@ class WebsocketServer {
       case IdableWebsocketTypeEnum.BRICK_CONTROLLER:
         this.brickControllerManager.handleClientDisconnect(idableSocket)
         break
-      // TODO: any other special handling per type?
+      case IdableWebsocketTypeEnum.PLAYER_CONTROLLER:
+        this.playerControllerManager.handleClientDisconnect(idableSocket)
+        break
     }
   }
 

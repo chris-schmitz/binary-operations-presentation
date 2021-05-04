@@ -241,6 +241,12 @@ But, we can use wireshark to catch those packets and display the actual binary d
 
 There a pretty strong chance that I won't spend much time updating this codebase after the talk, or at least if I do I'll likely not be keeping it as a muliplayer game. That said, if future me does return there are a couple of thoughts worth considering:
 
+## Massive refactor and TDD
+
+Have you ever started a project kind of idle-y and throught "eh, I'll feel it out, I don't need tests or too deep of a plan", but then later you thought "ah, yeah to really make this work the way I want I should start over and TDD+plan it out more"?
+
+Yeah, that was this one for me. It's rough around the edges in a lot of ways, but it has a pretty good core concept. I already have plans on using a similar structure for future projects so there is a better version in the wings, but I'm leaving all of the warts in this one.
+
 ## Collision rendering on the server
 
 Right now the gameboard clients are supposed to be dumb renderers, i.e. the only thing they should do is receive game frames, parse them so that they can be rendered, and then render then onto the screen or across the led strip.
