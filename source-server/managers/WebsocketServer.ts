@@ -144,11 +144,8 @@ class WebsocketServer {
   }
 
   private restartGame(id: Uint8Array) {
-    // TODO only send to brick and player controllers! no reason to redirect gameboards
-    this.playerControllerManager.sendToPlayer(Uint8Array.from([messageTypeEnum.BACK_TO_LOBBY]))
-    this.gameManager.restartGame(id)
     this.playerControllerManager.reset()
-    this.disconnectAllClients()
+    this.gameManager.restartGame(id)
   }
 
   private addBrickToGameBoard(data: Buffer, socket: WebSocket, payload: Buffer) {

@@ -41,8 +41,8 @@ class GameManager extends EventEmitter {
 
   public begin() {
     this.setPlayPhase(PlayPhaseEnum.PLAYING);
+    this.playerController?.resetState()
     this.initializeGrid()
-    this.clearPlayerController()
     this.brickAnimationIntervalId = setInterval(() => this.animate(), this.brickAnimationIntervalDelay)
   }
   private setPlayPhase(phase: PlayPhaseEnum) {
@@ -53,9 +53,6 @@ class GameManager extends EventEmitter {
     this.verifyAdminId(id)
     this.stopAnimation()
     this.begin()
-  }
-  private clearPlayerController() {
-    // this.playerController = undefined
   }
   private verifyAdminId(id: Uint8Array) {
     if (Buffer.compare(id, this.adminId!) !== 0) {
@@ -117,6 +114,7 @@ class GameManager extends EventEmitter {
 
   // TODO: OMG ABSTRACT!!!
   private animate(shiftBricks: boolean = true) {
+    console.log("------------> animation tick")
 
     if (shiftBricks) {
       this.shiftBricks()
@@ -155,11 +153,12 @@ class GameManager extends EventEmitter {
   private updatePlayPhase() {
     if (this.playPhase == PlayPhaseEnum.PLAYING && this.playerController?.columnState == 0) {
       this.playPhase = PlayPhaseEnum.GAME_OVER
-      this.stopAnimation() // TODO: consider moving this. this method is probably not where we want this
+      // this.stopAnimation() // TODO: consider moving this. this method is probably not where we want this
     }
   }
   stopAnimation() {
     clearInterval(this.brickAnimationIntervalId!)
+    this.brickAnimationIntervalId = null
   }
   packagePlayerState() {
     let player = 0

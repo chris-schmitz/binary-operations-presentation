@@ -38,6 +38,8 @@ export class PlayerControllerManager {
     })
   }
   reset() {
+    this.sendToPlayer(Uint8Array.from([messageTypeEnum.BACK_TO_LOBBY]))
+    this.playerControllerClient = null
     // * if we were doing multiple player characters this could be a loop through all connected players
     this.createPlayerId()
     // this.playerControllerClient?.resetState()
@@ -117,7 +119,7 @@ export class PlayerControllerManager {
     // ! and reloaded it would trigger this method even if they didn't submit an id. Yeah that's 
     // ! def a flaw, but I'm at the point where I want this codebase finished so I'm going to leave a 
     // ! note to future me vs fixing it :|
-    if (Buffer.compare(socket.id, this.playerId!) == 0) {
+    if (this.playerControllerClient && Buffer.compare(socket.id, this.playerControllerClient.id!) == 0) {
       this.clearAllClients()
     }
   }
