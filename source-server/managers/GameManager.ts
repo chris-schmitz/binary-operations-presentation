@@ -22,6 +22,7 @@ class GameManager extends EventEmitter {
   private totalColumns: number //todo: ripout
   playerController: PlayerController | undefined
   adminId: Uint8Array | undefined
+  _allowCollisions: boolean = false;
 
 
   constructor(verboseDebugging = false, brickAnimationIntervalDelay = 500, totalRows = 8, totalColumns = 8) {
@@ -43,6 +44,7 @@ class GameManager extends EventEmitter {
     this.setPlayPhase(PlayPhaseEnum.PLAYING);
     this.playerController?.resetState()
     this.initializeGrid()
+    this.allowCollisions = false
     this.brickAnimationIntervalId = setInterval(() => this.animate(), this.brickAnimationIntervalDelay)
   }
   private setPlayPhase(phase: PlayPhaseEnum) {
@@ -100,6 +102,7 @@ class GameManager extends EventEmitter {
 
   public updatePlayerState(playerController: PlayerController | null) {
     if (!playerController) return
+    this.allowCollisions = true
     this.playerController = playerController
     // TODO: this animate shouldn't cause a brick tick
     this.animate(false)
@@ -114,7 +117,6 @@ class GameManager extends EventEmitter {
 
   // TODO: OMG ABSTRACT!!!
   private animate(shiftBricks: boolean = true) {
-    console.log("------------> animation tick")
 
     if (shiftBricks) {
       this.shiftBricks()
@@ -153,7 +155,6 @@ class GameManager extends EventEmitter {
   private updatePlayPhase() {
     if (this.playPhase == PlayPhaseEnum.PLAYING && this.playerController?.columnState == 0) {
       this.playPhase = PlayPhaseEnum.GAME_OVER
-      // this.stopAnimation() // TODO: consider moving this. this method is probably not where we want this
     }
   }
   stopAnimation() {
@@ -177,7 +178,7 @@ class GameManager extends EventEmitter {
   }
   private detectCollision() {
     let collision = false
-    if (this.playerController) {
+    if (this.playerController && this.allowCollisions === true) {
       const commonRow = this.gridState[this.playerController.row]
       collision = (commonRow & this.playerController?.columnState) > 0
     }
@@ -208,6 +209,14 @@ class GameManager extends EventEmitter {
       byte >>= 1
     }
     return reversed
+  }
+
+  get allowCollisions(): boolean {
+    return this._allowCollisions
+  }
+
+  set allowCollisions(state: boolean) {
+    this._allowCollisions = state
   }
 }
 
