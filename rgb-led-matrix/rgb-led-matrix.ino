@@ -339,7 +339,7 @@ void writePlayerToMatrix()
     Serial.println(playerTargetPixel);
   }
 
-  if (playerTargetPixel > 0)
+  if (playerTargetPixel >= 0)
   {
     matrix[playerTargetPixel] = CRGB::Crimson;
   }

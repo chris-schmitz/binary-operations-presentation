@@ -34,18 +34,18 @@ class BrickController extends WebsocketClientManager {
 
     this.grabUiElements()
 
-    window.addEventListener("beforeunload", () => {
-      localStorage.removeItem("active")
-    })
+    // window.addEventListener("beforeunload", () => {
+    //   localStorage.removeItem("active")
+    // })
   }
 
   public begin() {
     this.setBrickColor(this.brickColor)
     this.setButtonColor(this.brickColor)
 
-    if (localStorage.getItem("active") == "true") return
+    // if (localStorage.getItem("active") == "true") return
     this.reconnect(() => {
-      localStorage.setItem("active", "true")
+      // localStorage.setItem("active", "true")
       this.addBrickControllerListeners()
     })
   }
