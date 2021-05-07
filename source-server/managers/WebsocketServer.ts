@@ -57,7 +57,9 @@ class WebsocketServer {
 
   private addListeners() {
     this.gameManager.on(TICK, this.sendGameFrame.bind(this))
-    this.gameManager.on(TICK, this.sendGameTick.bind(this))
+
+    this.gameManager.on(TICK, () => this.brickControllerManager.sendToAllClients(Uint8Array.from([messageTypeEnum.GAME_TICK])))
+    // this.gameManager.on(TICK, this.sendGameTick.bind(this))
 
     this.websocketServer.on("connection", (socket) => {
       console.log("new socket connected")

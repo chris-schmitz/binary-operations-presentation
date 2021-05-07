@@ -127,7 +127,6 @@ void onEventsCallback(WebsocketsEvent event, String data)
   }
   else if (event == WebsocketsEvent::ConnectionClosed)
   {
-    // TODO: add in reconnect logic
     Serial.println("---> Connection closed.");
 
     connectToWebsocketServer();
@@ -205,12 +204,12 @@ void addWebsocketListener()
   client.onEvent(onEventsCallback);
 
   client.onMessage([&](WebsocketsMessage message) {
+    std::string rawData = message.rawData();
     if (VERBOSE_MODE)
     {
-      Serial.print("===> Got message from server <=== ");
+      Serial.println("===> Got message from server <=== ");
+      Serial.println(getFirstMessageByte(rawData), HEX);
     }
-
-    std::string rawData = message.rawData();
 
     switch (getFirstMessageByte(rawData))
     {
@@ -314,27 +313,44 @@ void writePlayerToMatrix()
   previousPlayerColumnState = playerColumnState;
   previousCollision = collision;
   previousPlayerTargetPixel = playerTargetPixel;
+  if (VERBOSE_MODE)
+  {
+    Serial.print("prev player row: ");
+    Serial.println(previousPlayerRow);
+    Serial.print("prev player column: ");
+    Serial.println(previousPlayerColumnState);
+    Serial.print("prev collision: ");
+    Serial.println(previousCollision);
+    Serial.print("prev target pixel: ");
+    Serial.println(previousPlayerTargetPixel);
+  }
 
   int exponent = log(playerColumnState) / log(2);
   int column = playerRow % 2 == 0 ? exponent : 8 - exponent - 1;
   playerTargetPixel = playerRow * 8 + column;
 
-  // TODO: troubleshoot starting here
-  // Serial.print("pixel: ");
-  // Serial.print(playerTargetPixel);
-  // Serial.print(", color: ");
-  // Serial.print(CRGB(0xFF00FF), HEX);
-  // Serial.print(", ");
-  // Serial.println(CRGB::Crimson, HEX);
-  matrix[playerTargetPixel] = CRGB::Crimson;
+  if (VERBOSE_MODE)
+  {
+    Serial.print("expoenent: ");
+    Serial.println(exponent);
+    Serial.print("column: ");
+    Serial.println(column);
+    Serial.print("target pixel: ");
+    Serial.println(playerTargetPixel);
+  }
+
+  if (playerTargetPixel > 0)
+  {
+    matrix[playerTargetPixel] = CRGB::Crimson;
+  }
 }
 
 void animate()
 {
-  if (!frameHasChange())
-  {
-    return;
-  }
+  // if (!frameHasChange())
+  // {
+  //   return;
+  // }
 
   if (collision)
   {
