@@ -5,7 +5,7 @@
 #include "helpers.h"
 #include <ArduinoWebsockets.h>
 #include <FastLED.h>
-#include <WiFi.h>
+#include <WiFiManager.h>
 
 #define _BV(bit) (1 << (bit))
 #define MATRIX_PIN 12
@@ -13,16 +13,15 @@
 
 #define VERBOSE_MODE false
 
-const char *ssid = WIFI_SSID;
-const char *password = PASSWORD;
+using namespace websockets;
+
 const char *websocket_server_host = WEBSOCKET_SERVER_HOST;
 const uint16_t websocket_server_port = WEBSOCKET_SERVER_PORT;
 
 uint8_t websocketReconnectTotalAttempts = 10;
 uint8_t websocketReconnectCount = 0;
 
-using namespace websockets;
-
+WiFiManager wifiManager;
 WebsocketsClient client;
 
 CRGB matrix[TOTAL_LEDS];
@@ -54,31 +53,40 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("Setting up");
+
+  establishNetworkConnections();
+
   FastLED.addLeds<WS2811, MATRIX_PIN, RGB>(matrix, TOTAL_LEDS);
 
   clearMatrix(backgroundColor);
   clearMatrixState();
+}
 
-  connectToWifi();
+void establishNetworkConnections()
+{
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    connectToWifi();
+  }
+  if (!client.available())
+  {
+    connectToWebsocketServer();
+  }
 }
 
 // * Wifi and websocket setups =====
 void connectToWifi()
 {
-  WiFi.begin(ssid, password);
-  for (int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++)
+  bool connected = wifiManager.autoConnect("matrix-setup", "setMeUp!");
+  if (!connected)
   {
-    Serial.print(".");
-    delay(1000);
+    Serial.println("==> Unable to connect to access point");
   }
-  if (WiFi.status() != WL_CONNECTED)
+  else
   {
-    Serial.println("Unable to connect to wifi");
-    return;
+    Serial.print("---> Connected to access point: ");
+    Serial.println(wifiManager.getWiFiSSID());
   }
-
-  Serial.println("Connected to Wifi");
-  connectToWebsocketServer();
 }
 
 void connectToWebsocketServer()
@@ -367,9 +375,9 @@ void animate()
 
 void loop()
 {
-  if (WiFi.status() != WL_CONNECTED)
+  if (WiFi.status() != WL_CONNECTED || !client.available())
   {
-    connectToWifi();
+    establishNetworkConnections();
   }
 
   // TODO: add a reconnect if not available
