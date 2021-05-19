@@ -3,6 +3,7 @@
 #include "data-classes.h"
 #include "enumerables.h"
 #include "helpers.h"
+#include "matrix-patterns.h"
 #include <ArduinoWebsockets.h>
 #include <FastLED.h>
 #include <WiFiManager.h>
@@ -375,14 +376,23 @@ void animate()
 
 void loop()
 {
+
+  runPattern(CHECKER_PATTERN, &matrix[0]);
+  runPattern(CHECKER_PATTERN, &matrix[0]);
+  runPattern(CHECKER_PATTERN, &matrix[0]);
+  delay(500);
+  runPattern(RADIATE_PATTERN, &matrix[0]);
+  runPattern(RADIATE_PATTERN, &matrix[0]);
+  delay(1000);
+  /*
   if (WiFi.status() != WL_CONNECTED || !client.available())
   {
     establishNetworkConnections();
   }
 
-  // TODO: add a reconnect if not available
   if (client.available())
   {
     client.poll();
   }
+  */
 }
